@@ -1,0 +1,25 @@
+{
+  "ignorePatterns": [
+    "**/bin/**",
+    "**/obj/**",
+    "**/build/**",
+    "**/dist/**",
+    "**/.git/**",
+    "**/node_modules/**",
+    "**/__pycache__/**",
+    "**/.venv/**",
+    "**/venv/**",
+    "**/.vs/**",
+    "**/*.suo",
+    "**/*.user",
+    "**/TestResults/**",
+    "**/coverage/**",
+    "**/*.lock.json",
+    "**/package-lock.json",
+    "**/yarn.lock",
+    "**/Migrations/**",
+    "**/migrations/**",
+    "**/wwwroot/lib/**",
+    "**/.DS_Store"
+  ]
+}
