@@ -1,4 +1,4 @@
-# Clean Architecture
+# Architecture Reference — Clean Architecture
 
 Apply Clean Architecture: layered structure, strict dependency direction, single responsibility per layer.
 
@@ -70,22 +70,22 @@ Common / Shared             ← Shared utilities (response envelope, pagination,
 
 ## What Goes Where — Quick Reference
 
-| Thing                          | Layer          | Location pattern                                 |
-| ------------------------------ | -------------- | ------------------------------------------------ |
-| Entity / model class           | Domain         | `domain/entities/{Name}`                         |
-| Domain constant                | Domain         | `domain/constants/{Name}Constants`               |
-| Repository interface           | Domain         | `domain/repositories/I{Name}Repository`          |
+| Thing                          | Layer          | Location pattern                               |
+| ------------------------------ | -------------- | ---------------------------------------------- |
+| Entity / model class           | Domain         | `domain/entities/{Name}`                       |
+| Domain constant                | Domain         | `domain/constants/{Name}Constants`             |
+| Repository interface           | Domain         | `domain/repositories/I{Name}Repository`        |
 | Service interface              | Application    | `application/services/interfaces/I{Name}Service` |
-| Service implementation         | Application    | `application/services/{Name}Service`             |
-| Request / response DTO         | Application    | `application/dtos/{module}/`                     |
-| Validator                      | Application    | `application/validators/{module}/`               |
-| Mapping / conversion functions | Application    | `application/mappings/{Name}Mappings`            |
-| Error / message constants      | Application    | `application/constants/messages/`                |
-| ORM configuration / migration  | Infrastructure | `infrastructure/persistence/`                    |
-| Repository implementation      | Infrastructure | `infrastructure/repositories/{Name}Repository`   |
-| External service client        | Infrastructure | `infrastructure/services/`                       |
-| Endpoint / route definitions   | Api            | `api/endpoints/{Module}Endpoints`                |
-| App bootstrapping / DI wiring  | Api            | `api/bootstrap/`                                 |
+| Service implementation         | Application    | `application/services/{Name}Service`           |
+| Request / response DTO         | Application    | `application/dtos/{module}/`                   |
+| Validator                      | Application    | `application/validators/{module}/`             |
+| Mapping / conversion functions | Application    | `application/mappings/{Name}Mappings`          |
+| Error / message constants      | Application    | `application/constants/messages/`              |
+| ORM configuration / migration  | Infrastructure | `infrastructure/persistence/`                  |
+| Repository implementation      | Infrastructure | `infrastructure/repositories/{Name}Repository` |
+| External service client        | Infrastructure | `infrastructure/services/`                     |
+| Endpoint / route definitions   | Api            | `api/endpoints/{Module}Endpoints`              |
+| App bootstrapping / DI wiring  | Api            | `api/bootstrap/`                               |
 
 ---
 
@@ -137,15 +137,15 @@ Api
 
 ```bash
 # Examples (adapt to your stack):
-dotnet ef migrations add <Name>          # EF Core
-alembic revision --autogenerate -m "<Name>"  # SQLAlchemy / Alembic
-npx prisma migrate dev --name <Name>     # Prisma
-rails generate migration <Name>          # ActiveRecord
-go run . migrate create -seq <name>      # golang-migrate
+dotnet ef migrations add <Name>                    # EF Core (.NET)
+alembic revision --autogenerate -m "<Name>"        # SQLAlchemy / Python
+npx prisma migrate dev --name <Name>               # Prisma (Node.js)
+rails generate migration <Name>                    # ActiveRecord (Ruby)
+go run . migrate create -seq <name>                # golang-migrate
 ```
 
 **Commit migration files together** with the entity change that triggered them.
 
 **Use idempotent SQL** for data backfills: `IF NOT EXISTS`, `IF EXISTS`, `ON CONFLICT DO NOTHING`.
 
-**Deploy order:** apply migrations to production DB _before_ deploying new code — never after.
+**Deploy order:** apply migrations to production DB *before* deploying new code — never after.
