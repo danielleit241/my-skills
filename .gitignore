@@ -1,0 +1,33 @@
+# OS files
+Thumbs.db
+.DS_Store
+
+# IDE folders
+.vscode/
+.idea/
+
+# Log and temp files
+*.log
+*.tmp
+
+# Build outputs
+dist/
+build/
+out/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.env
+
+# Node
+node_modules/
+
+# .NET
+bin/
+obj/
+
+**/session-data
+projects/
+**/projects/

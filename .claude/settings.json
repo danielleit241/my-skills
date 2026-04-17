@@ -1,25 +1,108 @@
 {
+  "hooks": {
+    "PreCompact": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \".claude/hooks/pre-compact.js\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \".claude/hooks/session-start.js\""
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File .claude/hooks/run-sh.ps1 .claude/skills/continuous-learning-v2/hooks/observe.sh pre",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File .claude/hooks/run-sh.ps1 .claude/skills/strategic-compact/suggest-compact.sh",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Bash|Read|Glob|Grep|Agent",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File .claude/hooks/run-sh.ps1 .claude/skills/continuous-learning-v2/hooks/observe.sh pre",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File .claude/hooks/run-sh.ps1 .claude/skills/continuous-learning-v2/hooks/observe.sh post",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "python .claude/hooks/build-check.py",
+            "timeout": 30
+          }
+        ]
+      },
+      {
+        "matcher": "Bash|Read|Glob|Grep|Agent",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File .claude/hooks/run-sh.ps1 .claude/skills/continuous-learning-v2/hooks/observe.sh post",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \".claude/hooks/session-end.js\"",
+            "async": true,
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  },
   "ignorePatterns": [
     "**/bin/**",
     "**/obj/**",
-    "**/build/**",
-    "**/dist/**",
-    "**/.git/**",
-    "**/node_modules/**",
-    "**/__pycache__/**",
-    "**/.venv/**",
-    "**/venv/**",
     "**/.vs/**",
-    "**/*.suo",
-    "**/*.user",
+    "**/.git/**",
+    "**/Migrations/**",
     "**/TestResults/**",
     "**/coverage/**",
+    "**/.claude/session-data/**",
+    "**/*.suo",
+    "**/*.user",
     "**/*.lock.json",
-    "**/package-lock.json",
-    "**/yarn.lock",
-    "**/Migrations/**",
-    "**/migrations/**",
-    "**/wwwroot/lib/**",
-    "**/.DS_Store"
+    "**/node_modules/**"
   ]
 }
