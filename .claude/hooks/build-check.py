@@ -1,87 +1,75 @@
 #!/usr/bin/env python3
 """
-Hook: PostToolUse Write|Edit
-Runs `dotnet build --no-restore -q` on the affected ResearchHub project layer
-when a .cs file is written/edited. Injects build errors as additionalContext
-so Claude sees them immediately without running a separate build command.
-Silently exits (no output) when there are no errors.
+Hook: PostToolUse Write|Edit — Generic .NET build checker
+
+Runs `dotnet build --no-restore -q` on the .csproj that contains the
+edited .cs file. Injects compiler errors as additionalContext so Claude
+sees them immediately without running a separate build command.
+Silently exits (no output) when there are no errors or the file is not C#.
 """
+
 import sys
 import json
 import re
 import subprocess
 from pathlib import Path
 
-# Map source folder → csproj path (relative to ROOT)
-LAYER_MAP = {
-    "ResearchHub.Api":           "src/ResearchHub.Api/ResearchHub.Api.csproj",
-    "ResearchHub.Application":   "src/ResearchHub.Application/ResearchHub.Application.csproj",
-    "ResearchHub.Infrastructure": "src/ResearchHub.Infrastructure/ResearchHub.Infrastructure.csproj",
-    "ResearchHub.Domain":        "src/ResearchHub.Domain/ResearchHub.Domain.csproj",
-    "ResearchHub.Common":        "src/ResearchHub.Common/ResearchHub.Common.csproj",
-    "ResearchHub.Application.Tests": "tests/ResearchHub.Application.Tests/ResearchHub.Application.Tests.csproj",
-    "ResearchHub.IntegrationTests":  "tests/ResearchHub.IntegrationTests/ResearchHub.IntegrationTests.csproj",
-    "ResearchHub.Testing.Common":    "tests/ResearchHub.Testing.Common/ResearchHub.Testing.Common.csproj",
-}
+
+def find_csproj(file_path: Path) -> tuple[Path | None, str | None]:
+    """Walk up from the edited file to find the nearest containing .csproj."""
+    for parent in file_path.parents:
+        csproj_files = list(parent.glob("*.csproj"))
+        if csproj_files:
+            return csproj_files[0], parent.name
+    return None, None
 
 
-
-def resolve_root() -> Path:
-    current = Path(__file__).resolve()
-    for parent in current.parents:
-        if (parent / "ResearchHub.sln").exists():
+def find_solution_root(file_path: Path) -> Path | None:
+    """Walk up to find the directory containing a .sln file."""
+    for parent in file_path.parents:
+        if list(parent.glob("*.sln")):
             return parent
-
-    return current.parents[2]
-
-
-ROOT = resolve_root()
+    return None
 
 
-def main():
+def main() -> None:
     try:
         data = json.load(sys.stdin)
     except Exception:
-        sys.exit(0)
+        return
 
-    file_path = data.get("tool_input", {}).get("file_path", "")
-    if not file_path.endswith(".cs"):
-        sys.exit(0)
+    raw_path = data.get("tool_input", {}).get("file_path", "")
+    if not raw_path or not raw_path.endswith(".cs"):
+        return
 
-    normalized_file_path = file_path.replace("\\", "/")
+    file_path = Path(raw_path.replace("\\", "/"))
+    csproj, layer_name = find_csproj(file_path)
+    if not csproj:
+        return
 
-    # Determine which project layer was edited
-    proj_path = None
-    layer_name = None
-    for layer, csproj in LAYER_MAP.items():
-        if layer in normalized_file_path:
-            proj_path = ROOT / csproj
-            layer_name = layer
-            break
-
-    if not proj_path:
-        sys.exit(0)
+    solution_root = find_solution_root(file_path) or csproj.parent
 
     result = subprocess.run(
-        ["dotnet", "build", str(proj_path), "--no-restore", "-q"],
+        ["dotnet", "build", str(csproj), "--no-restore", "-q"],
         capture_output=True,
         text=True,
-        cwd=str(ROOT),
+        cwd=str(solution_root),
     )
 
     combined = result.stdout + result.stderr
-    # Only real C# compiler errors (CS####), not MSBuild informational messages
-    errors = [line for line in combined.splitlines() if re.search(r": error CS\d+:", line)]
+    errors = [
+        line for line in combined.splitlines()
+        if re.search(r": error CS\d+:", line)
+    ]
 
     if errors:
         msg = "\n".join(errors[:3])
-        out = {
+        print(json.dumps({
             "hookSpecificOutput": {
                 "hookEventName": "PostToolUse",
                 "additionalContext": f"Build errors in {layer_name} after edit:\n{msg}",
             }
-        }
-        print(json.dumps(out))
+        }))
 
 
 if __name__ == "__main__":

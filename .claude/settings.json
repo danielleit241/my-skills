@@ -29,12 +29,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File .claude/hooks/run-sh.ps1 .claude/skills/continuous-learning-v2/hooks/observe.sh pre",
+            "command": "python .claude/hooks/observe.py pre",
             "timeout": 10
           },
           {
             "type": "command",
-            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File .claude/hooks/run-sh.ps1 .claude/skills/strategic-compact/suggest-compact.sh",
+            "command": "python .claude/hooks/suggest_compact.py",
             "timeout": 5
           }
         ]
@@ -44,7 +44,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File .claude/hooks/run-sh.ps1 .claude/skills/continuous-learning-v2/hooks/observe.sh pre",
+            "command": "python .claude/hooks/observe.py pre",
             "timeout": 10
           }
         ]
@@ -56,7 +56,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File .claude/hooks/run-sh.ps1 .claude/skills/continuous-learning-v2/hooks/observe.sh post",
+            "command": "python .claude/hooks/observe.py post",
             "timeout": 10
           },
           {
@@ -71,7 +71,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File .claude/hooks/run-sh.ps1 .claude/skills/continuous-learning-v2/hooks/observe.sh post",
+            "command": "python .claude/hooks/observe.py post",
             "timeout": 10
           }
         ]
