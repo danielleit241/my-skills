@@ -18,7 +18,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \".claude/hooks/pre-compact.js\"",
+            "command": "python .claude/hooks/pre-compact.py",
             "timeout": 5
           }
         ]
@@ -30,7 +30,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \".claude/hooks/session-start.js\""
+            "command": "python .claude/hooks/session-start.py"
           }
         ]
       }
@@ -70,7 +70,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \".claude/hooks/session-end.js\"",
+            "command": "python .claude/hooks/session-end.py",
             "async": true,
             "timeout": 10
           }
