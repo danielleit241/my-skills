@@ -349,6 +349,35 @@ def list_aliases(limit: int = 5) -> list[dict]:
         return []
 
 
+# ── coding level ──────────────────────────────────────────────────────────────
+
+_LEVEL_NAMES = {0: "ELI5", 1: "Junior", 2: "Mid-level", 3: "Senior", 4: "Tech Lead", 5: "God Mode"}
+_LEVEL_FILES = {0: "0-eli5.md", 1: "1-junior.md", 2: "2-midlevel.md", 3: "3-senior.md", 4: "4-techlead.md", 5: "5-godmode.md"}
+
+
+def read_coding_level() -> str | None:
+    root = get_project_root()
+    if not root:
+        return None
+    ck_path = root / ".ck.json"
+    if not ck_path.exists():
+        return None
+    try:
+        cfg = json.loads(ck_path.read_text(encoding="utf-8"))
+        level = int(cfg.get("codingLevel", 5))
+        if level not in _LEVEL_NAMES:
+            return None
+        style_file = root / ".claude" / "coding-levels" / _LEVEL_FILES[level]
+        if not style_file.exists():
+            return None
+        content = style_file.read_text(encoding="utf-8").strip()
+        log(f"[SessionStart] Coding level: {level} ({_LEVEL_NAMES[level]})")
+        return content
+    except Exception as err:
+        log(f"[SessionStart] Warning: failed to read .ck.json: {err}")
+        return None
+
+
 # ── main ───────────────────────────────────────────────────────────────────────
 
 def main() -> None:
@@ -374,6 +403,11 @@ def main() -> None:
         log(f"[SessionStart] Registered observer lease for {session_id}")
     else:
         log("[SessionStart] No CLAUDE_SESSION_ID available; skipping observer lease registration")
+
+    # Coding level
+    coding_level = read_coding_level()
+    if coding_level:
+        context_parts.append(coding_level)
 
     # Active instincts
     instinct_summary = summarize_active_instincts(observer_context)

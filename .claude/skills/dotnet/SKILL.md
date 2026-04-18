@@ -1,10 +1,9 @@
 ---
-name: backend
-description: .NET backend development for Clean Architecture and microservice projects. Covers C# patterns, REST API design, Minimal API, TDD, testing, security, .NET Aspire orchestration, and MassTransit events. Use for any .NET backend task — writing services, endpoints, entities, validators, tests, or configuring infrastructure. Activate proactively when writing C# code, designing APIs, adding auth/JWT, writing tests, setting up Aspire, or wiring MassTransit events.
-origin: generic
+name: backend-development
+description: .NET implementation details — C# patterns, ASP.NET Core Minimal API, EF Core, xUnit/Moq/FluentAssertions/Testcontainers, .NET Aspire orchestration, MassTransit/RabbitMQ events, FluentValidation. Activate for any C# code task, writing endpoints/services/entities/validators/tests, configuring Aspire, wiring MassTransit consumers, or reviewing .NET code.
 ---
 
-# Backend Development — .NET Clean Architecture + Microservices
+# .NET — Clean Architecture Implementation
 
 Load only the reference needed for the current task.
 

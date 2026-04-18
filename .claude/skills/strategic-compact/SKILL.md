@@ -37,37 +37,6 @@ The `suggest-compact.js` script runs on PreToolUse (Edit/Write) and:
 2. **Threshold detection** — Suggests at configurable threshold (default: 50 calls)
 3. **Periodic reminders** — Reminds every 25 calls after threshold
 
-## Hook Setup
-
-Add to your `~/.claude/settings.json`:
-
-```json
-{
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node ~/.claude/skills/strategic-compact/suggest-compact.js"
-          }
-        ]
-      },
-      {
-        "matcher": "Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node ~/.claude/skills/strategic-compact/suggest-compact.js"
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
 ## Configuration
 
 Environment variables:
