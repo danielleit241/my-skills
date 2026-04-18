@@ -62,7 +62,8 @@ Behavioral guidance that loads automatically when relevant.
 
 | Skill                    | Triggers when                                            |
 | ------------------------ | -------------------------------------------------------- |
-| `backend`                | Writing C#, .NET APIs, services, tests                   |
+| `backend-mindset`        | Architecture decisions, API design, testing strategy (language-agnostic) |
+| `dotnet`                 | Writing C#, ASP.NET Core, EF Core, MassTransit, xUnit   |
 | `code-review`            | Reviewing code, receiving feedback, verifying completion |
 | `continuous-learning-v2` | Observing sessions, creating instincts                   |
 | `mermaidjs-v11`          | Creating diagrams and visualizations                     |
@@ -104,7 +105,7 @@ Hooks fire on `Write \| Edit \| Bash \| Agent` — read-only lookups (Read, Glob
 │   ├── commands.md  # activates for .claude/commands/**
 │   └── skills.md    # activates for .claude/skills/**
 ├── hooks/           # lifecycle hook scripts
-├── lib/             # shared JS utilities for hooks
+├── lib/             # shared Python utilities for hooks
 └── settings.json    # hook wiring + ignore patterns
 CLAUDE.md            # project entry point (thin — under 200 lines)
 EXAMPLES.md          # C# examples for backend coding principles

@@ -1,5 +1,5 @@
 ---
-name: backend-development
+name: dotnet
 description: .NET implementation details — C# patterns, ASP.NET Core Minimal API, EF Core, xUnit/Moq/FluentAssertions/Testcontainers, .NET Aspire orchestration, MassTransit/RabbitMQ events, FluentValidation. Activate for any C# code task, writing endpoints/services/entities/validators/tests, configuring Aspire, wiring MassTransit consumers, or reviewing .NET code.
 ---
 

@@ -62,6 +62,16 @@
             "timeout": 10
           }
         ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .claude/hooks/build-check.py",
+            "timeout": 30
+          }
+        ]
       }
     ],
     "Stop": [

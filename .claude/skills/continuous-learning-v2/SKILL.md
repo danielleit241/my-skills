@@ -5,9 +5,7 @@ description: Instinct-based learning system that observes sessions via hooks, cr
 version: 2.1.0
 ---
 
-# Continuous Learning v2.1 - Instinct
-
--Based Architecture
+# Continuous Learning v2.1 — Instinct-Based Architecture
 
 An advanced learning system that turns your Claude Code sessions into reusable knowledge through atomic "instincts" - small learned behaviors with confidence scoring.
 
