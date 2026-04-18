@@ -1,5 +1,17 @@
 {
   "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .claude/hooks/plan-context.py",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
     "PreCompact": [
       {
         "matcher": "*",
@@ -104,5 +116,6 @@
     "**/*.user",
     "**/*.lock.json",
     "**/node_modules/**"
-  ]
+  ],
+  "CLAUDE_CODE_DISABLE_1M_CONTEXT": true
 }

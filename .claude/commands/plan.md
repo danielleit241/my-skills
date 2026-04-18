@@ -1,118 +1,143 @@
 ---
-description: Restate requirements, assess risks, and create step-by-step implementation plan. WAIT for user CONFIRM before touching any code.
+description: Plan a feature or system with auto-detected complexity. Modes: --fast (quick plan → cook), --hard (research + red-team + validate), --parallel (hard + file ownership per phase), --two (hard + 2 approaches, user selects). Always starts with Scope Challenge.
 ---
 
-# Plan Command
+# /plan — Structured Planning Pipeline
 
-This command invokes the **planner** agent to create a comprehensive implementation plan before writing any code.
-
-## What This Command Does
-
-1. **Restate Requirements** - Clarify what needs to be built
-2. **Identify Risks** - Surface potential issues and blockers
-3. **Create Step Plan** - Break down implementation into phases
-4. **Wait for Confirmation** - MUST receive user approval before proceeding
-
-## When to Use
-
-Use `/plan` when:
-
-- Starting a new feature
-- Making significant architectural changes
-- Working on complex refactoring
-- Multiple files/components will be affected
-- Requirements are unclear or ambiguous
-
-## How It Works
-
-The planner agent will:
-
-1. **Analyze the request** and restate requirements in clear terms
-2. **Break down into phases** with specific, actionable steps
-3. **Identify dependencies** between components
-4. **Assess risks** and potential blockers
-5. **Estimate complexity** (High/Medium/Low)
-6. **Present the plan** and WAIT for your explicit confirmation
-
-## Example Usage
+## Usage
 
 ```
-User: /plan I need to add real-time notifications when markets resolve
-
-Agent (planner):
-# Implementation Plan: Real-Time Market Resolution Notifications
-
-## Requirements Restatement
-- Send notifications to users when markets they're watching resolve
-- Support multiple notification channels (in-app, email, webhook)
-- Ensure notifications are delivered reliably
-- Include market outcome and user's position result
-
-## Implementation Phases
-
-### Phase 1: Database Schema
-- Add notifications table with columns: id, user_id, market_id, type, status, created_at
-- Add user_notification_preferences table for channel preferences
-- Create indexes on user_id and market_id for performance
-
-### Phase 2: Notification Service
-- Create notification service in lib/notifications.ts
-- Implement notification queue using BullMQ/Redis
-- Add retry logic for failed deliveries
-- Create notification templates
-
-### Phase 3: Integration Points
-- Hook into market resolution logic (when status changes to "resolved")
-- Query all users with positions in market
-- Enqueue notifications for each user
-
-### Phase 4: Frontend Components
-- Create NotificationBell component in header
-- Add NotificationList modal
-- Implement real-time updates via Supabase subscriptions
-- Add notification preferences page
-
-## Dependencies
-- Redis (for queue)
-- Email service (SendGrid/Resend)
-- Supabase real-time subscriptions
-
-## Risks
-- HIGH: Email deliverability (SPF/DKIM required)
-- MEDIUM: Performance with 1000+ users per market
-- MEDIUM: Notification spam if markets resolve frequently
-- LOW: Real-time subscription overhead
-
-## Estimated Complexity: MEDIUM
-- Backend: 4-6 hours
-- Frontend: 3-4 hours
-- Testing: 2-3 hours
-- Total: 9-13 hours
-
-**WAITING FOR CONFIRMATION**: Proceed with this plan? (yes/no/modify)
+/plan [--fast | --hard | --parallel | --two] <description>
 ```
 
-## Important Notes
+Auto-detect mode if no flag given:
 
-**CRITICAL**: The planner agent will **NOT** write any code until you explicitly confirm the plan with "yes" or "proceed" or similar affirmative response.
+- **Fast** — single-file change, familiar pattern, ≤ 2 components
+- **Hard** — multi-file, unfamiliar domain, security-sensitive, or ≥ 3 phases
+- **Parallel** — Hard + per-phase file ownership map
+- **Two** — Hard + 2 approaches for user to select
 
-If you want changes, respond with:
+---
 
-- "modify: [your changes]"
-- "different approach: [alternative]"
-- "skip phase 2 and do phase 3 first"
+### Step 0 — Scope Challenge
 
-## Integration with Other Commands
+Before spawning any agents, challenge scope inline:
 
-After planning:
+```
+# Scope Challenge (Step 0):
+#   Exists? → [does this feature already exist in the codebase?]
+#   Minimum? → [smallest impl that satisfies requirements]
+#   Complexity? → [Fast | Hard] — reasons: multi-file? unfamiliar? security?
+#
+# Mode: [Fast | Hard | Parallel | Two]
+```
 
-- Use `/tdd` to implement with test-driven development
-- Use `/build-fix` if build errors occur
-- Use `/code-review` to review completed implementation
+If scope is too large: suggest splitting and **wait for user confirmation**.
 
-## Related Agents
+---
 
-This command invokes the `planner` agent provided by ECC.
+### Step 1 — Research (Hard / Parallel / Two only)
 
-For manual installs, the source file lives at:
-`agents/planner.md`
+Spawn **2 `plan-researcher` agents in parallel**:
+
+- **Instance A** — primary approach and best practices
+- **Instance B** — alternative approach and tradeoffs
+
+```
+// spawning 2 plan-researcher agents in parallel
+//
+// Researcher A: [approach] → [verdict]
+// Researcher B: [approach] → [verdict]
+```
+
+---
+
+### Step 2 — Plan Creation
+
+Spawn the **`planner` agent** with feature description + mode + research reports.
+
+Agent writes:
+
+```
+plans/YYMMDD-{slug}/
+  plan.md
+  phase-01-{name}.md
+  phase-02-{name}.md
+  ...
+```
+
+**Two mode**: `planner` produces `plan-a.md` and `plan-b.md` — show a summary of both, then **wait for user to choose** before continuing to Step 3.
+
+```
+// spawning planner agent
+//
+// Created:
+//   plans/{date}-{slug}/plan.md
+//   plans/{date}-{slug}/phase-01-{name}.md
+//   plans/{date}-{slug}/phase-02-{name}.md
+
+// [Two mode only] → show plan-a and plan-b summaries
+// [Review Gate] → "Which approach do you prefer — A or B?" — waiting...
+```
+
+---
+
+### Step 3 — Red-Team Review (Hard / Parallel / Two only)
+
+Spawn the **`plan-reviewer` agent** with paths to all plan files.
+
+Adjudicate each finding:
+
+- `ACCEPTED` → edit the relevant plan file immediately
+- `NOTED` → append to Risks section of `plan.md`
+- `REJECTED` → document reason
+
+```
+// spawning plan-reviewer agent
+//
+// Security:    "{finding}" → ACCEPTED → phase-02 updated
+// Assumption:  "{finding}" → NOTED    → added to risks
+// Failure:     "{finding}" → ACCEPTED → plan.md updated
+// Verdict: WARN — 0 CRITICAL, 1 HIGH resolved
+```
+
+If `plan-reviewer` returns `BLOCK`: revise the flagged phase and re-run before proceeding.
+
+---
+
+### Step 4 — Validation + Cook
+
+Ask 3–5 targeted questions about the plan's riskiest points. **Wait for user answers.**
+
+Then hydrate tasks via TodoWrite:
+
+```
+// T1: {Phase 1} (no blockers)
+// T2: {Phase 2} (blocked by T1)
+// T3: {Phase 3} (blocked by T2)
+```
+
+Output the exact cook command:
+
+```
+Ready to cook:
+/cook /abs/path/plans/{date}-{slug}/plan.md
+```
+
+---
+
+## Agents
+
+| Agent             | Step                       | Modes               |
+| ----------------- | -------------------------- | ------------------- |
+| `plan-researcher` | 1 — research (×2 parallel) | Hard, Parallel, Two |
+| `planner`         | 2 — creates plan files     | All                 |
+| `plan-reviewer`   | 3 — red-team review        | Hard, Parallel, Two |
+
+---
+
+## Integration
+
+- `/cook <plan-file>` — implement phase by phase
+- `/code-review` — review implementation after cooking
+- `/fix --quick` — fix build errors during cook

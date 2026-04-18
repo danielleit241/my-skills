@@ -5,11 +5,11 @@ description: >
   even if it seems obvious. Also use when receiving code review feedback from any source
   (human or automated), when finishing a task or major feature, before committing or
   creating a PR, or when about to express satisfaction with work. Covers three practices:
-  receiving feedback with technical rigor (no performative agreement), requesting
-  code-reviewer subagent reviews, and verification gates (run the command, read the output,
-  then make the claim). Never skip — the cost of false completion claims is higher than
-  the cost of verifying. References: code-review-reception.md, requesting-code-review.md,
-  verification-before-completion.md.
+  receiving feedback with technical rigor (no performative agreement), triggering code
+  review via /code-review command or cook/fix pipelines, and verification gates (run the
+  command, read the output, then make the claim). Never skip — the cost of false completion
+  claims is higher than the cost of verifying. References: code-review-reception.md,
+  requesting-code-review.md, verification-before-completion.md.
 ---
 
 # Code Review
@@ -21,7 +21,7 @@ Apply code review practices with technical rigor, evidence-based claims, and ver
 | Practice            | When to load                                          | File |
 | ------------------- | ----------------------------------------------------- | ---- |
 | Receiving feedback  | Unclear/questionable feedback, conflict with reviewer | `references/code-review-reception.md` |
-| Requesting review   | After each task, before merge                         | `references/requesting-code-review.md` |
+| Requesting review   | After each task, before merge — use `/code-review`    | `references/requesting-code-review.md` |
 | Verification gates  | Before any completion/success claim                   | `references/verification-before-completion.md` |
 
 ## Overview
@@ -52,6 +52,8 @@ Trigger when:
 - Before merging to main branch
 - After fixing complex bugs
 
+Use `/code-review` (local) or `/code-review <PR>` (PR mode). Cook/fix pipelines invoke the `code-reviewer` agent automatically.
+
 ### Verification Gates
 Trigger when:
 - About to claim tests pass, build succeeds, or work is complete
@@ -70,8 +72,8 @@ SITUATION?
 │  └─ From external reviewer? → Verify technically before implementing
 │
 ├─ Completed work
-│  ├─ Major feature/task? → Request code-reviewer subagent review
-│  └─ Before merge? → Request code-reviewer subagent review
+│  ├─ Major feature/task? → Run /code-review (or it's automatic in cook/fix)
+│  └─ Before merge? → Run /code-review <PR-number>
 │
 └─ About to claim status
    ├─ Have fresh verification? → State claim WITH evidence
