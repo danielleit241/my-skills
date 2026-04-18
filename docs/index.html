@@ -699,56 +699,89 @@ CLAUDE.local.md (gitignored) — personal preferences that shouldn't be committe
       // ── Pipeline demo ────────────────────────────────────────────────
       var DEMO_DATA = {
         plan: {
-          label: '/plan --hard  feature description',
+          label: '/plan --hard "add JWT auth to API"',
           steps: [
-            { agent: 'plan-researcher', icon: 'R', ms: 2000,
+            { type: 'user',   ms: 500,
+              text: '/plan --hard "add JWT auth to API"' },
+            { type: 'hook',   ms: 700,  icon: '⚡', agent: 'session-start.py',
+              running: 'Injecting project context — branch, open TODOs, memory...',
+              done:    'Context loaded · main branch · no active plan detected' },
+            { type: 'hook',   ms: 500,  icon: '⚡', agent: 'plan-context.py',
+              running: 'Scanning plans/ for in-progress work...',
+              done:    'No active plan found — proceeding fresh' },
+            { type: 'agent',  ms: 2000, icon: 'R',  agent: 'plan-researcher',
               running: 'Scanning codebase, investigating approach...',
               done:    '3 patterns found → recommending incremental refactor' },
-            { agent: 'planner',         icon: 'P', ms: 2400,
+            { type: 'agent',  ms: 2400, icon: 'P',  agent: 'planner',
               running: 'Synthesizing research into plan.md + phase files...',
-              done:    'plans/260419-feature/plan.md + 4 phase files written' },
-            { agent: 'plan-reviewer',   icon: 'V', ms: 1600,
+              done:    'plans/260419-jwt-auth/ · plan.md + 4 phase files written' },
+            { type: 'agent',  ms: 1600, icon: 'V',  agent: 'plan-reviewer',
               running: 'Red-teaming phase files for gaps and vague steps...',
-              done:    '1 vague step in phase-03 revised — plan approved ✓' }
+              done:    '1 vague step in phase-03 revised — plan approved ✓' },
+            { type: 'output', text: 'Ready → /cook plans/260419-jwt-auth/plan.md' }
           ]
         },
         cook: {
-          label: '/cook plans/260419-feature/plan.md',
+          label: '/cook plans/260419-jwt-auth/plan.md',
           steps: [
-            { agent: 'implement',   icon: '⚙', ms: 2200,
-              running: 'Reading phase-01, implementing auth middleware...',
-              done:    'auth.ts + session.ts written (142 lines)' },
-            { agent: 'tester',      icon: 'T', ms: 1800,
-              running: 'Running success criteria (3 checks)...',
-              done:    '3 / 3 passed ✓  —  phase-01 [x] marked' },
-            { agent: 'git-manager', icon: 'G', ms: 900,
-              running: 'Staging changed files...',
-              done:    'feat(auth): add JWT middleware — committed' }
+            { type: 'user',   ms: 500,
+              text: '/cook plans/260419-jwt-auth/plan.md' },
+            { type: 'hook',   ms: 800,  icon: '⚡', agent: 'build-check.py',
+              running: 'Validating build before execution (Node.js detected)...',
+              done:    'Build passes — environment stable ✓' },
+            { type: 'hook',   ms: 500,  icon: '⚡', agent: 'plan-context.py',
+              running: 'Loading phase-01 from plan.md...',
+              done:    'phase-01-auth-middleware · 3 success criteria' },
+            { type: 'agent',  ms: 2200, icon: '⚙',  agent: 'implement',
+              running: 'Implementing auth middleware (phase-01)...',
+              done:    'auth.ts + session.ts written · 142 lines' },
+            { type: 'agent',  ms: 1800, icon: 'T',  agent: 'tester',
+              running: 'Running 3 success criteria...',
+              done:    '3 / 3 passed ✓ — phase-01 [x] marked' },
+            { type: 'hook',   ms: 400,  icon: '⚡', agent: 'observe.py',
+              running: 'Logging PostToolUse metrics...',
+              done:    'Metrics recorded' },
+            { type: 'agent',  ms: 900,  icon: 'G',  agent: 'git-manager',
+              running: 'Staging files, creating conventional commit...',
+              done:    'feat(auth): add JWT middleware — committed' },
+            { type: 'output', text: 'Phase 1 / 4 complete — run /cook again to continue' }
           ]
         },
         fix: {
           label: '/fix "TypeError: Cannot read id of undefined"',
           steps: [
-            { agent: 'scout',         icon: 'S', ms: 1400,
-              running: 'Locating error pattern, reading affected files...',
-              done:    'user.ts:87 — req.user accessed before null check' },
-            { agent: 'debugger',      icon: 'D', ms: 1900,
-              running: 'Hypothesis A: missing null guard → confirming...',
-              done:    'CONFIRMED — fix applied: user.ts:87 guard added' },
-            { agent: 'code-reviewer', icon: 'C', ms: 1100,
-              running: 'Checking for regressions in 3 adjacent tests...',
-              done:    'Score: 9.8 / 10  ·  0 critical  —  APPROVED ✓' }
+            { type: 'user',   ms: 500,
+              text: '/fix "TypeError: Cannot read id of undefined"' },
+            { type: 'hook',   ms: 700,  icon: '⚡', agent: 'build-check.py',
+              running: 'Validating build state before patching...',
+              done:    'Build passes — safe to modify source' },
+            { type: 'agent',  ms: 1400, icon: 'S',  agent: 'scout',
+              running: 'Locating error pattern, mapping call graph...',
+              done:    'user.ts:87 — req.user accessed before null guard' },
+            { type: 'agent',  ms: 1900, icon: 'D',  agent: 'debugger',
+              running: 'Forming hypotheses, confirming root cause...',
+              done:    'Hypothesis A CONFIRMED — fix applied: null guard added at user.ts:87' },
+            { type: 'agent',  ms: 1100, icon: 'C',  agent: 'code-reviewer',
+              running: 'Checking patch for regressions in adjacent tests...',
+              done:    '9.8 / 10 · 0 critical — APPROVED ✓' },
+            { type: 'hook',   ms: 400,  icon: '⚡', agent: 'observe.py',
+              running: 'Logging fix event to session metrics...',
+              done:    'Metrics updated' },
+            { type: 'agent',  ms: 700,  icon: 'G',  agent: 'git-manager',
+              running: 'Committing verified minimal patch...',
+              done:    'fix(user): add null guard before .id access — committed' },
+            { type: 'output', text: 'Fix verified and committed — tests pass ✓' }
           ]
         }
       };
 
-      var demoPanel   = document.getElementById('pipeline-demo');
-      var demoCmdLbl  = document.getElementById('demo-cmd-label');
-      var demoStatus  = document.getElementById('demo-status');
-      var demoSteps   = document.getElementById('demo-steps');
+      var demoPanel    = document.getElementById('pipeline-demo');
+      var demoCmdLbl   = document.getElementById('demo-cmd-label');
+      var demoStatus   = document.getElementById('demo-status');
+      var demoSteps    = document.getElementById('demo-steps');
       var demoCloseBtn = document.getElementById('demo-close');
-      var demoTimers  = [];
-      var activeCmd   = null;
+      var demoTimers   = [];
+      var activeCmd    = null;
 
       function clearTimers() { demoTimers.forEach(clearTimeout); demoTimers = []; }
 
@@ -757,7 +790,33 @@ CLAUDE.local.md (gitignored) — personal preferences that shouldn't be committe
         demoPanel.classList.remove('open');
         document.querySelectorAll('.p3d-node').forEach(function (n) { n.classList.remove('p3d-active'); });
         activeCmd = null;
-        demoTimers.push(setTimeout(function () { demoSteps.innerHTML = ''; }, 400));
+        demoTimers.push(setTimeout(function () { demoSteps.innerHTML = ''; }, 420));
+      }
+
+      function buildStep(s) {
+        var el = document.createElement('div');
+        if (s.type === 'user') {
+          el.className = 'demo-step demo-step-user';
+          el.innerHTML = '<span class="demo-prompt">$</span><span class="demo-user-cmd">' + s.text + '</span>';
+          return el;
+        }
+        if (s.type === 'output') {
+          el.className = 'demo-step demo-step-output';
+          el.innerHTML = '<span class="demo-output-prefix">→</span><span class="demo-output-text">' + s.text + '</span>';
+          return el;
+        }
+        var isHook = s.type === 'hook';
+        el.className = 'demo-step' + (isHook ? ' demo-step-hook' : '');
+        el.innerHTML =
+          '<div class="demo-step-row">' +
+            '<div class="demo-spinner"></div>' +
+            '<div class="demo-check">✓</div>' +
+            '<span class="demo-agent-icon' + (isHook ? ' demo-hook-icon' : '') + '">' + s.icon + '</span>' +
+            '<span class="demo-agent-name">' + s.agent + '</span>' +
+          '</div>' +
+          '<div class="demo-log demo-log-running">' + s.running + '</div>' +
+          '<div class="demo-log demo-log-done"></div>';
+        return el;
       }
 
       function runDemo(cmd) {
@@ -775,8 +834,6 @@ CLAUDE.local.md (gitignored) — personal preferences that shouldn't be committe
         demoStatus.className   = 'demo-status running';
         demoPanel.classList.add('open');
 
-        var cursor = 0;
-
         function runStep(i) {
           if (i >= data.steps.length) {
             demoStatus.textContent = 'completed';
@@ -784,31 +841,23 @@ CLAUDE.local.md (gitignored) — personal preferences that shouldn't be committe
             return;
           }
           var s = data.steps[i];
-
-          // build step element
-          var el = document.createElement('div');
-          el.className = 'demo-step';
-          el.innerHTML =
-            '<div class="demo-step-row">' +
-              '<div class="demo-spinner"></div>' +
-              '<div class="demo-check">✓</div>' +
-              '<span class="demo-agent-icon">' + s.icon + '</span>' +
-              '<span class="demo-agent-name">' + s.agent + '</span>' +
-            '</div>' +
-            '<div class="demo-log demo-log-running">' + s.running + '</div>' +
-            '<div class="demo-log demo-log-done"></div>';
+          var el = buildStep(s);
           demoSteps.appendChild(el);
+          // scroll to bottom
+          demoSteps.parentElement.scrollTop = demoSteps.parentElement.scrollHeight;
 
-          // fade in
           demoTimers.push(setTimeout(function () { el.classList.add('visible'); }, 30));
 
-          // complete step after ms
+          if (s.type === 'user' || s.type === 'output') {
+            demoTimers.push(setTimeout(function () { runStep(i + 1); }, s.ms || 0));
+            return;
+          }
+
           demoTimers.push(setTimeout(function () {
             el.classList.add('done');
-            el.querySelector('.demo-log-done').textContent = '→  ' + s.done;
-            el.querySelector('.demo-log-done').classList.add('visible');
-            // start next after short gap
-            demoTimers.push(setTimeout(function () { runStep(i + 1); }, 320));
+            var logDone = el.querySelector('.demo-log-done');
+            if (logDone) { logDone.textContent = logDone.textContent = '→  ' + s.done; logDone.classList.add('visible'); }
+            demoTimers.push(setTimeout(function () { runStep(i + 1); }, 300));
           }, s.ms));
         }
 
