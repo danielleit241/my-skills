@@ -1087,12 +1087,13 @@ pre code {
 }
 
 /* per-type left border color */
-.demo-step:not(.demo-step-user):not(.demo-step-output):not(.demo-step-hook) {
-  border-left-color: rgba(193, 95, 60, 0.5);   /* agent — orange */
+.demo-step:not(.demo-step-user):not(.demo-step-output):not(.demo-step-hook):not(.demo-step-main) {
+  border-left-color: rgba(193, 95, 60, 0.5);     /* agent — orange */
 }
-.demo-step-hook    { border-left-color: rgba(107, 155, 210, 0.5); } /* hook — blue */
-.demo-step-user    { border-left: none; padding-left: 0; }
-.demo-step-output  { border-left: none; padding-left: 0; }
+.demo-step-hook   { border-left-color: rgba(107, 155, 210, 0.5); } /* hook  — blue   */
+.demo-step-main   { border-left-color: rgba(167, 139, 250, 0.6); } /* main  — purple */
+.demo-step-user   { border-left: none; padding-left: 0; }
+.demo-step-output { border-left: none; padding-left: 0; }
 
 .demo-step-row {
   display: flex;
@@ -1171,9 +1172,10 @@ pre code {
 .demo-log-done.visible { opacity: 1; }
 
 /* agent step background tint */
-.demo-step:not(.demo-step-user):not(.demo-step-output):not(.demo-step-hook).visible {
+.demo-step:not(.demo-step-user):not(.demo-step-output):not(.demo-step-hook):not(.demo-step-main).visible {
   background: rgba(193, 95, 60, 0.03);
 }
+.demo-step-main.visible { background: rgba(167, 139, 250, 0.04); }
 
 /* user input step */
 .demo-step-user {
@@ -1212,6 +1214,21 @@ pre code {
   background: rgba(107, 155, 210, 0.1) !important;
   border-color: rgba(107, 155, 210, 0.35) !important;
   color: #6b9bd2 !important;
+}
+
+/* main agent step — purple */
+.demo-step-main .demo-spinner     { border-top-color: #a78bfa; }
+.demo-step-main .demo-check       { color: #a78bfa; }
+.demo-step-main .demo-agent-name  { color: #c4b5fd; font-weight: 600; }
+.demo-step-main.done .demo-agent-name { color: #a78bfa; }
+.demo-step-main .demo-log-running { color: #4a3f6a; }
+.demo-step-main .demo-log-done    { color: #6e5fa8; }
+
+.demo-main-icon {
+  background: rgba(167, 139, 250, 0.12) !important;
+  border-color: rgba(167, 139, 250, 0.4) !important;
+  color: #a78bfa !important;
+  font-size: 0.8rem !important;
 }
 
 /* output step */

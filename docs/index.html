@@ -701,21 +701,30 @@ CLAUDE.local.md (gitignored) — personal preferences that shouldn't be committe
         plan: {
           label: '/plan --hard "add JWT auth to API"',
           steps: [
-            { type: 'user',   ms: 500,
+            { type: 'user',  ms: 500,
               text: '/plan --hard "add JWT auth to API"' },
-            { type: 'hook',   ms: 700,  icon: '⚡', agent: 'session-start.py',
+            { type: 'hook',  ms: 700,  icon: '⚡', agent: 'session-start.py',
               running: 'Injecting project context — branch, open TODOs, memory...',
               done:    'Context loaded · main branch · no active plan detected' },
-            { type: 'hook',   ms: 500,  icon: '⚡', agent: 'plan-context.py',
+            { type: 'hook',  ms: 500,  icon: '⚡', agent: 'plan-context.py',
               running: 'Scanning plans/ for in-progress work...',
               done:    'No active plan found — proceeding fresh' },
-            { type: 'agent',  ms: 2000, icon: 'R',  agent: 'plan-researcher',
+            { type: 'main',  ms: 900,  icon: '◈',  agent: 'claude (main)',
+              running: 'Reading description, detecting --hard flag, preparing research phase...',
+              done:    'Mode: Hard · spawning 2 parallel plan-researcher agents' },
+            { type: 'agent', ms: 2000, icon: 'R',  agent: 'plan-researcher',
               running: 'Scanning codebase, investigating approach...',
               done:    '3 patterns found → recommending incremental refactor' },
-            { type: 'agent',  ms: 2400, icon: 'P',  agent: 'planner',
+            { type: 'main',  ms: 600,  icon: '◈',  agent: 'claude (main)',
+              running: 'Reviewing researcher findings, handing off to planner...',
+              done:    'Research accepted · proceeding to plan synthesis' },
+            { type: 'agent', ms: 2400, icon: 'P',  agent: 'planner',
               running: 'Synthesizing research into plan.md + phase files...',
               done:    'plans/260419-jwt-auth/ · plan.md + 4 phase files written' },
-            { type: 'agent',  ms: 1600, icon: 'V',  agent: 'plan-reviewer',
+            { type: 'main',  ms: 500,  icon: '◈',  agent: 'claude (main)',
+              running: 'Plan written, dispatching plan-reviewer for red-team pass...',
+              done:    'Review requested' },
+            { type: 'agent', ms: 1600, icon: 'V',  agent: 'plan-reviewer',
               running: 'Red-teaming phase files for gaps and vague steps...',
               done:    '1 vague step in phase-03 revised — plan approved ✓' },
             { type: 'output', text: 'Ready → /cook plans/260419-jwt-auth/plan.md' }
@@ -724,24 +733,33 @@ CLAUDE.local.md (gitignored) — personal preferences that shouldn't be committe
         cook: {
           label: '/cook plans/260419-jwt-auth/plan.md',
           steps: [
-            { type: 'user',   ms: 500,
+            { type: 'user',  ms: 500,
               text: '/cook plans/260419-jwt-auth/plan.md' },
-            { type: 'hook',   ms: 800,  icon: '⚡', agent: 'build-check.py',
+            { type: 'hook',  ms: 800,  icon: '⚡', agent: 'build-check.py',
               running: 'Validating build before execution (Node.js detected)...',
               done:    'Build passes — environment stable ✓' },
-            { type: 'hook',   ms: 500,  icon: '⚡', agent: 'plan-context.py',
-              running: 'Loading phase-01 from plan.md...',
-              done:    'phase-01-auth-middleware · 3 success criteria' },
-            { type: 'agent',  ms: 2200, icon: '⚙',  agent: 'implement',
+            { type: 'hook',  ms: 500,  icon: '⚡', agent: 'plan-context.py',
+              running: 'Loading plan.md, identifying next unchecked phase...',
+              done:    'phase-01-auth-middleware · 3 success criteria loaded' },
+            { type: 'main',  ms: 800,  icon: '◈',  agent: 'claude (main)',
+              running: 'Reading phase-01 requirements, selecting implementation strategy...',
+              done:    'Strategy: write auth.ts + session.ts · then run tester' },
+            { type: 'agent', ms: 2200, icon: '⚙',  agent: 'implement',
               running: 'Implementing auth middleware (phase-01)...',
               done:    'auth.ts + session.ts written · 142 lines' },
-            { type: 'agent',  ms: 1800, icon: 'T',  agent: 'tester',
+            { type: 'main',  ms: 500,  icon: '◈',  agent: 'claude (main)',
+              running: 'Implementation done, dispatching tester to validate criteria...',
+              done:    'Tester spawned' },
+            { type: 'agent', ms: 1800, icon: 'T',  agent: 'tester',
               running: 'Running 3 success criteria...',
               done:    '3 / 3 passed ✓ — phase-01 [x] marked' },
-            { type: 'hook',   ms: 400,  icon: '⚡', agent: 'observe.py',
+            { type: 'hook',  ms: 400,  icon: '⚡', agent: 'observe.py',
               running: 'Logging PostToolUse metrics...',
               done:    'Metrics recorded' },
-            { type: 'agent',  ms: 900,  icon: 'G',  agent: 'git-manager',
+            { type: 'main',  ms: 400,  icon: '◈',  agent: 'claude (main)',
+              running: 'Phase passed · requesting git-manager to commit...',
+              done:    'Commit requested' },
+            { type: 'agent', ms: 900,  icon: 'G',  agent: 'git-manager',
               running: 'Staging files, creating conventional commit...',
               done:    'feat(auth): add JWT middleware — committed' },
             { type: 'output', text: 'Phase 1 / 4 complete — run /cook again to continue' }
@@ -750,24 +768,36 @@ CLAUDE.local.md (gitignored) — personal preferences that shouldn't be committe
         fix: {
           label: '/fix "TypeError: Cannot read id of undefined"',
           steps: [
-            { type: 'user',   ms: 500,
+            { type: 'user',  ms: 500,
               text: '/fix "TypeError: Cannot read id of undefined"' },
-            { type: 'hook',   ms: 700,  icon: '⚡', agent: 'build-check.py',
+            { type: 'hook',  ms: 700,  icon: '⚡', agent: 'build-check.py',
               running: 'Validating build state before patching...',
               done:    'Build passes — safe to modify source' },
-            { type: 'agent',  ms: 1400, icon: 'S',  agent: 'scout',
+            { type: 'main',  ms: 900,  icon: '◈',  agent: 'claude (main)',
+              running: 'Parsing error description, detecting scope, selecting Review mode...',
+              done:    'Scope: single TypeError · Mode: Review · spawning scout' },
+            { type: 'agent', ms: 1400, icon: 'S',  agent: 'scout',
               running: 'Locating error pattern, mapping call graph...',
               done:    'user.ts:87 — req.user accessed before null guard' },
-            { type: 'agent',  ms: 1900, icon: 'D',  agent: 'debugger',
-              running: 'Forming hypotheses, confirming root cause...',
-              done:    'Hypothesis A CONFIRMED — fix applied: null guard added at user.ts:87' },
-            { type: 'agent',  ms: 1100, icon: 'C',  agent: 'code-reviewer',
+            { type: 'main',  ms: 600,  icon: '◈',  agent: 'claude (main)',
+              running: 'Scout report received, forming fix hypotheses, dispatching debugger...',
+              done:    '2 hypotheses queued for debugger' },
+            { type: 'agent', ms: 1900, icon: 'D',  agent: 'debugger',
+              running: 'Testing hypotheses, confirming root cause, writing diff...',
+              done:    'Hypothesis A CONFIRMED — null guard added at user.ts:87' },
+            { type: 'main',  ms: 500,  icon: '◈',  agent: 'claude (main)',
+              running: 'Fix applied, dispatching code-reviewer before committing...',
+              done:    'Review gate active' },
+            { type: 'agent', ms: 1100, icon: 'C',  agent: 'code-reviewer',
               running: 'Checking patch for regressions in adjacent tests...',
               done:    '9.8 / 10 · 0 critical — APPROVED ✓' },
-            { type: 'hook',   ms: 400,  icon: '⚡', agent: 'observe.py',
+            { type: 'hook',  ms: 400,  icon: '⚡', agent: 'observe.py',
               running: 'Logging fix event to session metrics...',
               done:    'Metrics updated' },
-            { type: 'agent',  ms: 700,  icon: 'G',  agent: 'git-manager',
+            { type: 'main',  ms: 400,  icon: '◈',  agent: 'claude (main)',
+              running: 'Review passed · requesting commit...',
+              done:    'Commit requested' },
+            { type: 'agent', ms: 700,  icon: 'G',  agent: 'git-manager',
               running: 'Committing verified minimal patch...',
               done:    'fix(user): add null guard before .id access — committed' },
             { type: 'output', text: 'Fix verified and committed — tests pass ✓' }
@@ -805,13 +835,14 @@ CLAUDE.local.md (gitignored) — personal preferences that shouldn't be committe
           el.innerHTML = '<span class="demo-output-prefix">→</span><span class="demo-output-text">' + s.text + '</span>';
           return el;
         }
-        var isHook = s.type === 'hook';
-        el.className = 'demo-step' + (isHook ? ' demo-step-hook' : '');
+        var typeClass = s.type === 'hook' ? ' demo-step-hook' : s.type === 'main' ? ' demo-step-main' : '';
+        var iconClass = 'demo-agent-icon' + (s.type === 'hook' ? ' demo-hook-icon' : s.type === 'main' ? ' demo-main-icon' : '');
+        el.className = 'demo-step' + typeClass;
         el.innerHTML =
           '<div class="demo-step-row">' +
             '<div class="demo-spinner"></div>' +
             '<div class="demo-check">✓</div>' +
-            '<span class="demo-agent-icon' + (isHook ? ' demo-hook-icon' : '') + '">' + s.icon + '</span>' +
+            '<span class="' + iconClass + '">' + s.icon + '</span>' +
             '<span class="demo-agent-name">' + s.agent + '</span>' +
           '</div>' +
           '<div class="demo-log demo-log-running">' + s.running + '</div>' +
