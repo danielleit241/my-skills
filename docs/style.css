@@ -1076,12 +1076,23 @@ pre code {
   opacity: 0;
   transform: translateX(-10px);
   transition: opacity 0.3s ease, transform 0.3s ease;
+  border-left: 2px solid transparent;
+  padding-left: 0.5rem;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
 }
 
 .demo-step.visible {
   opacity: 1;
   transform: translateX(0);
 }
+
+/* per-type left border color */
+.demo-step:not(.demo-step-user):not(.demo-step-output):not(.demo-step-hook) {
+  border-left-color: rgba(193, 95, 60, 0.5);   /* agent — orange */
+}
+.demo-step-hook    { border-left-color: rgba(107, 155, 210, 0.5); } /* hook — blue */
+.demo-step-user    { border-left: none; padding-left: 0; }
+.demo-step-output  { border-left: none; padding-left: 0; }
 
 .demo-step-row {
   display: flex;
@@ -1159,6 +1170,11 @@ pre code {
 
 .demo-log-done.visible { opacity: 1; }
 
+/* agent step background tint */
+.demo-step:not(.demo-step-user):not(.demo-step-output):not(.demo-step-hook).visible {
+  background: rgba(193, 95, 60, 0.03);
+}
+
 /* user input step */
 .demo-step-user {
   display: flex;
@@ -1184,20 +1200,18 @@ pre code {
   letter-spacing: 0.01em;
 }
 
-/* hook step — lighter treatment than agents */
-.demo-step-hook .demo-agent-name { color: #9e9488; font-weight: 500; }
-.demo-step-hook.done .demo-agent-name { color: #9e9488; }
-.demo-step-hook .demo-log-running { color: #3d3830; }
+/* hook step — blue */
+.demo-step-hook .demo-spinner     { border-top-color: #6b9bd2; }
+.demo-step-hook .demo-check       { color: #6b9bd2; }
+.demo-step-hook .demo-agent-name  { color: #8baed4; font-weight: 500; }
+.demo-step-hook.done .demo-agent-name { color: #6b9bd2; }
+.demo-step-hook .demo-log-running { color: #3a4f66; }
+.demo-step-hook .demo-log-done    { color: #4a6a8a; }
 
 .demo-hook-icon {
-  background: rgba(90, 82, 72, 0.15) !important;
-  border-color: rgba(90, 82, 72, 0.4) !important;
-  color: #5a5248 !important;
-}
-
-.demo-step-hook.done .demo-hook-icon {
-  color: #7a7060 !important;
-  border-color: rgba(122, 112, 96, 0.4) !important;
+  background: rgba(107, 155, 210, 0.1) !important;
+  border-color: rgba(107, 155, 210, 0.35) !important;
+  color: #6b9bd2 !important;
 }
 
 /* output step */
