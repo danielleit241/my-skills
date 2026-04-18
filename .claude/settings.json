@@ -37,7 +37,7 @@
     ],
     "PreToolUse": [
       {
-        "matcher": "Write|Edit",
+        "matcher": "Write|Edit|Bash|Agent",
         "hooks": [
           {
             "type": "command",
@@ -50,36 +50,11 @@
             "timeout": 5
           }
         ]
-      },
-      {
-        "matcher": "Bash|Read|Glob|Grep|Agent",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python .claude/hooks/observe.py pre",
-            "timeout": 10
-          }
-        ]
       }
     ],
     "PostToolUse": [
       {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python .claude/hooks/observe.py post",
-            "timeout": 10
-          },
-          {
-            "type": "command",
-            "command": "python .claude/hooks/build-check.py",
-            "timeout": 30
-          }
-        ]
-      },
-      {
-        "matcher": "Bash|Read|Glob|Grep|Agent",
+        "matcher": "Write|Edit|Bash|Agent",
         "hooks": [
           {
             "type": "command",

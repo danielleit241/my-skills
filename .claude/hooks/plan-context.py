@@ -82,14 +82,6 @@ def parse_plan(plan_file: Path, content: str) -> dict | None:
     }
 
 
-def detect_cross_plan_conflicts(active_plans: list[dict]) -> list[str]:
-    """Warn if multiple plans touch overlapping paths (simple heuristic)."""
-    if len(active_plans) < 2:
-        return []
-    # Placeholder: in a real impl, compare file ownership sections
-    return []
-
-
 def build_context(active_plans: list[dict]) -> str:
     if not active_plans:
         return ""
@@ -101,12 +93,6 @@ def build_context(active_plans: list[dict]) -> str:
             f"  [{plan['mode']}] {plan['name']} ({plan['progress']} phases) — {next_info}"
         )
         lines.append(f"  Plan file: {plan['path']}")
-
-    conflicts = detect_cross_plan_conflicts(active_plans)
-    if conflicts:
-        lines.append("Cross-plan conflicts:")
-        for conflict in conflicts:
-            lines.append(f"  ⚠ {conflict}")
 
     return "\n".join(lines)
 
