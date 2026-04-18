@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>my-skills — Claude Pipeline Guide</title>
+  <!-- base href ensures assets resolve correctly under /my-skills/ sub-path -->
+  <base href="/my-skills/" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <div class="layout">
+
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <span class="sidebar-logo">my-skills</span>
+        <span class="sidebar-tagline">Claude Pipeline Guide</span>
+      </div>
+      <nav class="sidebar-nav" aria-label="Primary navigation">
+        <ul>
+          <li><a href="#overview" class="nav-link active">Overview</a></li>
+          <li><a href="#plan" class="nav-link">/plan</a></li>
+          <li><a href="#cook" class="nav-link">/cook</a></li>
+          <li><a href="#fix" class="nav-link">/fix</a></li>
+        </ul>
+      </nav>
+      <div class="sidebar-footer">
+        <a href="https://github.com/danielleit241/my-skills" target="_blank" rel="noopener" class="github-link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+          </svg>
+          GitHub
+        </a>
+      </div>
+    </aside>
+
+    <main class="content" id="main-content">
+
+      <header class="topbar">
+        <nav class="breadcrumb" aria-label="Breadcrumb">
+          <span class="breadcrumb-item">my-skills</span>
+          <span class="breadcrumb-sep" aria-hidden="true">/</span>
+          <span class="breadcrumb-item current" id="breadcrumb-current">Overview</span>
+        </nav>
+      </header>
+
+      <div class="page-body">
+
+        <!-- ─── Overview ─────────────────────────────────────── -->
+        <section id="overview" class="doc-section">
+          <h1>Overview</h1>
+          <p class="lead">
+            my-skills is a Claude-native repository of slash commands, sub-agents, and skills
+            that form a repeatable software delivery pipeline. Three commands cover the full
+            lifecycle from idea to merged code.
+          </p>
+
+          <h2>The Pipeline</h2>
+          <p>Every feature or fix moves through three stages. Each command hands off structured
+          artifacts to the next — no implicit context, no re-explaining.</p>
+
+          <div class="pipeline">
+            <div class="pipeline-step">
+              <span class="step-cmd">/plan</span>
+              <span class="step-label">Design</span>
+            </div>
+            <span class="pipeline-arrow" aria-hidden="true">&#8594;</span>
+            <div class="pipeline-step">
+              <span class="step-cmd">/cook</span>
+              <span class="step-label">Implement</span>
+            </div>
+            <span class="pipeline-arrow" aria-hidden="true">&#8594;</span>
+            <div class="pipeline-step">
+              <span class="step-cmd">/fix</span>
+              <span class="step-label">Repair</span>
+            </div>
+          </div>
+
+          <h2>How They Fit Together</h2>
+          <ul>
+            <li><strong>/plan</strong> — Takes a feature description and produces a structured plan directory
+                (<code>plans/YYMMDD-{slug}/</code>) with a <code>plan.md</code> and numbered phase files.</li>
+            <li><strong>/cook</strong> — Reads an existing plan directory and implements each phase
+                sequentially, spawning specialist sub-agents per phase.</li>
+            <li><strong>/fix</strong> — Takes a broken test or error message and scouts, diagnoses, patches,
+                and verifies a fix without touching unrelated code.</li>
+          </ul>
+
+          <div class="callout">
+            <p><strong>Design principle:</strong> Commands are stateless. They read files, write files, and exit.
+            The filesystem is the only shared state between stages.</p>
+          </div>
+
+          <h2>Repository Layout</h2>
+          <pre><code>.claude/
+  agents/     # sub-agents spawned by commands
+  commands/   # slash commands (/plan, /cook, /fix)
+  skills/     # behavioral guidance loaded by skill system
+  rules/      # path-scoped design principles
+  hooks/      # shell hooks for lifecycle events
+plans/        # generated by /plan — one folder per feature</code></pre>
+        </section>
+
+        <hr class="section-divider" />
+
+        <!-- ─── /plan ─────────────────────────────────────────── -->
+        <section id="plan" class="doc-section">
+          <h1>/plan</h1>
+          <p class="lead">
+            <code>/plan</code> turns a natural-language feature description into a structured,
+            versioned plan directory that <code>/cook</code> can execute without additional context.
+          </p>
+
+          <h2>Usage</h2>
+          <pre><code>/plan [--fast | --hard | --parallel | --two] &lt;description&gt;</code></pre>
+
+          <h2>Output Structure</h2>
+          <pre><code>plans/YYMMDD-{slug}/
+  plan.md              # overview, phase checklist, risks
+  phase-01-{name}.md   # per-phase implementation detail
+  phase-02-{name}.md
+  ...</code></pre>
+
+          <h2>Modes</h2>
+          <div class="mode-badges">
+            <span class="badge accent">--fast</span>
+            <span class="badge accent">--hard</span>
+            <span class="badge accent">--parallel</span>
+            <span class="badge accent">--two</span>
+          </div>
+          <ul>
+            <li><strong>--fast</strong> — Immediate plan, no research agents. For small well-understood tasks.</li>
+            <li><strong>--hard</strong> — Spawns researcher sub-agents before planning. For architectural decisions or unfamiliar territory.</li>
+            <li><strong>--parallel</strong> — Each phase file gets an exclusive file ownership list for simultaneous implementation without conflicts.</li>
+            <li><strong>--two</strong> — Produces two competing plans from different research agents. Human picks one; planner finalizes <code>plan.md</code>.</li>
+          </ul>
+
+          <h2>Agent Chain (Hard mode)</h2>
+          <div class="agent-chain">
+            <div class="agent-node">
+              <div class="agent-icon">R</div>
+              <div>
+                <div class="agent-name">plan-researcher</div>
+                <div class="agent-desc">Investigates approach, reads codebase, returns structured findings</div>
+              </div>
+            </div>
+            <div class="agent-connector"></div>
+            <div class="agent-node">
+              <div class="agent-icon">P</div>
+              <div>
+                <div class="agent-name">planner</div>
+                <div class="agent-desc">Synthesizes research into plan.md + numbered phase files</div>
+              </div>
+            </div>
+            <div class="agent-connector"></div>
+            <div class="agent-node">
+              <div class="agent-icon">V</div>
+              <div>
+                <div class="agent-name">plan-reviewer</div>
+                <div class="agent-desc">Red-teams phase files for gaps, vague steps, security holes</div>
+              </div>
+            </div>
+          </div>
+
+          <h2>plan.md Structure</h2>
+          <pre><code># Plan: {Feature Name}
+Status: In Progress
+Date: YYYY-MM-DD
+Mode: Hard
+
+## Overview       — what this plan delivers and why
+## Phases         — checkbox list linking to phase files
+## Research       — researcher findings and chosen approach
+## Dependencies   — prerequisite work or external services
+## Risks          — HIGH/MEDIUM/LOW with mitigations</code></pre>
+
+          <div class="callout">
+            <p><strong>Rule:</strong> Phase files must be detailed enough that implementation can begin without
+            asking. Vague steps like "implement the service" are rejected by the plan-reviewer agent.</p>
+          </div>
+        </section>
+
+        <hr class="section-divider" />
+
+        <!-- ─── /cook ─────────────────────────────────────────── -->
+        <section id="cook" class="doc-section">
+          <h1>/cook</h1>
+          <p class="lead">
+            <code>/cook</code> reads an existing plan directory and executes it phase by phase,
+            spawning specialist sub-agents per phase and tracking completion in the plan checklist.
+          </p>
+
+          <h2>Usage</h2>
+          <pre><code>/cook plans/260418-my-feature/plan.md</code></pre>
+
+          <h2>Execution Model</h2>
+          <p>Each unchecked phase in <code>plan.md</code> executes in order. After a phase
+          completes successfully, <code>/cook</code> marks it <code>[x]</code> before
+          proceeding. If a phase fails, execution halts — no partial phases are silently skipped.</p>
+
+          <h2>Phase Lifecycle</h2>
+          <div class="pipeline" style="flex-direction:column;align-items:flex-start;gap:.5rem">
+            <div class="pipeline-step" style="width:100%;max-width:480px;flex-direction:row;justify-content:flex-start;gap:.75rem">
+              <span class="step-cmd" style="min-width:1.5rem">1</span>
+              <span class="step-label" style="text-transform:none;font-size:.875rem;color:var(--text-primary)">Read phase file, extract requirements and implementation steps</span>
+            </div>
+            <div class="pipeline-step" style="width:100%;max-width:480px;flex-direction:row;justify-content:flex-start;gap:.75rem">
+              <span class="step-cmd" style="min-width:1.5rem">2</span>
+              <span class="step-label" style="text-transform:none;font-size:.875rem;color:var(--text-primary)">Implement code following codebase conventions</span>
+            </div>
+            <div class="pipeline-step" style="width:100%;max-width:480px;flex-direction:row;justify-content:flex-start;gap:.75rem">
+              <span class="step-cmd" style="min-width:1.5rem">3</span>
+              <span class="step-label" style="text-transform:none;font-size:.875rem;color:var(--text-primary)">Run success criteria — tester agent validates</span>
+            </div>
+            <div class="pipeline-step" style="width:100%;max-width:480px;flex-direction:row;justify-content:flex-start;gap:.75rem">
+              <span class="step-cmd" style="min-width:1.5rem">4</span>
+              <span class="step-label" style="text-transform:none;font-size:.875rem;color:var(--text-primary)">Mark phase [x] in plan.md, proceed to next phase</span>
+            </div>
+          </div>
+
+          <h2>Sub-agents Spawned</h2>
+          <div class="agent-chain">
+            <div class="agent-node">
+              <div class="agent-icon">T</div>
+              <div>
+                <div class="agent-name">tester</div>
+                <div class="agent-desc">Runs success criteria, reports pass/fail per criterion</div>
+              </div>
+            </div>
+            <div class="agent-connector"></div>
+            <div class="agent-node">
+              <div class="agent-icon">D</div>
+              <div>
+                <div class="agent-name">debugger</div>
+                <div class="agent-desc">Called on failure — diagnoses root cause and patches before re-testing</div>
+              </div>
+            </div>
+            <div class="agent-connector"></div>
+            <div class="agent-node">
+              <div class="agent-icon">G</div>
+              <div>
+                <div class="agent-name">git-manager</div>
+                <div class="agent-desc">Stages files, creates conventional commit after each completed phase</div>
+              </div>
+            </div>
+          </div>
+
+          <h2>Modes</h2>
+          <div class="mode-badges">
+            <span class="badge">default</span>
+            <span class="badge accent">--auto</span>
+            <span class="badge accent">--fast</span>
+            <span class="badge accent">--parallel</span>
+          </div>
+          <ul>
+            <li><strong>default</strong> — Interactive: pauses at each Review Gate for human approval.</li>
+            <li><strong>--auto</strong> — Auto-approve if code review score ≥ 9.5 with 0 critical issues.</li>
+            <li><strong>--fast</strong> — Single-pass implement, no tester/reviewer loop.</li>
+            <li><strong>--parallel</strong> — Multi-agent execution for 3+ independent phases.</li>
+          </ul>
+
+          <div class="callout">
+            <p><strong>Important:</strong> <code>/cook</code> never writes to a phase file after completion.
+            The plan directory is ground truth — do not edit phase files while a cook run is in progress.</p>
+          </div>
+        </section>
+
+        <hr class="section-divider" />
+
+        <!-- ─── /fix ──────────────────────────────────────────── -->
+        <section id="fix" class="doc-section">
+          <h1>/fix</h1>
+          <p class="lead">
+            <code>/fix</code> takes a failing test, error message, or bug description and runs
+            a structured scout → debugger → review pipeline to produce a minimal, verified patch.
+          </p>
+
+          <h2>Usage</h2>
+          <pre><code>/fix "AuthService_Login_Returns401_WhenPasswordInvalid"
+/fix "TypeError: Cannot read properties of undefined (reading 'id')"
+/fix --quick    # skip review step
+/fix --auto     # non-interactive, apply first valid fix
+/fix --review   # force human review before applying patch</code></pre>
+
+          <h2>Modes</h2>
+          <div class="mode-badges">
+            <span class="badge">default</span>
+            <span class="badge accent">--auto</span>
+            <span class="badge accent">--quick</span>
+            <span class="badge accent">--review</span>
+          </div>
+          <ul>
+            <li><strong>default</strong> — Full pipeline with human confirmation before patch is applied.</li>
+            <li><strong>--auto</strong> — Non-interactive. Applies first fix that passes tests. Suited for CI.</li>
+            <li><strong>--quick</strong> — Skips review agent. Scout + debugger + apply only. Faster, less safe.</li>
+            <li><strong>--review</strong> — Forces review even when the main agent would skip it. Use on high-risk paths.</li>
+          </ul>
+
+          <h2>Agent Pipeline</h2>
+          <div class="agent-chain">
+            <div class="agent-node">
+              <div class="agent-icon">S</div>
+              <div>
+                <div class="agent-name">scout</div>
+                <div class="agent-desc">Locates the failing test, reads related source files, maps call graph</div>
+              </div>
+            </div>
+            <div class="agent-connector"></div>
+            <div class="agent-node">
+              <div class="agent-icon">D</div>
+              <div>
+                <div class="agent-name">debugger</div>
+                <div class="agent-desc">Identifies root cause, writes minimal diff, re-runs test to confirm green</div>
+              </div>
+            </div>
+            <div class="agent-connector"></div>
+            <div class="agent-node">
+              <div class="agent-icon">R</div>
+              <div>
+                <div class="agent-name">code-reviewer</div>
+                <div class="agent-desc">Checks patch doesn't break adjacent tests or introduce regressions</div>
+              </div>
+            </div>
+          </div>
+
+          <h2>Constraints</h2>
+          <ul>
+            <li>Patch touches only files identified by the scout agent — no scope creep.</li>
+            <li>If the fix requires changes to more than 3 files, <code>/fix</code> warns and asks for confirmation.</li>
+            <li>No refactoring during a fix run. If refactoring is needed, it is noted and deferred to a <code>/plan</code> → <code>/cook</code> cycle.</li>
+          </ul>
+
+          <div class="callout">
+            <p><strong>When to use /fix vs /cook:</strong> Use <code>/fix</code> for regressions and bugs.
+            Use <code>/cook</code> for new features. If you find yourself using <code>/fix</code> to add
+            behavior, stop — create a plan instead.</p>
+          </div>
+        </section>
+
+      </div>
+    </main>
+
+  </div>
+
+  <script>
+    (function () {
+      var sections = document.querySelectorAll('.doc-section');
+      var navLinks = document.querySelectorAll('.nav-link');
+      var breadcrumb = document.getElementById('breadcrumb-current');
+      var labelMap = { overview: 'Overview', plan: '/plan', cook: '/cook', fix: '/fix' };
+
+      function onScroll() {
+        var current = 'overview';
+        var scrollY = window.scrollY + 120;
+        sections.forEach(function (sec) {
+          if (sec.offsetTop <= scrollY) current = sec.id;
+        });
+        navLinks.forEach(function (link) {
+          link.classList.toggle('active', link.getAttribute('href') === '#' + current);
+        });
+        if (breadcrumb) breadcrumb.textContent = labelMap[current] || current;
+      }
+
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+  </script>
+</body>
+</html>

@@ -6,6 +6,12 @@ A personal Claude Code configuration — slash commands, sub-agents, skills, and
 
 ---
 
+## Documentation
+
+Full guide to the `/plan → /cook → /fix` pipeline: **[https://danielleit241.github.io/my-skills/](https://danielleit241.github.io/my-skills/)**
+
+---
+
 ## Pipelines
 
 Three main pipelines cover the full development loop:
