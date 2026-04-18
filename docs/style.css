@@ -972,6 +972,186 @@ pre code {
   opacity: 0.5;
 }
 
+.p3d-click-hint {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #3d3830;
+  margin-top: 0.625rem;
+  transition: color 0.2s;
+}
+
+.p3d-node:hover .p3d-click-hint { color: var(--accent-primary); }
+
+.p3d-node.p3d-active {
+  border-color: var(--accent-primary);
+  background: #231e18;
+  box-shadow: 0 0 0 3px rgba(193,95,60,0.25), 0 12px 32px rgba(0,0,0,0.5);
+  transform: translateZ(24px) scale(1.04);
+}
+
+/* ─── Demo Terminal ───────────────────────────────────────────── */
+.pipeline-demo {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-top: 0;
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  background: #0d0b09;
+  border: 1px solid transparent;
+  border-top: none;
+}
+
+.pipeline-demo.open {
+  max-height: 420px;
+  margin-top: -1px;
+  border-color: var(--accent-primary);
+  border-top: none;
+}
+
+.demo-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid #1e1a16;
+  background: #111009;
+  gap: 1rem;
+}
+
+.demo-cmd-label {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--accent-primary);
+  font-weight: 600;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.demo-status {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #5a5248;
+  flex-shrink: 0;
+}
+
+.demo-status.running { color: var(--accent-primary); }
+.demo-status.done    { color: #7ab47a; }
+
+.demo-close {
+  background: none;
+  border: none;
+  color: #5a5248;
+  cursor: pointer;
+  font-size: 0.875rem;
+  padding: 0.15rem 0.35rem;
+  border-radius: var(--radius-sm);
+  line-height: 1;
+  flex-shrink: 0;
+  transition: color 0.15s, background 0.15s;
+}
+
+.demo-close:hover { color: #f0ece6; background: #2e2822; }
+
+.demo-steps {
+  padding: 1rem 1.25rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.demo-step {
+  opacity: 0;
+  transform: translateX(-10px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.demo-step.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.demo-step-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.demo-spinner {
+  width: 13px;
+  height: 13px;
+  border: 1.5px solid #2e2822;
+  border-top-color: var(--accent-primary);
+  border-radius: 50%;
+  animation: demo-spin 0.65s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes demo-spin { to { transform: rotate(360deg); } }
+
+.demo-check {
+  display: none;
+  width: 13px;
+  height: 13px;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  color: #7ab47a;
+  flex-shrink: 0;
+  font-weight: 700;
+}
+
+.demo-step.done .demo-spinner { display: none; }
+.demo-step.done .demo-check   { display: flex; }
+
+.demo-agent-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(193,95,60,0.12);
+  border: 1px solid rgba(193,95,60,0.3);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--accent-primary);
+  flex-shrink: 0;
+}
+
+.demo-agent-name {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #c8c0b4;
+}
+
+.demo-step.done .demo-agent-name { color: #7ab47a; }
+
+.demo-log {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  padding-left: calc(13px + 20px + 0.5rem + 0.5rem);
+  margin-top: 0.2rem;
+  line-height: 1.5;
+}
+
+.demo-log-running { color: #5a5248; }
+
+.demo-log-done {
+  color: #8a7a6a;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.demo-log-done.visible { opacity: 1; }
+
 /* ─── Expandable Command Cards ───────────────────────────────── */
 .cmd-card-title {
   display: flex;

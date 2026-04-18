@@ -242,37 +242,51 @@
       <h2>The Core Pipeline</h2>
       <div class="pipeline-3d-wrap" id="pipeline-3d">
         <div class="p3d-stage">
-          <div class="p3d-node">
+          <div class="p3d-node" data-cmd="plan" role="button" tabindex="0" aria-label="Demo /plan pipeline">
             <div class="p3d-pulse-ring"></div>
             <div class="p3d-step-num">01</div>
             <div class="p3d-cmd">/plan</div>
             <div class="p3d-role">Design</div>
             <div class="p3d-sub">researcher · planner · reviewer</div>
+            <div class="p3d-click-hint">click to demo</div>
           </div>
           <div class="p3d-conn">
             <div class="p3d-flow-line"><div class="p3d-flow-dot" style="animation-delay:0s"></div></div>
             <span class="p3d-conn-label">plan.md</span>
           </div>
-          <div class="p3d-node">
+          <div class="p3d-node" data-cmd="cook" role="button" tabindex="0" aria-label="Demo /cook pipeline">
             <div class="p3d-pulse-ring" style="animation-delay:1s"></div>
             <div class="p3d-step-num">02</div>
             <div class="p3d-cmd">/cook</div>
             <div class="p3d-role">Implement</div>
             <div class="p3d-sub">tester · debugger · git-manager</div>
+            <div class="p3d-click-hint">click to demo</div>
           </div>
           <div class="p3d-conn">
             <div class="p3d-flow-line"><div class="p3d-flow-dot" style="animation-delay:0.9s"></div></div>
             <span class="p3d-conn-label">patch</span>
           </div>
-          <div class="p3d-node">
+          <div class="p3d-node" data-cmd="fix" role="button" tabindex="0" aria-label="Demo /fix pipeline">
             <div class="p3d-pulse-ring" style="animation-delay:2s"></div>
             <div class="p3d-step-num">03</div>
             <div class="p3d-cmd">/fix</div>
             <div class="p3d-role">Repair</div>
             <div class="p3d-sub">scout · debugger · reviewer</div>
+            <div class="p3d-click-hint">click to demo</div>
           </div>
         </div>
-        <p class="p3d-hint">Move cursor over to rotate &nbsp;·&nbsp; scroll down for details</p>
+
+        <!-- Demo terminal panel -->
+        <div class="pipeline-demo" id="pipeline-demo" aria-live="polite">
+          <div class="demo-header">
+            <span class="demo-cmd-label" id="demo-cmd-label"></span>
+            <span class="demo-status" id="demo-status"></span>
+            <button class="demo-close" id="demo-close" aria-label="Close demo">✕</button>
+          </div>
+          <div class="demo-steps" id="demo-steps"></div>
+        </div>
+
+        <p class="p3d-hint">Hover to rotate &nbsp;·&nbsp; Click a node to run the demo</p>
       </div>
 
       <p>Commands are stateless — they read files, write files, and exit.
@@ -681,6 +695,138 @@ CLAUDE.local.md (gitignored) — personal preferences that shouldn't be committe
           }, 600);
         });
       }
+
+      // ── Pipeline demo ────────────────────────────────────────────────
+      var DEMO_DATA = {
+        plan: {
+          label: '/plan --hard  feature description',
+          steps: [
+            { agent: 'plan-researcher', icon: 'R', ms: 2000,
+              running: 'Scanning codebase, investigating approach...',
+              done:    '3 patterns found → recommending incremental refactor' },
+            { agent: 'planner',         icon: 'P', ms: 2400,
+              running: 'Synthesizing research into plan.md + phase files...',
+              done:    'plans/260419-feature/plan.md + 4 phase files written' },
+            { agent: 'plan-reviewer',   icon: 'V', ms: 1600,
+              running: 'Red-teaming phase files for gaps and vague steps...',
+              done:    '1 vague step in phase-03 revised — plan approved ✓' }
+          ]
+        },
+        cook: {
+          label: '/cook plans/260419-feature/plan.md',
+          steps: [
+            { agent: 'implement',   icon: '⚙', ms: 2200,
+              running: 'Reading phase-01, implementing auth middleware...',
+              done:    'auth.ts + session.ts written (142 lines)' },
+            { agent: 'tester',      icon: 'T', ms: 1800,
+              running: 'Running success criteria (3 checks)...',
+              done:    '3 / 3 passed ✓  —  phase-01 [x] marked' },
+            { agent: 'git-manager', icon: 'G', ms: 900,
+              running: 'Staging changed files...',
+              done:    'feat(auth): add JWT middleware — committed' }
+          ]
+        },
+        fix: {
+          label: '/fix "TypeError: Cannot read id of undefined"',
+          steps: [
+            { agent: 'scout',         icon: 'S', ms: 1400,
+              running: 'Locating error pattern, reading affected files...',
+              done:    'user.ts:87 — req.user accessed before null check' },
+            { agent: 'debugger',      icon: 'D', ms: 1900,
+              running: 'Hypothesis A: missing null guard → confirming...',
+              done:    'CONFIRMED — fix applied: user.ts:87 guard added' },
+            { agent: 'code-reviewer', icon: 'C', ms: 1100,
+              running: 'Checking for regressions in 3 adjacent tests...',
+              done:    'Score: 9.8 / 10  ·  0 critical  —  APPROVED ✓' }
+          ]
+        }
+      };
+
+      var demoPanel   = document.getElementById('pipeline-demo');
+      var demoCmdLbl  = document.getElementById('demo-cmd-label');
+      var demoStatus  = document.getElementById('demo-status');
+      var demoSteps   = document.getElementById('demo-steps');
+      var demoCloseBtn = document.getElementById('demo-close');
+      var demoTimers  = [];
+      var activeCmd   = null;
+
+      function clearTimers() { demoTimers.forEach(clearTimeout); demoTimers = []; }
+
+      function closeDemo() {
+        clearTimers();
+        demoPanel.classList.remove('open');
+        document.querySelectorAll('.p3d-node').forEach(function (n) { n.classList.remove('p3d-active'); });
+        activeCmd = null;
+        demoTimers.push(setTimeout(function () { demoSteps.innerHTML = ''; }, 400));
+      }
+
+      function runDemo(cmd) {
+        var data = DEMO_DATA[cmd];
+        clearTimers();
+        demoSteps.innerHTML = '';
+        activeCmd = cmd;
+
+        document.querySelectorAll('.p3d-node').forEach(function (n) {
+          n.classList.toggle('p3d-active', n.dataset.cmd === cmd);
+        });
+
+        demoCmdLbl.textContent = data.label;
+        demoStatus.textContent = 'running';
+        demoStatus.className   = 'demo-status running';
+        demoPanel.classList.add('open');
+
+        var cursor = 0;
+
+        function runStep(i) {
+          if (i >= data.steps.length) {
+            demoStatus.textContent = 'completed';
+            demoStatus.className   = 'demo-status done';
+            return;
+          }
+          var s = data.steps[i];
+
+          // build step element
+          var el = document.createElement('div');
+          el.className = 'demo-step';
+          el.innerHTML =
+            '<div class="demo-step-row">' +
+              '<div class="demo-spinner"></div>' +
+              '<div class="demo-check">✓</div>' +
+              '<span class="demo-agent-icon">' + s.icon + '</span>' +
+              '<span class="demo-agent-name">' + s.agent + '</span>' +
+            '</div>' +
+            '<div class="demo-log demo-log-running">' + s.running + '</div>' +
+            '<div class="demo-log demo-log-done"></div>';
+          demoSteps.appendChild(el);
+
+          // fade in
+          demoTimers.push(setTimeout(function () { el.classList.add('visible'); }, 30));
+
+          // complete step after ms
+          demoTimers.push(setTimeout(function () {
+            el.classList.add('done');
+            el.querySelector('.demo-log-done').textContent = '→  ' + s.done;
+            el.querySelector('.demo-log-done').classList.add('visible');
+            // start next after short gap
+            demoTimers.push(setTimeout(function () { runStep(i + 1); }, 320));
+          }, s.ms));
+        }
+
+        runStep(0);
+      }
+
+      document.querySelectorAll('.p3d-node[data-cmd]').forEach(function (node) {
+        node.style.cursor = 'pointer';
+        node.addEventListener('click', function () {
+          var cmd = node.dataset.cmd;
+          if (activeCmd === cmd) { closeDemo(); } else { runDemo(cmd); }
+        });
+        node.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); node.click(); }
+        });
+      });
+
+      demoCloseBtn.addEventListener('click', closeDemo);
 
       // ── Expandable cmd cards ─────────────────────────────────────────
       document.querySelectorAll('.cmd-expandable').forEach(function (card) {
