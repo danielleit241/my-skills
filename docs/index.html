@@ -4,39 +4,69 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>my-skills — Claude Pipeline Guide</title>
-  <!-- base href ensures assets resolve correctly under /my-skills/ sub-path -->
-  <base href="/my-skills/" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="./style.css" />
+  <script>
+    // Apply saved theme before first paint to avoid flash
+    (function() {
+      var t = localStorage.getItem('theme') || 'light';
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
 </head>
 <body>
   <div class="layout">
 
+    <!-- ─── Sidebar ──────────────────────────────────────────── -->
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-header">
         <span class="sidebar-logo">my-skills</span>
         <span class="sidebar-tagline">Claude Pipeline Guide</span>
       </div>
+
       <nav class="sidebar-nav" aria-label="Primary navigation">
+        <span class="nav-label">Guide</span>
         <ul>
-          <li><a href="#overview" class="nav-link active">Overview</a></li>
-          <li><a href="#plan" class="nav-link">/plan</a></li>
-          <li><a href="#cook" class="nav-link">/cook</a></li>
-          <li><a href="#fix" class="nav-link">/fix</a></li>
+          <li>
+            <a href="#overview" class="nav-link active">
+              <span class="nav-icon">◈</span> Overview
+            </a>
+          </li>
+          <li>
+            <a href="#plan" class="nav-link">
+              <span class="nav-icon">◇</span> /plan
+            </a>
+          </li>
+          <li>
+            <a href="#cook" class="nav-link">
+              <span class="nav-icon">◇</span> /cook
+            </a>
+          </li>
+          <li>
+            <a href="#fix" class="nav-link">
+              <span class="nav-icon">◇</span> /fix
+            </a>
+          </li>
         </ul>
       </nav>
+
       <div class="sidebar-footer">
         <a href="https://github.com/danielleit241/my-skills" target="_blank" rel="noopener" class="github-link">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
             <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
           </svg>
           GitHub
         </a>
+        <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+          <span class="icon-light">☀</span>
+          <span class="icon-dark">☾</span>
+        </button>
       </div>
     </aside>
 
+    <!-- ─── Main Content ──────────────────────────────────────── -->
     <main class="content" id="main-content">
 
       <header class="topbar">
@@ -49,14 +79,18 @@
 
       <div class="page-body">
 
-        <!-- ─── Overview ─────────────────────────────────────── -->
+        <!-- ─── Overview ──────────────────────────────────────── -->
         <section id="overview" class="doc-section">
-          <h1>Overview</h1>
-          <p class="lead">
-            my-skills is a Claude-native repository of slash commands, sub-agents, and skills
-            that form a repeatable software delivery pipeline. Three commands cover the full
-            lifecycle from idea to merged code.
-          </p>
+          <div class="section-hero">
+            <div class="section-kicker">
+              <span>◈</span> Guide
+            </div>
+            <h1>Claude Pipeline Guide</h1>
+            <p class="lead">
+              A repeatable, agent-driven delivery pipeline for software features —
+              from design to deployed code — using three slash commands.
+            </p>
+          </div>
 
           <h2>The Pipeline</h2>
           <p>Every feature or fix moves through three stages. Each command hands off structured
@@ -106,13 +140,18 @@ plans/        # generated by /plan — one folder per feature</code></pre>
 
         <hr class="section-divider" />
 
-        <!-- ─── /plan ─────────────────────────────────────────── -->
+        <!-- ─── /plan ──────────────────────────────────────────── -->
         <section id="plan" class="doc-section">
-          <h1>/plan</h1>
-          <p class="lead">
-            <code>/plan</code> turns a natural-language feature description into a structured,
-            versioned plan directory that <code>/cook</code> can execute without additional context.
-          </p>
+          <div class="section-hero">
+            <div class="section-kicker">
+              <span>◇</span> Command 01
+            </div>
+            <h1>/plan</h1>
+            <p class="lead">
+              Turns a natural-language feature description into a structured, versioned
+              plan directory that <code>/cook</code> can execute without additional context.
+            </p>
+          </div>
 
           <h2>Usage</h2>
           <pre><code>/plan [--fast | --hard | --parallel | --two] &lt;description&gt;</code></pre>
@@ -185,13 +224,18 @@ Mode: Hard
 
         <hr class="section-divider" />
 
-        <!-- ─── /cook ─────────────────────────────────────────── -->
+        <!-- ─── /cook ──────────────────────────────────────────── -->
         <section id="cook" class="doc-section">
-          <h1>/cook</h1>
-          <p class="lead">
-            <code>/cook</code> reads an existing plan directory and executes it phase by phase,
-            spawning specialist sub-agents per phase and tracking completion in the plan checklist.
-          </p>
+          <div class="section-hero">
+            <div class="section-kicker">
+              <span>◇</span> Command 02
+            </div>
+            <h1>/cook</h1>
+            <p class="lead">
+              Reads an existing plan directory and executes it phase by phase,
+              spawning specialist sub-agents and tracking completion in the plan checklist.
+            </p>
+          </div>
 
           <h2>Usage</h2>
           <pre><code>/cook plans/260418-my-feature/plan.md</code></pre>
@@ -203,19 +247,19 @@ Mode: Hard
 
           <h2>Phase Lifecycle</h2>
           <div class="pipeline" style="flex-direction:column;align-items:flex-start;gap:.5rem">
-            <div class="pipeline-step" style="width:100%;max-width:480px;flex-direction:row;justify-content:flex-start;gap:.75rem">
+            <div class="pipeline-step" style="width:100%;max-width:480px;flex-direction:row;justify-content:flex-start;gap:.875rem">
               <span class="step-cmd" style="min-width:1.5rem">1</span>
               <span class="step-label" style="text-transform:none;font-size:.875rem;color:var(--text-primary)">Read phase file, extract requirements and implementation steps</span>
             </div>
-            <div class="pipeline-step" style="width:100%;max-width:480px;flex-direction:row;justify-content:flex-start;gap:.75rem">
+            <div class="pipeline-step" style="width:100%;max-width:480px;flex-direction:row;justify-content:flex-start;gap:.875rem">
               <span class="step-cmd" style="min-width:1.5rem">2</span>
               <span class="step-label" style="text-transform:none;font-size:.875rem;color:var(--text-primary)">Implement code following codebase conventions</span>
             </div>
-            <div class="pipeline-step" style="width:100%;max-width:480px;flex-direction:row;justify-content:flex-start;gap:.75rem">
+            <div class="pipeline-step" style="width:100%;max-width:480px;flex-direction:row;justify-content:flex-start;gap:.875rem">
               <span class="step-cmd" style="min-width:1.5rem">3</span>
               <span class="step-label" style="text-transform:none;font-size:.875rem;color:var(--text-primary)">Run success criteria — tester agent validates</span>
             </div>
-            <div class="pipeline-step" style="width:100%;max-width:480px;flex-direction:row;justify-content:flex-start;gap:.75rem">
+            <div class="pipeline-step" style="width:100%;max-width:480px;flex-direction:row;justify-content:flex-start;gap:.875rem">
               <span class="step-cmd" style="min-width:1.5rem">4</span>
               <span class="step-label" style="text-transform:none;font-size:.875rem;color:var(--text-primary)">Mark phase [x] in plan.md, proceed to next phase</span>
             </div>
@@ -270,13 +314,18 @@ Mode: Hard
 
         <hr class="section-divider" />
 
-        <!-- ─── /fix ──────────────────────────────────────────── -->
+        <!-- ─── /fix ───────────────────────────────────────────── -->
         <section id="fix" class="doc-section">
-          <h1>/fix</h1>
-          <p class="lead">
-            <code>/fix</code> takes a failing test, error message, or bug description and runs
-            a structured scout → debugger → review pipeline to produce a minimal, verified patch.
-          </p>
+          <div class="section-hero">
+            <div class="section-kicker">
+              <span>◇</span> Command 03
+            </div>
+            <h1>/fix</h1>
+            <p class="lead">
+              Takes a failing test, error message, or bug description and runs a
+              structured scout → debugger → review pipeline to produce a minimal, verified patch.
+            </p>
+          </div>
 
           <h2>Usage</h2>
           <pre><code>/fix "AuthService_Login_Returns401_WhenPasswordInvalid"
@@ -347,21 +396,31 @@ Mode: Hard
 
   <script>
     (function () {
-      var sections = document.querySelectorAll('.doc-section');
-      var navLinks = document.querySelectorAll('.nav-link');
-      var breadcrumb = document.getElementById('breadcrumb-current');
-      var labelMap = { overview: 'Overview', plan: '/plan', cook: '/cook', fix: '/fix' };
+      // ── Theme toggle ────────────────────────────────────────────
+      var btn = document.getElementById('theme-toggle');
+      btn.addEventListener('click', function () {
+        var current = document.documentElement.getAttribute('data-theme') || 'light';
+        var next = current === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('theme', next);
+      });
+
+      // ── Active nav link on scroll ────────────────────────────────
+      var sections  = document.querySelectorAll('.doc-section');
+      var navLinks  = document.querySelectorAll('.nav-link');
+      var crumb     = document.getElementById('breadcrumb-current');
+      var labelMap  = { overview: 'Overview', plan: '/plan', cook: '/cook', fix: '/fix' };
 
       function onScroll() {
         var current = 'overview';
         var scrollY = window.scrollY + 120;
-        sections.forEach(function (sec) {
-          if (sec.offsetTop <= scrollY) current = sec.id;
+        sections.forEach(function (s) {
+          if (s.offsetTop <= scrollY) current = s.id;
         });
-        navLinks.forEach(function (link) {
-          link.classList.toggle('active', link.getAttribute('href') === '#' + current);
+        navLinks.forEach(function (l) {
+          l.classList.toggle('active', l.getAttribute('href') === '#' + current);
         });
-        if (breadcrumb) breadcrumb.textContent = labelMap[current] || current;
+        if (crumb) crumb.textContent = labelMap[current] || current;
       }
 
       window.addEventListener('scroll', onScroll, { passive: true });
