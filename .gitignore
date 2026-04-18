@@ -1,12 +1,12 @@
 # OS files
-Thumbs.db
 .DS_Store
+Thumbs.db
 
-# IDE folders
+# IDE
 .vscode/
 .idea/
 
-# Log and temp files
+# Logs and temp
 *.log
 *.tmp
 
@@ -28,6 +28,14 @@ node_modules/
 bin/
 obj/
 
+# Claude Code — personal overrides (never commit)
+CLAUDE.local.md
+**/settings.local.json
+
+# Claude Code — session and project data
 **/session-data
 projects/
 **/projects/
+
+# Generated plan output
+plans/*
