@@ -6,7 +6,7 @@
   <title>my-skills — Claude Code Skill System</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,700;0,800;1,700;1,800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="./style.css" />
   <script>
     (function() {
@@ -16,49 +16,27 @@
   </script>
 </head>
 <body>
-  <div class="layout">
 
-    <!-- ─── Sidebar ─────────────────────────────────────────────── -->
-    <aside class="sidebar" id="sidebar">
-      <div class="sidebar-header">
-        <span class="sidebar-logo">my-skills</span>
-        <span class="sidebar-tagline">Claude Code Skill System</span>
-      </div>
+  <!-- ─── Topbar ───────────────────────────────────────────────── -->
+  <header class="topbar" id="topbar">
+    <div class="topbar-inner">
+      <a href="#overview" class="topbar-logo">
+        <span class="logo-name">my-skills</span>
+        <span class="logo-sep">/</span>
+        <span class="logo-tag">Claude Code Skill System</span>
+      </a>
 
-      <nav class="sidebar-nav" aria-label="Primary navigation">
-        <span class="nav-label">Docs</span>
-        <ul>
-          <li>
-            <a href="#overview" class="nav-link active">
-              <span class="nav-icon">◈</span> Overview
-            </a>
-          </li>
-          <li>
-            <a href="#structure" class="nav-link">
-              <span class="nav-icon">◇</span> Structure
-            </a>
-          </li>
-          <li>
-            <a href="#commands" class="nav-link">
-              <span class="nav-icon">◇</span> Commands
-            </a>
-          </li>
-          <li>
-            <a href="#configuration" class="nav-link">
-              <span class="nav-icon">◇</span> Configuration
-            </a>
-          </li>
-          <li>
-            <a href="#hooks" class="nav-link">
-              <span class="nav-icon">◇</span> Hooks
-            </a>
-          </li>
-        </ul>
+      <nav class="topnav" aria-label="Primary navigation">
+        <a href="#overview"      class="topnav-link active">Overview</a>
+        <a href="#structure"     class="topnav-link">Structure</a>
+        <a href="#commands"      class="topnav-link">Commands</a>
+        <a href="#configuration" class="topnav-link">Config</a>
+        <a href="#hooks"         class="topnav-link">Hooks</a>
       </nav>
 
-      <div class="sidebar-footer">
+      <div class="topbar-actions">
         <a href="https://github.com/danielleit241/my-skills" target="_blank" rel="noopener" class="github-link">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
             <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
           </svg>
           GitHub
@@ -68,123 +46,140 @@
           <span class="icon-dark">☾</span>
         </button>
       </div>
-    </aside>
+    </div>
+  </header>
 
-    <!-- ─── Main Content ──────────────────────────────────────────── -->
-    <main class="content" id="main-content">
+  <!-- ─── Cover ───────────────────────────────────────────────────── -->
+  <section class="cover">
+    <div class="cover-inner">
+      <p class="cover-eyebrow">◆ MY-SKILLS &nbsp;·&nbsp; GUIDE &nbsp;·&nbsp; N° 01 ◆</p>
+      <p class="cover-label">
+        <span class="cover-rule"></span>
+        CLAUDE CODE SKILL SYSTEM
+        <span class="cover-rule"></span>
+      </p>
+      <h1 class="cover-heading">
+        A skill system built for<br>
+        <em class="cover-accent">Claude Code</em><br>
+        and serious engineering
+      </h1>
+      <p class="cover-sub">
+        Structured slash commands, specialist sub-agents, and lifecycle hooks
+        that turn Claude into a disciplined engineering collaborator.
+      </p>
+      <div class="cover-tags">
+        <span class="cover-tag">OPEN SOURCE</span>
+        <span class="cover-tag">CLAUDE CODE</span>
+        <span class="cover-tag">PIPELINE</span>
+      </div>
+    </div>
+  </section>
 
-      <header class="topbar">
-        <nav class="breadcrumb" aria-label="Breadcrumb">
-          <span class="breadcrumb-item">my-skills</span>
-          <span class="breadcrumb-sep" aria-hidden="true">/</span>
-          <span class="breadcrumb-item current" id="breadcrumb-current">Overview</span>
-        </nav>
-      </header>
+  <!-- ─── Page Body ─────────────────────────────────────────────── -->
+  <main class="page-body">
 
-      <div class="page-body">
+    <!-- ─── Overview ─────────────────────────────────────────────── -->
+    <section id="overview" class="doc-section">
+      <div class="section-hero">
+        <div class="section-kicker"><span>◈</span> Open Source</div>
+        <h1>my-skills</h1>
+        <p class="lead">
+          A personal Claude Code skill system — structured slash commands, specialist sub-agents,
+          path-scoped rules, and lifecycle hooks that turn Claude into a disciplined
+          engineering collaborator.
+        </p>
+        <div class="hero-install">
+          <code class="install-cmd">git clone https://github.com/danielleit241/my-skills</code>
+        </div>
+      </div>
 
-        <!-- ─── Overview ─────────────────────────────────────────── -->
-        <section id="overview" class="doc-section">
-          <div class="section-hero">
-            <div class="section-kicker"><span>◈</span> Open Source</div>
-            <h1>my-skills</h1>
-            <p class="lead">
-              A personal Claude Code skill system — structured slash commands, specialist sub-agents,
-              path-scoped rules, and lifecycle hooks that turn Claude into a disciplined
-              engineering collaborator.
-            </p>
-            <div class="hero-install">
-              <code class="install-cmd">git clone https://github.com/danielleit241/my-skills</code>
-            </div>
+      <h2>What it provides</h2>
+      <div class="feature-grid">
+        <div class="feature-card">
+          <div class="feature-card-header">
+            <span class="feature-title">Slash Commands</span>
+            <span class="badge accent">pipeline</span>
           </div>
-
-          <h2>What it provides</h2>
-          <div class="feature-grid">
-            <div class="feature-card">
-              <div class="feature-card-header">
-                <span class="feature-title">Slash Commands</span>
-                <span class="badge accent">pipeline</span>
-              </div>
-              <p class="feature-desc">/plan, /cook, /fix, /code-review, /learn — structured workflows that hand off
-              artifacts between stages without re-explaining context.</p>
-            </div>
-            <div class="feature-card">
-              <div class="feature-card-header">
-                <span class="feature-title">Sub-agents</span>
-                <span class="badge accent">agents</span>
-              </div>
-              <p class="feature-desc">Specialist agents (scout, debugger, planner, tester, git-manager) spawned by
-              commands for focused, bounded work with no context pollution.</p>
-            </div>
-            <div class="feature-card">
-              <div class="feature-card-header">
-                <span class="feature-title">Path-scoped Rules</span>
-                <span class="badge accent">config</span>
-              </div>
-              <p class="feature-desc">Design principles that load only when Claude touches a specific directory —
-              zero noise when rules aren't relevant to the current task.</p>
-            </div>
-            <div class="feature-card">
-              <div class="feature-card-header">
-                <span class="feature-title">Lifecycle Hooks</span>
-                <span class="badge accent">ops</span>
-              </div>
-              <p class="feature-desc">Python scripts triggered on session start/end, pre-compact, and tool events —
-              build checks, memory management, context injection.</p>
-            </div>
-            <div class="feature-card">
-              <div class="feature-card-header">
-                <span class="feature-title">Auto Memory</span>
-                <span class="badge">memory</span>
-              </div>
-              <p class="feature-desc">Persistent file-based memory across sessions. User preferences, feedback,
-              project decisions, and references saved and recalled automatically.</p>
-            </div>
-            <div class="feature-card">
-              <div class="feature-card-header">
-                <span class="feature-title">CLAUDE.local.md</span>
-                <span class="badge">personal</span>
-              </div>
-              <p class="feature-desc">Gitignored personal overrides for tone, style, and shortcut preferences
-              that stay local and never pollute the shared project config.</p>
-            </div>
+          <p class="feature-desc">/plan, /cook, /fix, /code-review, /learn — structured workflows that hand off
+          artifacts between stages without re-explaining context.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-card-header">
+            <span class="feature-title">Sub-agents</span>
+            <span class="badge accent">agents</span>
           </div>
-
-          <h2>Core Principles</h2>
-          <div class="principle-list">
-            <div class="principle-item">
-              <span class="principle-tag">YAGNI</span>
-              <span class="principle-text">Don't build for hypothetical future requirements. Three similar lines beat a premature abstraction.</span>
-            </div>
-            <div class="principle-item">
-              <span class="principle-tag">KISS</span>
-              <span class="principle-text">Prefer the simpler solution. No half-finished implementations, no wrapper-for-wrapper architectures.</span>
-            </div>
-            <div class="principle-item">
-              <span class="principle-tag">DRY</span>
-              <span class="principle-text">One source of truth per concern. No duplicate commands, no duplicate rules.</span>
-            </div>
-            <div class="principle-item">
-              <span class="principle-tag">Brutal honesty</span>
-              <span class="principle-text">Challenge every assumption. Diplomacy is noise; clarity is value.</span>
-            </div>
+          <p class="feature-desc">Specialist agents (scout, debugger, planner, tester, git-manager) spawned by
+          commands for focused, bounded work with no context pollution.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-card-header">
+            <span class="feature-title">Path-scoped Rules</span>
+            <span class="badge accent">config</span>
           </div>
-        </section>
-
-        <hr class="section-divider" />
-
-        <!-- ─── Structure ─────────────────────────────────────────── -->
-        <section id="structure" class="doc-section">
-          <div class="section-hero">
-            <div class="section-kicker"><span>◇</span> 01 — Structure</div>
-            <h1>Repository Layout</h1>
-            <p class="lead">
-              Everything under <code>.claude/</code>. Each subdirectory has a single responsibility
-              and is loaded only when relevant to what Claude is currently doing.
-            </p>
+          <p class="feature-desc">Design principles that load only when Claude touches a specific directory —
+          zero noise when rules aren't relevant to the current task.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-card-header">
+            <span class="feature-title">Lifecycle Hooks</span>
+            <span class="badge accent">ops</span>
           </div>
+          <p class="feature-desc">Python scripts triggered on session start/end, pre-compact, and tool events —
+          build checks, memory management, context injection.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-card-header">
+            <span class="feature-title">Auto Memory</span>
+            <span class="badge">memory</span>
+          </div>
+          <p class="feature-desc">Persistent file-based memory across sessions. User preferences, feedback,
+          project decisions, and references saved and recalled automatically.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-card-header">
+            <span class="feature-title">CLAUDE.local.md</span>
+            <span class="badge">personal</span>
+          </div>
+          <p class="feature-desc">Gitignored personal overrides for tone, style, and shortcut preferences
+          that stay local and never pollute the shared project config.</p>
+        </div>
+      </div>
 
-          <pre><code>my-skills/
+      <h2>Core Principles</h2>
+      <div class="principle-list">
+        <div class="principle-item">
+          <span class="principle-tag">YAGNI</span>
+          <span class="principle-text">Don't build for hypothetical future requirements. Three similar lines beat a premature abstraction.</span>
+        </div>
+        <div class="principle-item">
+          <span class="principle-tag">KISS</span>
+          <span class="principle-text">Prefer the simpler solution. No half-finished implementations, no wrapper-for-wrapper architectures.</span>
+        </div>
+        <div class="principle-item">
+          <span class="principle-tag">DRY</span>
+          <span class="principle-text">One source of truth per concern. No duplicate commands, no duplicate rules.</span>
+        </div>
+        <div class="principle-item">
+          <span class="principle-tag">Brutal honesty</span>
+          <span class="principle-text">Challenge every assumption. Diplomacy is noise; clarity is value.</span>
+        </div>
+      </div>
+    </section>
+
+    <hr class="section-divider" />
+
+    <!-- ─── Structure ─────────────────────────────────────────────── -->
+    <section id="structure" class="doc-section">
+      <div class="section-hero">
+        <div class="section-kicker"><span>◇</span> 01 — Structure</div>
+        <h1>Repository Layout</h1>
+        <p class="lead">
+          Everything under <code>.claude/</code>. Each subdirectory has a single responsibility
+          and loads only when relevant to what Claude is currently doing.
+        </p>
+      </div>
+
+      <pre><code>my-skills/
 ├── .claude/
 │   ├── agents/          # Sub-agent definitions (scout, debugger, tester…)
 │   ├── commands/        # Slash command implementations (/plan, /cook, /fix…)
@@ -196,182 +191,182 @@
 ├── CLAUDE.md            # Project-level instructions for Claude
 └── CLAUDE.local.md      # Personal overrides (gitignored)</code></pre>
 
-          <h2>Directory Roles</h2>
-          <div class="dir-table">
-            <div class="dir-row">
-              <code class="dir-name">.claude/agents/</code>
-              <span class="dir-desc">Specialist sub-agents spawned by commands. Each agent has a bounded role.
-              Never invoked directly — always called via a parent command.</span>
-            </div>
-            <div class="dir-row">
-              <code class="dir-name">.claude/commands/</code>
-              <span class="dir-desc">Slash command Markdown files. Claude Code reads these when the user types
-              the command. Each file defines workflow, step ordering, and which agents to spawn.</span>
-            </div>
-            <div class="dir-row">
-              <code class="dir-name">.claude/skills/</code>
-              <span class="dir-desc">Behavioral guidance that loads when the skill system activates. Covers tone,
-              response style, coding standards, and task-specific behavior overrides.</span>
-            </div>
-            <div class="dir-row">
-              <code class="dir-name">.claude/rules/</code>
-              <span class="dir-desc">Path-scoped design principles. Each file activates only when Claude is
-              working in a matched directory — agent rules for agents/, command rules for commands/.</span>
-            </div>
-            <div class="dir-row">
-              <code class="dir-name">.claude/hooks/</code>
-              <span class="dir-desc">Python scripts triggered by lifecycle events: session start/end, tool calls,
-              pre-compact. Used for build checks, memory management, and context injection.</span>
-            </div>
-            <div class="dir-row">
-              <code class="dir-name">plans/</code>
-              <span class="dir-desc">Output of /plan. One subdirectory per feature, named YYMMDD-{slug}/.
-              Contains plan.md and numbered phase files. Never edited manually during a /cook run.</span>
+      <h2>Directory Roles</h2>
+      <div class="dir-table">
+        <div class="dir-row">
+          <code class="dir-name">.claude/agents/</code>
+          <span class="dir-desc">Specialist sub-agents spawned by commands. Each agent has a bounded role.
+          Never invoked directly — always called via a parent command.</span>
+        </div>
+        <div class="dir-row">
+          <code class="dir-name">.claude/commands/</code>
+          <span class="dir-desc">Slash command Markdown files. Claude Code reads these when the user types
+          the command. Each file defines workflow, step ordering, and which agents to spawn.</span>
+        </div>
+        <div class="dir-row">
+          <code class="dir-name">.claude/skills/</code>
+          <span class="dir-desc">Behavioral guidance that loads when the skill system activates. Covers tone,
+          response style, coding standards, and task-specific behavior overrides.</span>
+        </div>
+        <div class="dir-row">
+          <code class="dir-name">.claude/rules/</code>
+          <span class="dir-desc">Path-scoped design principles. Each file activates only when Claude is
+          working in a matched directory — agent rules for agents/, command rules for commands/.</span>
+        </div>
+        <div class="dir-row">
+          <code class="dir-name">.claude/hooks/</code>
+          <span class="dir-desc">Python scripts triggered by lifecycle events: session start/end, tool calls,
+          pre-compact. Used for build checks, memory management, and context injection.</span>
+        </div>
+        <div class="dir-row">
+          <code class="dir-name">plans/</code>
+          <span class="dir-desc">Output of /plan. One subdirectory per feature, named YYMMDD-{slug}/.
+          Contains plan.md and numbered phase files. Never edited manually during a /cook run.</span>
+        </div>
+      </div>
+    </section>
+
+    <hr class="section-divider" />
+
+    <!-- ─── Commands ──────────────────────────────────────────────── -->
+    <section id="commands" class="doc-section">
+      <div class="section-hero">
+        <div class="section-kicker"><span>◇</span> 02 — Commands</div>
+        <h1>Slash Commands</h1>
+        <p class="lead">
+          Seven commands covering the full feature delivery lifecycle — planning, implementation,
+          bug fixing, code review, documentation, and session configuration.
+        </p>
+      </div>
+
+      <h2>The Core Pipeline</h2>
+      <div class="pipeline">
+        <div class="pipeline-step">
+          <span class="step-cmd">/plan</span>
+          <span class="step-label">Design</span>
+        </div>
+        <span class="pipeline-arrow" aria-hidden="true">&#8594;</span>
+        <div class="pipeline-step">
+          <span class="step-cmd">/cook</span>
+          <span class="step-label">Implement</span>
+        </div>
+        <span class="pipeline-arrow" aria-hidden="true">&#8594;</span>
+        <div class="pipeline-step">
+          <span class="step-cmd">/fix</span>
+          <span class="step-label">Repair</span>
+        </div>
+      </div>
+
+      <p>Commands are stateless — they read files, write files, and exit.
+      The filesystem is the only shared state between pipeline stages.</p>
+
+      <h2>Command Reference</h2>
+      <div class="cmd-list">
+        <div class="cmd-card">
+          <div class="cmd-card-header">
+            <code class="cmd-name">/plan</code>
+            <div class="mode-badges" style="margin:0">
+              <span class="badge accent">--fast</span>
+              <span class="badge accent">--hard</span>
+              <span class="badge accent">--parallel</span>
+              <span class="badge accent">--two</span>
             </div>
           </div>
-        </section>
-
-        <hr class="section-divider" />
-
-        <!-- ─── Commands ──────────────────────────────────────────── -->
-        <section id="commands" class="doc-section">
-          <div class="section-hero">
-            <div class="section-kicker"><span>◇</span> 02 — Commands</div>
-            <h1>Slash Commands</h1>
-            <p class="lead">
-              Seven commands covering the full feature delivery lifecycle — planning, implementation,
-              bug fixing, code review, documentation, and session configuration.
-            </p>
-          </div>
-
-          <h2>The Core Pipeline</h2>
-          <div class="pipeline">
-            <div class="pipeline-step">
-              <span class="step-cmd">/plan</span>
-              <span class="step-label">Design</span>
-            </div>
-            <span class="pipeline-arrow" aria-hidden="true">&#8594;</span>
-            <div class="pipeline-step">
-              <span class="step-cmd">/cook</span>
-              <span class="step-label">Implement</span>
-            </div>
-            <span class="pipeline-arrow" aria-hidden="true">&#8594;</span>
-            <div class="pipeline-step">
-              <span class="step-cmd">/fix</span>
-              <span class="step-label">Repair</span>
+          <p>Turns a natural-language description into a structured plan directory
+          (<code>plans/YYMMDD-{slug}/</code>) with a <code>plan.md</code> and numbered phase files.
+          Hard mode spawns researcher sub-agents before planning; Two mode produces competing plans for human review.</p>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-card-header">
+            <code class="cmd-name">/cook</code>
+            <div class="mode-badges" style="margin:0">
+              <span class="badge">default</span>
+              <span class="badge accent">--auto</span>
+              <span class="badge accent">--fast</span>
+              <span class="badge accent">--parallel</span>
             </div>
           </div>
-
-          <p>Commands are stateless — they read files, write files, and exit.
-          The filesystem is the only shared state between pipeline stages.</p>
-
-          <h2>Command Reference</h2>
-          <div class="cmd-list">
-            <div class="cmd-card">
-              <div class="cmd-card-header">
-                <code class="cmd-name">/plan</code>
-                <div class="mode-badges" style="margin:0">
-                  <span class="badge accent">--fast</span>
-                  <span class="badge accent">--hard</span>
-                  <span class="badge accent">--parallel</span>
-                  <span class="badge accent">--two</span>
-                </div>
-              </div>
-              <p>Turns a natural-language description into a structured plan directory
-              (<code>plans/YYMMDD-{slug}/</code>) with a <code>plan.md</code> and numbered phase files.
-              Hard mode spawns researcher sub-agents before planning; Two mode produces competing plans for human review.</p>
-            </div>
-            <div class="cmd-card">
-              <div class="cmd-card-header">
-                <code class="cmd-name">/cook</code>
-                <div class="mode-badges" style="margin:0">
-                  <span class="badge">default</span>
-                  <span class="badge accent">--auto</span>
-                  <span class="badge accent">--fast</span>
-                  <span class="badge accent">--parallel</span>
-                </div>
-              </div>
-              <p>Reads an existing plan and executes it phase by phase. Spawns tester, debugger, and
-              git-manager sub-agents per phase. Marks each phase <code>[x]</code> on completion.
-              Pauses for review at each gate unless <code>--auto</code> is set.</p>
-            </div>
-            <div class="cmd-card">
-              <div class="cmd-card-header">
-                <code class="cmd-name">/fix</code>
-                <div class="mode-badges" style="margin:0">
-                  <span class="badge">default</span>
-                  <span class="badge accent">--auto</span>
-                  <span class="badge accent">--quick</span>
-                  <span class="badge accent">--review</span>
-                </div>
-              </div>
-              <p>Takes a failing test or error description. Runs scout → debugger → code-reviewer
-              pipeline. Produces a minimal verified patch. Never touches files outside the
-              scout's identified scope — no accidental refactoring.</p>
-            </div>
-            <div class="cmd-card">
-              <div class="cmd-card-header">
-                <code class="cmd-name">/code-review</code>
-                <div class="mode-badges" style="margin:0">
-                  <span class="badge">standalone</span>
-                </div>
-              </div>
-              <p>Standalone review without the full fix pipeline. Reads CLAUDE.md for project-specific
-              rules then applies universal security, correctness, and quality checks.
-              Returns scored findings with severity levels.</p>
-            </div>
-            <div class="cmd-card">
-              <div class="cmd-card-header">
-                <code class="cmd-name">/learn</code>
-                <div class="mode-badges" style="margin:0">
-                  <span class="badge">memory</span>
-                </div>
-              </div>
-              <p>Saves a concept, decision, or behavioral rule to persistent memory. Writes structured
-              Markdown files to <code>~/.claude/projects/</code> with typed frontmatter
-              (user, feedback, project, reference) for scoped retrieval.</p>
-            </div>
-            <div class="cmd-card">
-              <div class="cmd-card-header">
-                <code class="cmd-name">/docs-fe</code>
-                <div class="mode-badges" style="margin:0">
-                  <span class="badge">docs</span>
-                </div>
-              </div>
-              <p>Frontend documentation command. Generates or updates docs for UI components,
-              pages, and frontend modules following project documentation conventions.</p>
-            </div>
-            <div class="cmd-card">
-              <div class="cmd-card-header">
-                <code class="cmd-name">/coding-level</code>
-                <div class="mode-badges" style="margin:0">
-                  <span class="badge">config</span>
-                </div>
-              </div>
-              <p>Sets the session coding level (1–3). Level 1 is beginner-friendly with explanations;
-              Level 3 targets senior engineers — leads with trade-offs, assumes pattern fluency,
-              and skips basics entirely.</p>
+          <p>Reads an existing plan and executes it phase by phase. Spawns tester, debugger, and
+          git-manager sub-agents per phase. Marks each phase <code>[x]</code> on completion.
+          Pauses for review at each gate unless <code>--auto</code> is set.</p>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-card-header">
+            <code class="cmd-name">/fix</code>
+            <div class="mode-badges" style="margin:0">
+              <span class="badge">default</span>
+              <span class="badge accent">--auto</span>
+              <span class="badge accent">--quick</span>
+              <span class="badge accent">--review</span>
             </div>
           </div>
-        </section>
-
-        <hr class="section-divider" />
-
-        <!-- ─── Configuration ─────────────────────────────────────── -->
-        <section id="configuration" class="doc-section">
-          <div class="section-hero">
-            <div class="section-kicker"><span>◇</span> 03 — Configuration</div>
-            <h1>Configuration</h1>
-            <p class="lead">
-              Three layers: project instructions (<code>CLAUDE.md</code>), personal overrides
-              (<code>CLAUDE.local.md</code>), and path-scoped rules that inject only when relevant.
-            </p>
+          <p>Takes a failing test or error description. Runs scout → debugger → code-reviewer
+          pipeline. Produces a minimal verified patch. Never touches files outside the
+          scout's identified scope — no accidental refactoring.</p>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-card-header">
+            <code class="cmd-name">/code-review</code>
+            <div class="mode-badges" style="margin:0">
+              <span class="badge">standalone</span>
+            </div>
           </div>
+          <p>Standalone review without the full fix pipeline. Reads CLAUDE.md for project-specific
+          rules then applies universal security, correctness, and quality checks.
+          Returns scored findings with severity levels.</p>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-card-header">
+            <code class="cmd-name">/learn</code>
+            <div class="mode-badges" style="margin:0">
+              <span class="badge">memory</span>
+            </div>
+          </div>
+          <p>Saves a concept, decision, or behavioral rule to persistent memory. Writes structured
+          Markdown files to <code>~/.claude/projects/</code> with typed frontmatter
+          (user, feedback, project, reference) for scoped retrieval.</p>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-card-header">
+            <code class="cmd-name">/docs-fe</code>
+            <div class="mode-badges" style="margin:0">
+              <span class="badge">docs</span>
+            </div>
+          </div>
+          <p>Frontend documentation command. Generates or updates docs for UI components,
+          pages, and frontend modules following project documentation conventions.</p>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-card-header">
+            <code class="cmd-name">/coding-level</code>
+            <div class="mode-badges" style="margin:0">
+              <span class="badge">config</span>
+            </div>
+          </div>
+          <p>Sets the session coding level (1–3). Level 1 is beginner-friendly with explanations;
+          Level 3 targets senior engineers — leads with trade-offs, assumes pattern fluency,
+          and skips basics entirely.</p>
+        </div>
+      </div>
+    </section>
 
-          <h2>CLAUDE.md</h2>
-          <p>Project-level instructions committed to the repo. Loaded by Claude Code at every
-          session start. Defines core principles, directory structure, and rule activation paths.</p>
-          <pre><code># my-skills
+    <hr class="section-divider" />
+
+    <!-- ─── Configuration ─────────────────────────────────────────── -->
+    <section id="configuration" class="doc-section">
+      <div class="section-hero">
+        <div class="section-kicker"><span>◇</span> 03 — Configuration</div>
+        <h1>Configuration</h1>
+        <p class="lead">
+          Three layers: project instructions (<code>CLAUDE.md</code>), personal overrides
+          (<code>CLAUDE.local.md</code>), and path-scoped rules that inject only when relevant.
+        </p>
+      </div>
+
+      <h2>CLAUDE.md</h2>
+      <p>Project-level instructions committed to the repo. Loaded by Claude Code at every
+      session start. Defines core principles, directory structure, and rule activation paths.</p>
+      <pre><code># my-skills
 
 ## Core Principles
 YAGNI · KISS · DRY · Brutal honesty over diplomacy · Challenge every assumption
@@ -394,43 +389,43 @@ YAGNI · KISS · DRY · Brutal honesty over diplomacy · Challenge every assumpt
 ## Personal overrides
 CLAUDE.local.md (gitignored) — personal preferences that shouldn't be committed.</code></pre>
 
-          <h2>CLAUDE.local.md</h2>
-          <p>Gitignored personal overrides. Use this for machine-specific or workflow-specific
-          preferences that shouldn't affect other contributors or the shared config.</p>
-          <div class="callout">
-            <p><strong>Pattern:</strong> Anything in CLAUDE.local.md overrides CLAUDE.md for the same key.
-            Keep shared config in CLAUDE.md; keep personal preferences in CLAUDE.local.md.</p>
-          </div>
+      <h2>CLAUDE.local.md</h2>
+      <p>Gitignored personal overrides. Use this for machine-specific or workflow-specific
+      preferences that shouldn't affect other contributors or the shared config.</p>
+      <div class="callout">
+        <p><strong>Pattern:</strong> Anything in CLAUDE.local.md overrides CLAUDE.md for the same key.
+        Keep shared config in CLAUDE.md; keep personal preferences in CLAUDE.local.md.</p>
+      </div>
 
-          <h2>How Path-scoped Rules Load</h2>
-          <div class="step-list">
-            <div class="step-item">
-              <span class="step-num">01</span>
-              <div class="step-body">
-                <div class="step-title">Claude opens a file</div>
-                <div class="step-text">The file path is matched against the rules activation table in CLAUDE.md</div>
-              </div>
-            </div>
-            <div class="step-item">
-              <span class="step-num">02</span>
-              <div class="step-body">
-                <div class="step-title">Matching rule file loads</div>
-                <div class="step-text">Design principles for that directory are injected into the active context</div>
-              </div>
-            </div>
-            <div class="step-item">
-              <span class="step-num">03</span>
-              <div class="step-body">
-                <div class="step-title">Rules apply only while relevant</div>
-                <div class="step-text">No cross-contamination — agent design rules never bleed into command files</div>
-              </div>
-            </div>
+      <h2>How Path-scoped Rules Load</h2>
+      <div class="step-list">
+        <div class="step-item">
+          <span class="step-num">01</span>
+          <div class="step-body">
+            <div class="step-title">Claude opens a file</div>
+            <div class="step-text">The file path is matched against the rules activation table in CLAUDE.md</div>
           </div>
+        </div>
+        <div class="step-item">
+          <span class="step-num">02</span>
+          <div class="step-body">
+            <div class="step-title">Matching rule file loads</div>
+            <div class="step-text">Design principles for that directory are injected into the active context</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <span class="step-num">03</span>
+          <div class="step-body">
+            <div class="step-title">Rules apply only while relevant</div>
+            <div class="step-text">No cross-contamination — agent design rules never bleed into command files</div>
+          </div>
+        </div>
+      </div>
 
-          <h2>settings.json</h2>
-          <p>Hook registrations and tool permissions live in <code>.claude/settings.json</code>.
-          Each hook entry maps an event to a command string executed by the shell.</p>
-          <pre><code>{
+      <h2>settings.json</h2>
+      <p>Hook registrations and tool permissions live in <code>.claude/settings.json</code>.
+      Each hook entry maps an event to a command string executed by the shell.</p>
+      <pre><code>{
   "hooks": {
     "PreToolUse": [{
       "matcher": "Bash",
@@ -445,97 +440,94 @@ CLAUDE.local.md (gitignored) — personal preferences that shouldn't be committe
     }]
   }
 }</code></pre>
-        </section>
+    </section>
 
-        <hr class="section-divider" />
+    <hr class="section-divider" />
 
-        <!-- ─── Hooks ──────────────────────────────────────────────── -->
-        <section id="hooks" class="doc-section">
-          <div class="section-hero">
-            <div class="section-kicker"><span>◇</span> 04 — Hooks</div>
-            <h1>Lifecycle Hooks</h1>
-            <p class="lead">
-              Python scripts triggered by Claude Code events. Each hook has a single responsibility
-              and fails gracefully — a broken hook never blocks Claude from working.
-            </p>
-          </div>
-
-          <h2>Hook Inventory</h2>
-          <div class="hook-list">
-            <div class="hook-card">
-              <div class="hook-card-header">
-                <code class="hook-name">build-check.py</code>
-                <span class="badge accent">PreToolUse</span>
-              </div>
-              <p>Runs before Bash tool calls. Detects the project language (Node, Python, .NET, Go)
-              and validates the build passes. Blocks on failure with a structured error report
-              rather than letting Claude execute against a broken environment.</p>
-            </div>
-            <div class="hook-card">
-              <div class="hook-card-header">
-                <code class="hook-name">session-start.py</code>
-                <span class="badge">Start</span>
-              </div>
-              <p>Fires when a Claude Code session begins. Injects project context — current branch,
-              recent commits, open TODOs — so Claude starts every session fully oriented
-              without the user having to re-explain the current state.</p>
-            </div>
-            <div class="hook-card">
-              <div class="hook-card-header">
-                <code class="hook-name">session-end.py</code>
-                <span class="badge">Stop</span>
-              </div>
-              <p>Fires on session end. Writes a session summary to the project memory directory,
-              capturing files modified, tools used, and key decisions as context
-              for the next session.</p>
-            </div>
-            <div class="hook-card">
-              <div class="hook-card-header">
-                <code class="hook-name">pre-compact.py</code>
-                <span class="badge">PreCompact</span>
-              </div>
-              <p>Runs before context compaction. Saves in-flight state — current task, working files,
-              pending decisions — so nothing is lost when the context window resets mid-session.</p>
-            </div>
-            <div class="hook-card">
-              <div class="hook-card-header">
-                <code class="hook-name">plan-context.py</code>
-                <span class="badge">Start</span>
-              </div>
-              <p>Detects if there is an active plan in <code>plans/</code> and injects its current
-              phase status into session context — so /cook always knows where to resume
-              without the user pointing it at a plan file.</p>
-            </div>
-            <div class="hook-card">
-              <div class="hook-card-header">
-                <code class="hook-name">observe.py</code>
-                <span class="badge">PostToolUse</span>
-              </div>
-              <p>Fires after every tool call. Logs tool usage patterns for session metrics and
-              optionally triggers suggest_compact when context usage approaches the threshold.</p>
-            </div>
-            <div class="hook-card">
-              <div class="hook-card-header">
-                <code class="hook-name">suggest_compact.py</code>
-                <span class="badge">PostToolUse</span>
-              </div>
-              <p>Monitors context window usage. When usage exceeds a configured threshold,
-              surfaces a /compact suggestion before context pressure begins degrading
-              response quality.</p>
-            </div>
-          </div>
-
-          <div class="callout">
-            <p><strong>Adding a hook:</strong> Create a Python script in <code>.claude/hooks/</code>,
-            then register it in <code>.claude/settings.json</code> under the appropriate event key.
-            Hooks receive event data via stdin as JSON.</p>
-          </div>
-        </section>
-
+    <!-- ─── Hooks ──────────────────────────────────────────────────── -->
+    <section id="hooks" class="doc-section">
+      <div class="section-hero">
+        <div class="section-kicker"><span>◇</span> 04 — Hooks</div>
+        <h1>Lifecycle Hooks</h1>
+        <p class="lead">
+          Python scripts triggered by Claude Code events. Each hook has a single responsibility
+          and fails gracefully — a broken hook never blocks Claude from working.
+        </p>
       </div>
-    </main>
 
-  </div>
+      <h2>Hook Inventory</h2>
+      <div class="hook-list">
+        <div class="hook-card">
+          <div class="hook-card-header">
+            <code class="hook-name">build-check.py</code>
+            <span class="badge accent">PreToolUse</span>
+          </div>
+          <p>Runs before Bash tool calls. Detects the project language (Node, Python, .NET, Go)
+          and validates the build passes. Blocks on failure with a structured error report
+          rather than letting Claude execute against a broken environment.</p>
+        </div>
+        <div class="hook-card">
+          <div class="hook-card-header">
+            <code class="hook-name">session-start.py</code>
+            <span class="badge">Start</span>
+          </div>
+          <p>Fires when a Claude Code session begins. Injects project context — current branch,
+          recent commits, open TODOs — so Claude starts every session fully oriented
+          without the user having to re-explain the current state.</p>
+        </div>
+        <div class="hook-card">
+          <div class="hook-card-header">
+            <code class="hook-name">session-end.py</code>
+            <span class="badge">Stop</span>
+          </div>
+          <p>Fires on session end. Writes a session summary to the project memory directory,
+          capturing files modified, tools used, and key decisions as context
+          for the next session.</p>
+        </div>
+        <div class="hook-card">
+          <div class="hook-card-header">
+            <code class="hook-name">pre-compact.py</code>
+            <span class="badge">PreCompact</span>
+          </div>
+          <p>Runs before context compaction. Saves in-flight state — current task, working files,
+          pending decisions — so nothing is lost when the context window resets mid-session.</p>
+        </div>
+        <div class="hook-card">
+          <div class="hook-card-header">
+            <code class="hook-name">plan-context.py</code>
+            <span class="badge">Start</span>
+          </div>
+          <p>Detects if there is an active plan in <code>plans/</code> and injects its current
+          phase status into session context — so /cook always knows where to resume
+          without the user pointing it at a plan file.</p>
+        </div>
+        <div class="hook-card">
+          <div class="hook-card-header">
+            <code class="hook-name">observe.py</code>
+            <span class="badge">PostToolUse</span>
+          </div>
+          <p>Fires after every tool call. Logs tool usage patterns for session metrics and
+          optionally triggers suggest_compact when context usage approaches the threshold.</p>
+        </div>
+        <div class="hook-card">
+          <div class="hook-card-header">
+            <code class="hook-name">suggest_compact.py</code>
+            <span class="badge">PostToolUse</span>
+          </div>
+          <p>Monitors context window usage. When usage exceeds a configured threshold,
+          surfaces a /compact suggestion before context pressure begins degrading
+          response quality.</p>
+        </div>
+      </div>
+
+      <div class="callout">
+        <p><strong>Adding a hook:</strong> Create a Python script in <code>.claude/hooks/</code>,
+        then register it in <code>.claude/settings.json</code> under the appropriate event key.
+        Hooks receive event data via stdin as JSON.</p>
+      </div>
+    </section>
+
+  </main>
 
   <script>
     (function () {
@@ -548,11 +540,10 @@ CLAUDE.local.md (gitignored) — personal preferences that shouldn't be committe
         localStorage.setItem('theme', next);
       });
 
-      // Active nav link on scroll
-      var sections = document.querySelectorAll('.doc-section');
-      var navLinks = document.querySelectorAll('.nav-link');
-      var crumb    = document.getElementById('breadcrumb-current');
-      var labelMap = {
+      // Active topnav link on scroll
+      var sections  = document.querySelectorAll('.doc-section');
+      var navLinks  = document.querySelectorAll('.topnav-link');
+      var labelMap  = {
         overview: 'Overview',
         structure: 'Structure',
         commands: 'Commands',
@@ -562,14 +553,13 @@ CLAUDE.local.md (gitignored) — personal preferences that shouldn't be committe
 
       function onScroll() {
         var current = 'overview';
-        var scrollY = window.scrollY + 120;
+        var scrollY = window.scrollY + 80;
         sections.forEach(function (s) {
           if (s.offsetTop <= scrollY) current = s.id;
         });
         navLinks.forEach(function (l) {
           l.classList.toggle('active', l.getAttribute('href') === '#' + current);
         });
-        if (crumb) crumb.textContent = labelMap[current] || current;
       }
 
       window.addEventListener('scroll', onScroll, { passive: true });

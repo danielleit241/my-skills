@@ -65,12 +65,14 @@ def check_typescript(file_path: Path) -> str | None:
     tsconfig = walk_up(file_path, "tsconfig.json")
     if not tsconfig:
         return None
-    cwd = str(tsconfig.parent)
-    # prefer local tsc via npx
-    output = run(["npx", "--no", "tsc", "--noEmit", "--pretty", "false"], cwd)
+    cwd = tsconfig.parent
+    # prefer local tsc binary; fall back to global
+    local_tsc = cwd / "node_modules" / ".bin" / "tsc"
+    tsc_cmd = str(local_tsc) if local_tsc.exists() else "tsc"
+    output = run([tsc_cmd, "--noEmit", "--pretty", "false"], str(cwd))
     errors = [l for l in output.splitlines() if re.search(r"error TS\d+:", l)]
     if errors:
-        return f"tsc errors:\n" + "\n".join(errors[:5])
+        return "tsc errors:\n" + "\n".join(errors[:5])
     return None
 
 

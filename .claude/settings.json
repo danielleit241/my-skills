@@ -102,5 +102,7 @@
     "**/*.lock.json",
     "**/node_modules/**"
   ],
-  "CLAUDE_CODE_DISABLE_1M_CONTEXT": true
+  "env": {
+    "CLAUDE_CODE_DISABLE_1M_CONTEXT": "true"
+  }
 }
