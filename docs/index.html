@@ -240,21 +240,39 @@
       </div>
 
       <h2>The Core Pipeline</h2>
-      <div class="pipeline">
-        <div class="pipeline-step">
-          <span class="step-cmd">/plan</span>
-          <span class="step-label">Design</span>
+      <div class="pipeline-3d-wrap" id="pipeline-3d">
+        <div class="p3d-stage">
+          <div class="p3d-node">
+            <div class="p3d-pulse-ring"></div>
+            <div class="p3d-step-num">01</div>
+            <div class="p3d-cmd">/plan</div>
+            <div class="p3d-role">Design</div>
+            <div class="p3d-sub">researcher · planner · reviewer</div>
+          </div>
+          <div class="p3d-conn">
+            <div class="p3d-flow-line"><div class="p3d-flow-dot" style="animation-delay:0s"></div></div>
+            <span class="p3d-conn-label">plan.md</span>
+          </div>
+          <div class="p3d-node">
+            <div class="p3d-pulse-ring" style="animation-delay:1s"></div>
+            <div class="p3d-step-num">02</div>
+            <div class="p3d-cmd">/cook</div>
+            <div class="p3d-role">Implement</div>
+            <div class="p3d-sub">tester · debugger · git-manager</div>
+          </div>
+          <div class="p3d-conn">
+            <div class="p3d-flow-line"><div class="p3d-flow-dot" style="animation-delay:0.9s"></div></div>
+            <span class="p3d-conn-label">patch</span>
+          </div>
+          <div class="p3d-node">
+            <div class="p3d-pulse-ring" style="animation-delay:2s"></div>
+            <div class="p3d-step-num">03</div>
+            <div class="p3d-cmd">/fix</div>
+            <div class="p3d-role">Repair</div>
+            <div class="p3d-sub">scout · debugger · reviewer</div>
+          </div>
         </div>
-        <span class="pipeline-arrow" aria-hidden="true">&#8594;</span>
-        <div class="pipeline-step">
-          <span class="step-cmd">/cook</span>
-          <span class="step-label">Implement</span>
-        </div>
-        <span class="pipeline-arrow" aria-hidden="true">&#8594;</span>
-        <div class="pipeline-step">
-          <span class="step-cmd">/fix</span>
-          <span class="step-label">Repair</span>
-        </div>
+        <p class="p3d-hint">Move cursor over to rotate &nbsp;·&nbsp; scroll down for details</p>
       </div>
 
       <p>Commands are stateless — they read files, write files, and exit.
@@ -262,47 +280,89 @@
 
       <h2>Command Reference</h2>
       <div class="cmd-list">
-        <div class="cmd-card">
-          <div class="cmd-card-header">
-            <code class="cmd-name">/plan</code>
-            <div class="mode-badges" style="margin:0">
-              <span class="badge accent">--fast</span>
-              <span class="badge accent">--hard</span>
-              <span class="badge accent">--parallel</span>
-              <span class="badge accent">--two</span>
+        <div class="cmd-card cmd-expandable">
+          <div class="cmd-card-header cmd-toggle" aria-expanded="false">
+            <div class="cmd-card-title">
+              <code class="cmd-name">/plan</code>
+              <div class="mode-badges" style="margin:0">
+                <span class="badge accent">--fast</span>
+                <span class="badge accent">--hard</span>
+                <span class="badge accent">--parallel</span>
+                <span class="badge accent">--two</span>
+              </div>
             </div>
+            <span class="cmd-chevron" aria-hidden="true">›</span>
           </div>
           <p>Turns a natural-language description into a structured plan directory
           (<code>plans/YYMMDD-{slug}/</code>) with a <code>plan.md</code> and numbered phase files.
           Hard mode spawns researcher sub-agents before planning; Two mode produces competing plans for human review.</p>
-        </div>
-        <div class="cmd-card">
-          <div class="cmd-card-header">
-            <code class="cmd-name">/cook</code>
-            <div class="mode-badges" style="margin:0">
-              <span class="badge">default</span>
-              <span class="badge accent">--auto</span>
-              <span class="badge accent">--fast</span>
-              <span class="badge accent">--parallel</span>
+          <div class="cmd-detail">
+            <div class="cmd-detail-inner">
+              <div class="cmd-agent-flow">
+                <div class="caf-node"><span class="caf-icon">R</span><span class="caf-name">plan-researcher</span><span class="caf-desc">reads codebase, returns findings</span></div>
+                <div class="caf-arrow">↓</div>
+                <div class="caf-node"><span class="caf-icon">P</span><span class="caf-name">planner</span><span class="caf-desc">writes plan.md + phase files</span></div>
+                <div class="caf-arrow">↓</div>
+                <div class="caf-node"><span class="caf-icon">V</span><span class="caf-name">plan-reviewer</span><span class="caf-desc">red-teams for gaps and vague steps</span></div>
+              </div>
             </div>
+          </div>
+        </div>
+        <div class="cmd-card cmd-expandable">
+          <div class="cmd-card-header cmd-toggle" aria-expanded="false">
+            <div class="cmd-card-title">
+              <code class="cmd-name">/cook</code>
+              <div class="mode-badges" style="margin:0">
+                <span class="badge">default</span>
+                <span class="badge accent">--auto</span>
+                <span class="badge accent">--fast</span>
+                <span class="badge accent">--parallel</span>
+              </div>
+            </div>
+            <span class="cmd-chevron" aria-hidden="true">›</span>
           </div>
           <p>Reads an existing plan and executes it phase by phase. Spawns tester, debugger, and
           git-manager sub-agents per phase. Marks each phase <code>[x]</code> on completion.
           Pauses for review at each gate unless <code>--auto</code> is set.</p>
-        </div>
-        <div class="cmd-card">
-          <div class="cmd-card-header">
-            <code class="cmd-name">/fix</code>
-            <div class="mode-badges" style="margin:0">
-              <span class="badge">default</span>
-              <span class="badge accent">--auto</span>
-              <span class="badge accent">--quick</span>
-              <span class="badge accent">--review</span>
+          <div class="cmd-detail">
+            <div class="cmd-detail-inner">
+              <div class="cmd-agent-flow">
+                <div class="caf-node"><span class="caf-icon">T</span><span class="caf-name">tester</span><span class="caf-desc">runs success criteria, reports pass/fail</span></div>
+                <div class="caf-arrow">↓</div>
+                <div class="caf-node"><span class="caf-icon">D</span><span class="caf-name">debugger</span><span class="caf-desc">diagnoses failure, applies minimal patch</span></div>
+                <div class="caf-arrow">↓</div>
+                <div class="caf-node"><span class="caf-icon">G</span><span class="caf-name">git-manager</span><span class="caf-desc">conventional commit after each phase</span></div>
+              </div>
             </div>
+          </div>
+        </div>
+        <div class="cmd-card cmd-expandable">
+          <div class="cmd-card-header cmd-toggle" aria-expanded="false">
+            <div class="cmd-card-title">
+              <code class="cmd-name">/fix</code>
+              <div class="mode-badges" style="margin:0">
+                <span class="badge">default</span>
+                <span class="badge accent">--auto</span>
+                <span class="badge accent">--quick</span>
+                <span class="badge accent">--review</span>
+              </div>
+            </div>
+            <span class="cmd-chevron" aria-hidden="true">›</span>
           </div>
           <p>Takes a failing test or error description. Runs scout → debugger → code-reviewer
           pipeline. Produces a minimal verified patch. Never touches files outside the
           scout's identified scope — no accidental refactoring.</p>
+          <div class="cmd-detail">
+            <div class="cmd-detail-inner">
+              <div class="cmd-agent-flow">
+                <div class="caf-node"><span class="caf-icon">S</span><span class="caf-name">scout</span><span class="caf-desc">locates error, reads affected files</span></div>
+                <div class="caf-arrow">↓</div>
+                <div class="caf-node"><span class="caf-icon">D</span><span class="caf-name">debugger</span><span class="caf-desc">confirms root cause, writes minimal diff</span></div>
+                <div class="caf-arrow">↓</div>
+                <div class="caf-node"><span class="caf-icon">C</span><span class="caf-name">code-reviewer</span><span class="caf-desc">scores fix, checks for regressions</span></div>
+              </div>
+            </div>
+          </div>
         </div>
         <div class="cmd-card">
           <div class="cmd-card-header">
@@ -531,7 +591,8 @@ CLAUDE.local.md (gitignored) — personal preferences that shouldn't be committe
 
   <script>
     (function () {
-      // Theme toggle
+
+      // ── Theme toggle ────────────────────────────────────────────────
       var btn = document.getElementById('theme-toggle');
       btn.addEventListener('click', function () {
         var current = document.documentElement.getAttribute('data-theme') || 'light';
@@ -540,16 +601,9 @@ CLAUDE.local.md (gitignored) — personal preferences that shouldn't be committe
         localStorage.setItem('theme', next);
       });
 
-      // Active topnav link on scroll
-      var sections  = document.querySelectorAll('.doc-section');
-      var navLinks  = document.querySelectorAll('.topnav-link');
-      var labelMap  = {
-        overview: 'Overview',
-        structure: 'Structure',
-        commands: 'Commands',
-        configuration: 'Configuration',
-        hooks: 'Hooks'
-      };
+      // ── Active topnav link on scroll ─────────────────────────────────
+      var sections = document.querySelectorAll('.doc-section');
+      var navLinks = document.querySelectorAll('.topnav-link');
 
       function onScroll() {
         var current = 'overview';
@@ -564,6 +618,107 @@ CLAUDE.local.md (gitignored) — personal preferences that shouldn't be committe
 
       window.addEventListener('scroll', onScroll, { passive: true });
       onScroll();
+
+      // ── Scroll fade-in ───────────────────────────────────────────────
+      if ('IntersectionObserver' in window) {
+        var fadeObserver = new IntersectionObserver(function (entries) {
+          entries.forEach(function (e) {
+            if (e.isIntersecting) {
+              e.target.classList.add('visible');
+              fadeObserver.unobserve(e.target);
+            }
+          });
+        }, { threshold: 0.08 });
+
+        document.querySelectorAll('.doc-section, .feature-card, .hook-card, .cmd-card, .dir-row').forEach(function (el) {
+          el.classList.add('fade-up');
+          fadeObserver.observe(el);
+        });
+      }
+
+      // ── 3D pipeline mouse tracking ───────────────────────────────────
+      var p3dWrap  = document.getElementById('pipeline-3d');
+      var p3dStage = p3dWrap && p3dWrap.querySelector('.p3d-stage');
+
+      if (p3dWrap && p3dStage) {
+        var RAF_ID = null;
+        var targetRX = -5, targetRY = 8;
+        var currentRX = -5, currentRY = 8;
+        var isHovering = false;
+
+        function lerpAngle(a, b, t) { return a + (b - a) * t; }
+
+        function animateStage() {
+          currentRX = lerpAngle(currentRX, targetRX, 0.1);
+          currentRY = lerpAngle(currentRY, targetRY, 0.1);
+          p3dStage.style.transform = 'rotateX(' + currentRX.toFixed(2) + 'deg) rotateY(' + currentRY.toFixed(2) + 'deg)';
+          RAF_ID = requestAnimationFrame(animateStage);
+        }
+
+        p3dWrap.addEventListener('mouseenter', function () {
+          isHovering = true;
+          if (!RAF_ID) RAF_ID = requestAnimationFrame(animateStage);
+        });
+
+        p3dWrap.addEventListener('mousemove', function (e) {
+          var rect = p3dWrap.getBoundingClientRect();
+          var mx = (e.clientX - rect.left) / rect.width;
+          var my = (e.clientY - rect.top) / rect.height;
+          targetRX = (my - 0.5) * -14;
+          targetRY = (mx - 0.5) * 18;
+        });
+
+        p3dWrap.addEventListener('mouseleave', function () {
+          isHovering = false;
+          targetRX = -5;
+          targetRY = 8;
+          setTimeout(function () {
+            if (!isHovering) {
+              cancelAnimationFrame(RAF_ID);
+              RAF_ID = null;
+              p3dStage.style.transform = 'rotateX(-5deg) rotateY(8deg)';
+            }
+          }, 600);
+        });
+      }
+
+      // ── Expandable cmd cards ─────────────────────────────────────────
+      document.querySelectorAll('.cmd-expandable').forEach(function (card) {
+        var toggle = card.querySelector('.cmd-toggle');
+        var detail = card.querySelector('.cmd-detail');
+        if (!toggle || !detail) return;
+
+        detail.style.maxHeight  = '0';
+        detail.style.overflow   = 'hidden';
+        detail.style.transition = 'max-height 0.35s cubic-bezier(0.4,0,0.2,1)';
+
+        toggle.style.cursor = 'pointer';
+        toggle.addEventListener('click', function () {
+          var isOpen = card.classList.contains('cmd-open');
+          // close all
+          document.querySelectorAll('.cmd-expandable').forEach(function (c) {
+            c.classList.remove('cmd-open');
+            var t = c.querySelector('.cmd-toggle');
+            var d = c.querySelector('.cmd-detail');
+            if (t) t.setAttribute('aria-expanded', 'false');
+            if (d) d.style.maxHeight = '0';
+          });
+          // open if was closed
+          if (!isOpen) {
+            card.classList.add('cmd-open');
+            toggle.setAttribute('aria-expanded', 'true');
+            detail.style.maxHeight = detail.scrollHeight + 'px';
+          }
+        });
+      });
+
+      // ── Stagger fade-in for grid children ────────────────────────────
+      document.querySelectorAll('.feature-grid, .hook-list').forEach(function (grid) {
+        Array.from(grid.children).forEach(function (child, i) {
+          child.style.transitionDelay = (i * 0.06) + 's';
+        });
+      });
+
     })();
   </script>
 </body>
