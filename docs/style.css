@@ -187,13 +187,20 @@ hr.section-divider {
 /* ─── Cover Page ─────────────────────────────────────────────── */
 .cover {
   min-height: calc(100vh - var(--topbar-height));
-  background: #181410;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--bg-border);
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
   padding: 5rem 2rem;
   position: relative;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+[data-theme="dark"] .cover {
+  background: #181410;
+  border-bottom-color: #2e2822;
 }
 
 .cover-inner {
@@ -222,7 +229,7 @@ hr.section-divider {
   font-size: 0.6875rem;
   font-weight: 600;
   letter-spacing: 0.18em;
-  color: #9e9488;
+  color: var(--text-secondary);
   text-transform: uppercase;
   margin-bottom: 1.75rem;
 }
@@ -231,7 +238,7 @@ hr.section-divider {
   display: block;
   width: 2.5rem;
   height: 1px;
-  background: #4a4540;
+  background: var(--bg-border);
 }
 
 .cover-heading {
@@ -239,7 +246,7 @@ hr.section-divider {
   font-size: clamp(2.5rem, 6vw, 4.25rem);
   font-weight: 800;
   line-height: 1.1;
-  color: #f0ece6;
+  color: var(--text-primary);
   letter-spacing: -0.02em;
   margin-bottom: 1.75rem;
 }
@@ -253,7 +260,7 @@ hr.section-divider {
   font-family: var(--font-serif);
   font-style: italic;
   font-size: 1.0625rem;
-  color: #9e9488;
+  color: var(--text-secondary);
   line-height: 1.65;
   max-width: 520px;
   margin-bottom: 2.5rem;
@@ -272,8 +279,8 @@ hr.section-divider {
   font-size: 0.6875rem;
   font-weight: 500;
   letter-spacing: 0.12em;
-  color: #9e9488;
-  border: 1px solid #3a3530;
+  color: var(--text-secondary);
+  border: 1px solid var(--bg-border);
   border-radius: 999px;
   padding: 0.4rem 1rem;
   transition: color 0.15s, border-color 0.15s;
@@ -1087,7 +1094,7 @@ pre code {
 }
 
 /* per-type left border color */
-.demo-step:not(.demo-step-user):not(.demo-step-output):not(.demo-step-hook):not(.demo-step-main) {
+.demo-step:not(.demo-step-user):not(.demo-step-output):not(.demo-step-hook):not(.demo-step-main):not(.demo-step-slash) {
   border-left-color: rgba(193, 95, 60, 0.5);     /* agent — orange */
 }
 .demo-step-hook   { border-left-color: rgba(107, 155, 210, 0.5); } /* hook  — blue   */
@@ -1172,7 +1179,7 @@ pre code {
 .demo-log-done.visible { opacity: 1; }
 
 /* agent step background tint */
-.demo-step:not(.demo-step-user):not(.demo-step-output):not(.demo-step-hook):not(.demo-step-main).visible {
+.demo-step:not(.demo-step-user):not(.demo-step-output):not(.demo-step-hook):not(.demo-step-main):not(.demo-step-slash).visible {
   background: rgba(193, 95, 60, 0.03);
 }
 .demo-step-main.visible { background: rgba(167, 139, 250, 0.04); }
@@ -1214,6 +1221,24 @@ pre code {
   background: rgba(107, 155, 210, 0.1) !important;
   border-color: rgba(107, 155, 210, 0.35) !important;
   color: #6b9bd2 !important;
+}
+
+/* slash command step — amber */
+.demo-step-slash .demo-spinner     { border-top-color: #d4920a; }
+.demo-step-slash .demo-check       { color: #d4920a; }
+.demo-step-slash .demo-agent-name  { color: #e4a820; font-weight: 700; }
+.demo-step-slash.done .demo-agent-name { color: #d4920a; }
+.demo-step-slash .demo-log-running { color: #4a3808; }
+.demo-step-slash .demo-log-done    { color: #7a5a10; }
+.demo-step-slash                   { border-left-color: rgba(212, 146, 10, 0.55); }
+.demo-step-slash.visible           { background: rgba(212, 146, 10, 0.04); }
+
+.demo-slash-icon {
+  background: rgba(212, 146, 10, 0.12) !important;
+  border-color: rgba(212, 146, 10, 0.4) !important;
+  color: #d4920a !important;
+  font-weight: 800 !important;
+  font-size: 0.9rem !important;
 }
 
 /* main agent step — purple */

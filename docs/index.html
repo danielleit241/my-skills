@@ -703,6 +703,9 @@ CLAUDE.local.md (gitignored) — personal preferences that shouldn't be committe
           steps: [
             { type: 'user',  ms: 500,
               text: '/plan --hard "add JWT auth to API"' },
+            { type: 'slash', ms: 700,  icon: '/',  agent: '/plan',
+              running: 'Reading .claude/commands/plan.md · detecting --hard flag...',
+              done:    'Command loaded · mode: Hard · research phase required' },
             { type: 'hook',  ms: 700,  icon: '⚡', agent: 'session-start.py',
               running: 'Injecting project context — branch, open TODOs, memory...',
               done:    'Context loaded · main branch · no active plan detected' },
@@ -735,6 +738,9 @@ CLAUDE.local.md (gitignored) — personal preferences that shouldn't be committe
           steps: [
             { type: 'user',  ms: 500,
               text: '/cook plans/260419-jwt-auth/plan.md' },
+            { type: 'slash', ms: 700,  icon: '/',  agent: '/cook',
+              running: 'Reading .claude/commands/cook.md · parsing plan path argument...',
+              done:    'Command loaded · plan.md found · 1 unchecked phase ready' },
             { type: 'hook',  ms: 800,  icon: '⚡', agent: 'build-check.py',
               running: 'Validating build before execution (Node.js detected)...',
               done:    'Build passes — environment stable ✓' },
@@ -770,6 +776,9 @@ CLAUDE.local.md (gitignored) — personal preferences that shouldn't be committe
           steps: [
             { type: 'user',  ms: 500,
               text: '/fix "TypeError: Cannot read id of undefined"' },
+            { type: 'slash', ms: 700,  icon: '/',  agent: '/fix',
+              running: 'Reading .claude/commands/fix.md · parsing error description...',
+              done:    'Command loaded · mode: Review · scout-first pipeline selected' },
             { type: 'hook',  ms: 700,  icon: '⚡', agent: 'build-check.py',
               running: 'Validating build state before patching...',
               done:    'Build passes — safe to modify source' },
@@ -835,8 +844,8 @@ CLAUDE.local.md (gitignored) — personal preferences that shouldn't be committe
           el.innerHTML = '<span class="demo-output-prefix">→</span><span class="demo-output-text">' + s.text + '</span>';
           return el;
         }
-        var typeClass = s.type === 'hook' ? ' demo-step-hook' : s.type === 'main' ? ' demo-step-main' : '';
-        var iconClass = 'demo-agent-icon' + (s.type === 'hook' ? ' demo-hook-icon' : s.type === 'main' ? ' demo-main-icon' : '');
+        var typeClass = s.type === 'hook' ? ' demo-step-hook' : s.type === 'main' ? ' demo-step-main' : s.type === 'slash' ? ' demo-step-slash' : '';
+        var iconClass = 'demo-agent-icon' + (s.type === 'hook' ? ' demo-hook-icon' : s.type === 'main' ? ' demo-main-icon' : s.type === 'slash' ? ' demo-slash-icon' : '');
         el.className = 'demo-step' + typeClass;
         el.innerHTML =
           '<div class="demo-step-row">' +
