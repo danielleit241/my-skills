@@ -883,8 +883,6 @@ CLAUDE.local.md (gitignored) — personal preferences that shouldn't be committe
           var s = data.steps[i];
           var el = buildStep(s);
           demoSteps.appendChild(el);
-          // scroll to bottom
-          demoSteps.parentElement.scrollTop = demoSteps.parentElement.scrollHeight;
 
           demoTimers.push(setTimeout(function () { el.classList.add('visible'); }, 30));
 

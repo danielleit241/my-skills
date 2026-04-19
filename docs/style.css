@@ -1053,7 +1053,7 @@ pre code {
 }
 
 .pipeline-demo.open {
-  max-height: 480px;
+  max-height: 2000px;
   margin-top: -1px;
   border-color: var(--accent-primary);
   border-top: none;
@@ -1112,14 +1112,7 @@ pre code {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  max-height: 380px;
-  overflow-y: auto;
-  scroll-behavior: smooth;
 }
-
-.demo-steps::-webkit-scrollbar { width: 4px; }
-.demo-steps::-webkit-scrollbar-track { background: transparent; }
-.demo-steps::-webkit-scrollbar-thumb { background: var(--p3d-node-border); border-radius: 2px; }
 
 .demo-step {
   opacity: 0;
