@@ -602,7 +602,27 @@ pre code {
 /* ─── Hero Install ───────────────────────────────────────────── */
 .hero-install {
   margin-top: 1.5rem;
-  display: inline-flex;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: 600px;
+}
+
+.install-method {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.install-label {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-secondary);
+  opacity: 0.7;
+  min-width: 90px;
+  flex-shrink: 0;
 }
 
 .install-cmd {
@@ -614,6 +634,65 @@ pre code {
   padding: 0.6rem 1rem;
   color: var(--text-primary);
   letter-spacing: 0.01em;
+  user-select: all;
+}
+
+.install-method.primary .install-cmd {
+  border-color: var(--accent-primary);
+  background: var(--accent-subtle);
+}
+
+/* ─── Plugin Grid ────────────────────────────────────────────── */
+.plugin-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  margin: 1.25rem 0 1.5rem;
+  max-width: var(--content-max);
+}
+
+@media (max-width: 700px) { .plugin-grid { grid-template-columns: 1fr; } }
+@media (min-width: 701px) and (max-width: 900px) { .plugin-grid { grid-template-columns: repeat(2, 1fr); } }
+
+.plugin-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--bg-border);
+  border-radius: var(--radius-md);
+  padding: 0.875rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  transition: border-color 0.15s;
+}
+
+.plugin-card:hover { border-color: var(--accent-primary); }
+
+.plugin-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.plugin-name {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--accent-primary);
+}
+
+.plugin-desc {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+.plugin-install {
+  margin-top: 0.35rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  opacity: 0.7;
   user-select: all;
 }
 
@@ -1350,6 +1429,79 @@ pre code {
 .cmd-detail-inner {
   padding: 1rem 0 0.25rem;
 }
+
+/* ─── Token Cost Notice ──────────────────────────────────────── */
+.token-cost {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 10px;
+  padding: 6px 10px;
+  background: var(--bg-surface);
+  border: 1px solid var(--bg-border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 0.71rem;
+  color: var(--text-secondary);
+  line-height: 1;
+}
+
+.token-cost-icon {
+  font-size: 0.8rem;
+  opacity: 0.55;
+  flex-shrink: 0;
+}
+
+.token-cost-range {
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: 0.01em;
+}
+
+.token-cost-sep { opacity: 0.4; }
+
+.token-cost-note { opacity: 0.65; }
+
+.token-breakdown {
+  margin-top: 14px;
+  border-top: 1px solid var(--bg-border);
+  padding-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  max-width: 460px;
+}
+
+.token-breakdown-title {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-secondary);
+  opacity: 0.7;
+  margin-bottom: 6px;
+}
+
+.token-breakdown-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 8px;
+  font-family: var(--font-mono);
+  font-size: 0.73rem;
+  border-bottom: 1px solid var(--bg-border);
+}
+
+.token-breakdown-row:last-child { border-bottom: none; }
+
+.token-breakdown-flag { color: var(--accent-primary); font-weight: 500; }
+
+.token-breakdown-cost {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.token-breakdown-agents { color: var(--text-secondary); opacity: 0.7; font-size: 0.67rem; }
 
 /* ─── Agent Flow (inline) ────────────────────────────────────── */
 .cmd-agent-flow {

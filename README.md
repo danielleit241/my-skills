@@ -72,8 +72,8 @@ Behavioral guidance that loads automatically when relevant.
 | `dotnet`                 | Writing C#, ASP.NET Core, EF Core, MassTransit, xUnit   |
 | `code-review`            | Reviewing code, receiving feedback, verifying completion |
 | `continuous-learning-v2` | Observing sessions, creating instincts                   |
+| `frontend-slides`        | Building HTML presentations or converting PowerPoint files |
 | `mermaidjs-v11`          | Creating diagrams and visualizations                     |
-| `mob-elaboration`        | Defining requirements or architecture before coding      |
 | `problem-solving`        | Stuck on a problem, need creative unblocking             |
 | `sequential-thinking`    | Complex multi-step reasoning                             |
 | `skill-creator`          | Creating or improving skill files                        |
@@ -126,9 +126,25 @@ EXAMPLES.md          # C# examples for backend coding principles
 
 ---
 
-## Usage
+## Installation
 
-Copy `.claude/` into any project to activate the commands, agents, skills, and hooks.
+### Via Claude Code Marketplace (recommended)
+
+```
+/plugin marketplace add danielleit241/my-skills
+```
+
+Then install individual plugins:
+
+```
+/plugin install frontend-slides@my-skills
+/plugin install commands-bundle@my-skills
+/plugin install agents-bundle@my-skills
+```
+
+### Manual
+
+Copy `.claude/` into any project:
 
 ```bash
 cp -r /path/to/my-skills/.claude /path/to/your-project/

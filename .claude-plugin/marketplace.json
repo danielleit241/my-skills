@@ -1,0 +1,182 @@
+{
+  "name": "my-skills",
+  "owner": {
+    "name": "danielleit241",
+    "email": "danielleee241@gmail.com"
+  },
+  "metadata": {
+    "description": "A curated collection of Claude Code skills, commands, and agents for senior engineers",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "frontend-slides",
+      "description": "Create stunning, animation-rich HTML presentations from scratch or by converting PowerPoint files",
+      "source": {
+        "source": "git-subdir",
+        "url": "https://github.com/danielleit241/my-skills",
+        "path": ".claude/skills/frontend-slides"
+      },
+      "skills": ["SKILL.md"],
+      "category": "frontend",
+      "keywords": ["slides", "presentation", "html", "animation", "design"]
+    },
+    {
+      "name": "skill-creator",
+      "description": "Create new skills, modify and improve existing skills, and measure skill performance with evals",
+      "source": {
+        "source": "git-subdir",
+        "url": "https://github.com/danielleit241/my-skills",
+        "path": ".claude/skills/skill-creator"
+      },
+      "skills": ["SKILL.md"],
+      "category": "meta",
+      "keywords": ["skill", "creator", "evals", "benchmark"]
+    },
+    {
+      "name": "mermaidjs-v11",
+      "description": "Create diagrams and visualizations using Mermaid.js v11 — 24+ diagram types",
+      "source": {
+        "source": "git-subdir",
+        "url": "https://github.com/danielleit241/my-skills",
+        "path": ".claude/skills/mermaidjs-v11"
+      },
+      "skills": ["SKILL.md"],
+      "category": "documentation",
+      "keywords": ["mermaid", "diagrams", "flowchart", "visualization"]
+    },
+    {
+      "name": "backend-mindset",
+      "description": "Language-agnostic backend engineering — Clean Architecture, REST API design, TDD, event-driven patterns",
+      "source": {
+        "source": "git-subdir",
+        "url": "https://github.com/danielleit241/my-skills",
+        "path": ".claude/skills/backend-mindset"
+      },
+      "skills": ["SKILL.md"],
+      "category": "backend",
+      "keywords": [
+        "architecture",
+        "backend",
+        "api",
+        "tdd",
+        "clean-architecture"
+      ]
+    },
+    {
+      "name": "dotnet",
+      "description": ".NET implementation — C#, ASP.NET Core, EF Core, xUnit, .NET Aspire, MassTransit",
+      "source": {
+        "source": "git-subdir",
+        "url": "https://github.com/danielleit241/my-skills",
+        "path": ".claude/skills/dotnet"
+      },
+      "skills": ["SKILL.md"],
+      "category": "backend",
+      "keywords": ["dotnet", "csharp", "aspnetcore", "efcore", "aspire"]
+    },
+    {
+      "name": "code-review",
+      "description": "Structured code review with security, correctness, and quality gates — never skip verification",
+      "source": {
+        "source": "git-subdir",
+        "url": "https://github.com/danielleit241/my-skills",
+        "path": ".claude/skills/code-review"
+      },
+      "skills": ["SKILL.md"],
+      "category": "quality",
+      "keywords": ["code-review", "security", "quality", "verification"]
+    },
+    {
+      "name": "problem-solving",
+      "description": "Creative problem-solving — collision-zone thinking, inversion, pattern recognition, simplification",
+      "source": {
+        "source": "git-subdir",
+        "url": "https://github.com/danielleit241/my-skills",
+        "path": ".claude/skills/problem-solving"
+      },
+      "skills": ["SKILL.md"],
+      "category": "reasoning",
+      "keywords": ["problem-solving", "creativity", "thinking", "inversion"]
+    },
+    {
+      "name": "sequential-thinking",
+      "description": "Systematic step-by-step reasoning with revision, branching, and dynamic scope adjustment",
+      "source": {
+        "source": "git-subdir",
+        "url": "https://github.com/danielleit241/my-skills",
+        "path": ".claude/skills/sequential-thinking"
+      },
+      "skills": ["SKILL.md"],
+      "category": "reasoning",
+      "keywords": ["thinking", "reasoning", "planning", "decomposition"]
+    },
+    {
+      "name": "strategic-compact",
+      "description": "Manual context compaction at logical intervals to preserve context through task phases",
+      "source": {
+        "source": "git-subdir",
+        "url": "https://github.com/danielleit241/my-skills",
+        "path": ".claude/skills/strategic-compact"
+      },
+      "skills": ["SKILL.md"],
+      "category": "productivity",
+      "keywords": ["context", "compaction", "memory", "productivity"]
+    },
+    {
+      "name": "continuous-learning-v2",
+      "description": "Instinct-based learning system — observes sessions, creates atomic instincts, evolves into skills",
+      "source": {
+        "source": "git-subdir",
+        "url": "https://github.com/danielleit241/my-skills",
+        "path": ".claude/skills/continuous-learning-v2"
+      },
+      "skills": ["SKILL.md"],
+      "category": "meta",
+      "keywords": ["learning", "instincts", "adaptation", "memory"]
+    },
+    {
+      "name": "commands-bundle",
+      "description": "Full slash command suite: /plan, /cook, /fix, /learn, /code-review, /docs-fe, /coding-level",
+      "source": {
+        "source": "git-subdir",
+        "url": "https://github.com/danielleit241/my-skills",
+        "path": ".claude/commands"
+      },
+      "commands": [
+        "plan.md",
+        "cook.md",
+        "fix.md",
+        "learn.md",
+        "code-review.md",
+        "docs-fe.md",
+        "coding-level.md"
+      ],
+      "category": "productivity",
+      "keywords": ["commands", "plan", "cook", "fix", "workflow"]
+    },
+    {
+      "name": "agents-bundle",
+      "description": "Sub-agent suite for plan, cook, and fix pipelines — scout, debugger, tester, reviewers",
+      "source": {
+        "source": "git-subdir",
+        "url": "https://github.com/danielleit241/my-skills",
+        "path": ".claude/agents"
+      },
+      "agents": [
+        "scout.md",
+        "debugger.md",
+        "tester.md",
+        "planner.md",
+        "plan-researcher.md",
+        "plan-reviewer.md",
+        "code-reviewer.md",
+        "project-manager.md",
+        "docs-manager.md",
+        "git-manager.md"
+      ],
+      "category": "automation",
+      "keywords": ["agents", "pipeline", "automation", "sub-agents"]
+    }
+  ]
+}

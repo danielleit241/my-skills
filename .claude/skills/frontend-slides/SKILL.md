@@ -197,28 +197,42 @@ If images were provided, the slide outline already incorporates them from Step 1
 
 When converting PowerPoint files:
 
-1. **Extract content** — Run `python scripts/extract-pptx.py <input.pptx> <output_dir>` (install python-pptx if needed: `pip install python-pptx`)
+1. **Extract content** — Run `python scripts/extract-pptx.py <input.pptx> slides/[project-name]/content/` (install python-pptx if needed: `pip install python-pptx`)
 2. **Confirm with user** — Present extracted slide titles, content summaries, and image counts
 3. **Style selection** — Proceed to Phase 2 for style discovery
-4. **Generate HTML** — Convert to chosen style, preserving all text, images (from assets/), slide order, and speaker notes (as HTML comments)
+4. **Generate HTML** — Convert to chosen style, preserving all text, images (from `slides/[project-name]/assets/`), slide order, and speaker notes (as HTML comments)
 
 ---
 
 ## Phase 5: Delivery
 
 1. **Clean up** — Delete `.claude-design/slide-previews/` if it exists
-2. **Open** — Use `open [filename].html` to launch in browser
+2. **Open** — Use `open slides/[project-name]/index.html` to launch in browser
 3. **Summarize** — Tell the user:
-   - File location, style name, slide count
+   - File location (`slides/[project-name]/index.html`), style name, slide count
    - Navigation: Arrow keys, Space, scroll/swipe, click nav dots
    - How to customize: `:root` CSS variables for colors, font link for typography, `.reveal` class for animations
    - If inline editing was enabled: Hover top-left corner or press E to enter edit mode, click any text to edit, Ctrl+S to save
 
 ---
 
-## Phase 6: Share & Export (Optional)
+## Success Criteria
 
-After delivery, **ask the user:** _"Would you like to share this presentation? I can export it as a PDF."_
+A well-executed presentation meets ALL of the following:
+
+- [ ] No slide scrolls — every slide fits exactly in 100vh at 1280×720
+- [ ] Font is NOT Inter, Roboto, Arial, or system fonts — it's a named Google/Fontshare font
+- [ ] Color palette has a dominant + sharp accent, not 5 equal colors
+- [ ] At least 3 animations with staggered reveals on title slide
+- [ ] Zero `overflow: visible` or `overflow: auto` on `.slide` elements
+- [ ] All font sizes use `clamp()` — no hardcoded `px` or `rem` on text
+- [ ] A non-designer looking at the preview thinks "this looks professionally designed, not AI-generated"
+
+---
+
+## Phase 6: PDF Export (Optional)
+
+After delivery, **ask the user:** _"Would you like to export this as a PDF for sharing?"_
 
 Options:
 

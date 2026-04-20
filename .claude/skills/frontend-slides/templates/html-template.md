@@ -353,7 +353,7 @@ def resize_max(input_path, output_path, max_dim=1200):
 | Image > 1MB                      | `resize_max(max_dim=1200)`    |
 | Wrong aspect ratio               | Manual crop with `img.crop()` |
 
-Save processed images with `_processed` suffix. Never overwrite originals.
+Save processed images to `assets/` with `_processed` suffix. Never modify originals in `content/`.
 
 ### Image Placement
 
@@ -404,16 +404,15 @@ Save processed images with `_processed` suffix. Never overwrite originals.
 
 ## File Structure
 
-Single presentations:
+```
+slides/
+└── project-name/
+    ├── content/      # Raw inputs: notes, .pptx, original images
+    ├── assets/       # Processed images (resized, cropped — never overwrite originals in content/)
+    └── index.html    # Self-contained output, all CSS/JS inline
+```
 
-```
-presentation.html    # Self-contained, all CSS/JS inline
-assets/              # Images only, if any
-```
-
-Multiple presentations in one project:
-
-```
-[name].html
-[name]-assets/
-```
+- `project-name` is derived from the presentation topic (kebab-case, e.g. `dev-onboarding`, `q3-pitch`)
+- `content/` is user-supplied; never modify files here
+- `assets/` is generated; safe to regenerate at any time
+- PDF export saves as `slides/project-name/project-name.pdf`

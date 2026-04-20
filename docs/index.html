@@ -89,7 +89,14 @@
           engineering collaborator.
         </p>
         <div class="hero-install">
-          <code class="install-cmd">git clone https://github.com/danielleit241/my-skills</code>
+          <div class="install-method primary">
+            <span class="install-label">marketplace</span>
+            <code class="install-cmd">/plugin marketplace add danielleit241/my-skills</code>
+          </div>
+          <div class="install-method">
+            <span class="install-label">or clone</span>
+            <code class="install-cmd">git clone https://github.com/danielleit241/my-skills</code>
+          </div>
         </div>
       </div>
 
@@ -162,6 +169,110 @@
         <div class="principle-item">
           <span class="principle-tag">Brutal honesty</span>
           <span class="principle-text">Challenge every assumption. Diplomacy is noise; clarity is value.</span>
+        </div>
+      </div>
+
+      <h2>Available Plugins</h2>
+      <p style="font-size:0.875rem;color:var(--text-secondary);margin-bottom:0.25rem">
+        After adding the marketplace, install individual plugins:
+        <code style="font-size:0.8rem">/plugin install &lt;name&gt;@my-skills</code>
+      </p>
+      <div class="plugin-grid">
+        <div class="plugin-card">
+          <div class="plugin-card-header">
+            <span class="plugin-name">commands-bundle</span>
+            <span class="badge accent">pipeline</span>
+          </div>
+          <p class="plugin-desc">/plan, /cook, /fix, /learn, /code-review, /docs-fe, /coding-level — the full slash command suite.</p>
+          <code class="plugin-install">/plugin install commands-bundle@my-skills</code>
+        </div>
+        <div class="plugin-card">
+          <div class="plugin-card-header">
+            <span class="plugin-name">agents-bundle</span>
+            <span class="badge accent">agents</span>
+          </div>
+          <p class="plugin-desc">Scout, debugger, tester, planner, reviewers — sub-agents for the plan → cook → fix pipeline.</p>
+          <code class="plugin-install">/plugin install agents-bundle@my-skills</code>
+        </div>
+        <div class="plugin-card">
+          <div class="plugin-card-header">
+            <span class="plugin-name">frontend-slides</span>
+            <span class="badge">frontend</span>
+          </div>
+          <p class="plugin-desc">Create animation-rich HTML presentations from scratch or convert PowerPoint files.</p>
+          <code class="plugin-install">/plugin install frontend-slides@my-skills</code>
+        </div>
+        <div class="plugin-card">
+          <div class="plugin-card-header">
+            <span class="plugin-name">backend-mindset</span>
+            <span class="badge">backend</span>
+          </div>
+          <p class="plugin-desc">Clean Architecture, REST API design, TDD, event-driven patterns — language-agnostic.</p>
+          <code class="plugin-install">/plugin install backend-mindset@my-skills</code>
+        </div>
+        <div class="plugin-card">
+          <div class="plugin-card-header">
+            <span class="plugin-name">dotnet</span>
+            <span class="badge">backend</span>
+          </div>
+          <p class="plugin-desc">C#, ASP.NET Core Minimal API, EF Core, xUnit, .NET Aspire, MassTransit.</p>
+          <code class="plugin-install">/plugin install dotnet@my-skills</code>
+        </div>
+        <div class="plugin-card">
+          <div class="plugin-card-header">
+            <span class="plugin-name">mermaidjs-v11</span>
+            <span class="badge">docs</span>
+          </div>
+          <p class="plugin-desc">24+ Mermaid.js v11 diagram types — flowcharts, sequence, ER, Gantt, architecture.</p>
+          <code class="plugin-install">/plugin install mermaidjs-v11@my-skills</code>
+        </div>
+        <div class="plugin-card">
+          <div class="plugin-card-header">
+            <span class="plugin-name">skill-creator</span>
+            <span class="badge">meta</span>
+          </div>
+          <p class="plugin-desc">Create, improve, and benchmark Claude Code skills with eval pipelines.</p>
+          <code class="plugin-install">/plugin install skill-creator@my-skills</code>
+        </div>
+        <div class="plugin-card">
+          <div class="plugin-card-header">
+            <span class="plugin-name">code-review</span>
+            <span class="badge">quality</span>
+          </div>
+          <p class="plugin-desc">Structured code review with security gates, correctness checks, and verification.</p>
+          <code class="plugin-install">/plugin install code-review@my-skills</code>
+        </div>
+        <div class="plugin-card">
+          <div class="plugin-card-header">
+            <span class="plugin-name">problem-solving</span>
+            <span class="badge">reasoning</span>
+          </div>
+          <p class="plugin-desc">Collision-zone thinking, inversion, pattern recognition — creative unblocking techniques.</p>
+          <code class="plugin-install">/plugin install problem-solving@my-skills</code>
+        </div>
+        <div class="plugin-card">
+          <div class="plugin-card-header">
+            <span class="plugin-name">sequential-thinking</span>
+            <span class="badge">reasoning</span>
+          </div>
+          <p class="plugin-desc">Step-by-step reasoning with revision, branching, and dynamic scope adjustment.</p>
+          <code class="plugin-install">/plugin install sequential-thinking@my-skills</code>
+        </div>
+        <div class="plugin-card">
+          <div class="plugin-card-header">
+            <span class="plugin-name">continuous-learning-v2</span>
+            <span class="badge">meta</span>
+          </div>
+          <p class="plugin-desc">Instinct-based learning — observes sessions, creates atomic instincts, evolves into skills.</p>
+          <code class="plugin-install">/plugin install continuous-learning-v2@my-skills</code>
+        </div>
+        <div class="plugin-card">
+          <div class="plugin-card-header">
+            <span class="plugin-name">strategic-compact</span>
+            <span class="badge">productivity</span>
+          </div>
+          <p class="plugin-desc">Manual context compaction at logical intervals to preserve context across phases.</p>
+          <code class="plugin-install">/plugin install strategic-compact@my-skills</code>
         </div>
       </div>
     </section>
@@ -310,6 +421,12 @@
           <p>Turns a natural-language description into a structured plan directory
           (<code>plans/YYMMDD-{slug}/</code>) with a <code>plan.md</code> and numbered phase files.
           Hard mode spawns researcher sub-agents before planning; Two mode produces competing plans for human review.</p>
+          <div class="token-cost">
+            <span class="token-cost-icon">◎</span>
+            <span class="token-cost-range">15K–150K</span>
+            <span class="token-cost-sep">·</span>
+            <span class="token-cost-note">varies by mode — see breakdown below</span>
+          </div>
           <div class="cmd-detail">
             <div class="cmd-detail-inner">
               <div class="cmd-agent-flow">
@@ -318,6 +435,29 @@
                 <div class="caf-node"><span class="caf-icon">P</span><span class="caf-name">planner</span><span class="caf-desc">writes plan.md + phase files</span></div>
                 <div class="caf-arrow">↓</div>
                 <div class="caf-node"><span class="caf-icon">V</span><span class="caf-name">plan-reviewer</span><span class="caf-desc">red-teams for gaps and vague steps</span></div>
+              </div>
+              <div class="token-breakdown">
+                <div class="token-breakdown-title">Token cost per mode</div>
+                <div class="token-breakdown-row">
+                  <span class="token-breakdown-flag">--fast</span>
+                  <span class="token-breakdown-cost">~15–25K</span>
+                  <span class="token-breakdown-agents">planner only</span>
+                </div>
+                <div class="token-breakdown-row">
+                  <span class="token-breakdown-flag">--hard</span>
+                  <span class="token-breakdown-cost">~50–90K</span>
+                  <span class="token-breakdown-agents">2× researcher + planner + reviewer</span>
+                </div>
+                <div class="token-breakdown-row">
+                  <span class="token-breakdown-flag">--parallel</span>
+                  <span class="token-breakdown-cost">~70–120K</span>
+                  <span class="token-breakdown-agents">parallel researcher pairs + planner + reviewer</span>
+                </div>
+                <div class="token-breakdown-row">
+                  <span class="token-breakdown-flag">--two</span>
+                  <span class="token-breakdown-cost">~90–150K</span>
+                  <span class="token-breakdown-agents">2 full competing plans</span>
+                </div>
               </div>
             </div>
           </div>
@@ -338,6 +478,12 @@
           <p>Reads an existing plan and executes it phase by phase. Spawns tester, debugger, and
           git-manager sub-agents per phase. Marks each phase <code>[x]</code> on completion.
           Pauses for review at each gate unless <code>--auto</code> is set.</p>
+          <div class="token-cost">
+            <span class="token-cost-icon">◎</span>
+            <span class="token-cost-range">25–50K</span>
+            <span class="token-cost-sep">·</span>
+            <span class="token-cost-note">per phase · multiply by phase count</span>
+          </div>
           <div class="cmd-detail">
             <div class="cmd-detail-inner">
               <div class="cmd-agent-flow">
@@ -346,6 +492,29 @@
                 <div class="caf-node"><span class="caf-icon">D</span><span class="caf-name">debugger</span><span class="caf-desc">diagnoses failure, applies minimal patch</span></div>
                 <div class="caf-arrow">↓</div>
                 <div class="caf-node"><span class="caf-icon">G</span><span class="caf-name">git-manager</span><span class="caf-desc">conventional commit after each phase</span></div>
+              </div>
+              <div class="token-breakdown">
+                <div class="token-breakdown-title">Token cost per mode</div>
+                <div class="token-breakdown-row">
+                  <span class="token-breakdown-flag">default</span>
+                  <span class="token-breakdown-cost">~25–50K</span>
+                  <span class="token-breakdown-agents">implement + tester + git-manager</span>
+                </div>
+                <div class="token-breakdown-row">
+                  <span class="token-breakdown-flag">--auto</span>
+                  <span class="token-breakdown-cost">~25–50K</span>
+                  <span class="token-breakdown-agents">same pipeline, no review pauses</span>
+                </div>
+                <div class="token-breakdown-row">
+                  <span class="token-breakdown-flag">--fast</span>
+                  <span class="token-breakdown-cost">~20–35K</span>
+                  <span class="token-breakdown-agents">skips optional review agents</span>
+                </div>
+                <div class="token-breakdown-row">
+                  <span class="token-breakdown-flag">--parallel</span>
+                  <span class="token-breakdown-cost">~40–80K</span>
+                  <span class="token-breakdown-agents">concurrent phase implementation</span>
+                </div>
               </div>
             </div>
           </div>
@@ -366,6 +535,12 @@
           <p>Takes a failing test or error description. Runs scout → debugger → code-reviewer
           pipeline. Produces a minimal verified patch. Never touches files outside the
           scout's identified scope — no accidental refactoring.</p>
+          <div class="token-cost">
+            <span class="token-cost-icon">◎</span>
+            <span class="token-cost-range">15–60K</span>
+            <span class="token-cost-sep">·</span>
+            <span class="token-cost-note">varies by mode</span>
+          </div>
           <div class="cmd-detail">
             <div class="cmd-detail-inner">
               <div class="cmd-agent-flow">
@@ -374,6 +549,29 @@
                 <div class="caf-node"><span class="caf-icon">D</span><span class="caf-name">debugger</span><span class="caf-desc">confirms root cause, writes minimal diff</span></div>
                 <div class="caf-arrow">↓</div>
                 <div class="caf-node"><span class="caf-icon">C</span><span class="caf-name">code-reviewer</span><span class="caf-desc">scores fix, checks for regressions</span></div>
+              </div>
+              <div class="token-breakdown">
+                <div class="token-breakdown-title">Token cost per mode</div>
+                <div class="token-breakdown-row">
+                  <span class="token-breakdown-flag">--quick</span>
+                  <span class="token-breakdown-cost">~15–30K</span>
+                  <span class="token-breakdown-agents">scout + debugger, no review gate</span>
+                </div>
+                <div class="token-breakdown-row">
+                  <span class="token-breakdown-flag">default</span>
+                  <span class="token-breakdown-cost">~30–55K</span>
+                  <span class="token-breakdown-agents">scout + debugger + code-reviewer + git-manager</span>
+                </div>
+                <div class="token-breakdown-row">
+                  <span class="token-breakdown-flag">--review</span>
+                  <span class="token-breakdown-cost">~35–60K</span>
+                  <span class="token-breakdown-agents">full pipeline, pauses at each gate</span>
+                </div>
+                <div class="token-breakdown-row">
+                  <span class="token-breakdown-flag">--auto</span>
+                  <span class="token-breakdown-cost">~30–55K</span>
+                  <span class="token-breakdown-agents">auto-approves ≥9.5 score, no pauses</span>
+                </div>
               </div>
             </div>
           </div>
@@ -388,6 +586,12 @@
           <p>Standalone review without the full fix pipeline. Reads CLAUDE.md for project-specific
           rules then applies universal security, correctness, and quality checks.
           Returns scored findings with severity levels.</p>
+          <div class="token-cost">
+            <span class="token-cost-icon">◎</span>
+            <span class="token-cost-range">~10–25K</span>
+            <span class="token-cost-sep">·</span>
+            <span class="token-cost-note">scales with diff size</span>
+          </div>
         </div>
         <div class="cmd-card">
           <div class="cmd-card-header">
@@ -399,6 +603,12 @@
           <p>Saves a concept, decision, or behavioral rule to persistent memory. Writes structured
           Markdown files to <code>~/.claude/projects/</code> with typed frontmatter
           (user, feedback, project, reference) for scoped retrieval.</p>
+          <div class="token-cost">
+            <span class="token-cost-icon">◎</span>
+            <span class="token-cost-range">~3–8K</span>
+            <span class="token-cost-sep">·</span>
+            <span class="token-cost-note">lightweight — reads session context only</span>
+          </div>
         </div>
         <div class="cmd-card">
           <div class="cmd-card-header">
@@ -409,6 +619,12 @@
           </div>
           <p>Frontend documentation command. Generates or updates docs for UI components,
           pages, and frontend modules following project documentation conventions.</p>
+          <div class="token-cost">
+            <span class="token-cost-icon">◎</span>
+            <span class="token-cost-range">~15–30K</span>
+            <span class="token-cost-sep">·</span>
+            <span class="token-cost-note">scales with number of changed endpoints</span>
+          </div>
         </div>
         <div class="cmd-card">
           <div class="cmd-card-header">
@@ -420,6 +636,12 @@
           <p>Sets the session coding level (1–3). Level 1 is beginner-friendly with explanations;
           Level 3 targets senior engineers — leads with trade-offs, assumes pattern fluency,
           and skips basics entirely.</p>
+          <div class="token-cost">
+            <span class="token-cost-icon">◎</span>
+            <span class="token-cost-range">&lt;2K</span>
+            <span class="token-cost-sep">·</span>
+            <span class="token-cost-note">config only — loads a single level file</span>
+          </div>
         </div>
       </div>
     </section>
