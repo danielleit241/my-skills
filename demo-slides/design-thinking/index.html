@@ -1,0 +1,1383 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Design Thinking — Open Talk</title>
+
+  <!-- Playfair Display (elegant serif display) + Source Sans 3 (clean body) -->
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,700&family=Source+Sans+3:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+
+    /* ===========================================
+       CSS CUSTOM PROPERTIES — SAGE & AMBER THEME
+       =========================================== */
+    :root {
+      --bg-primary:     #112a1c;
+      --bg-deep:        #0d1f17;
+      --bg-card:        #173524;
+      --bg-card-hover:  #1d3f2b;
+      --text-primary:   #f0ede6;
+      --text-secondary: rgba(240, 237, 230, 0.62);
+      --text-muted:     rgba(240, 237, 230, 0.32);
+      --accent:         #e8b24a;
+      --accent-dim:     rgba(232, 178, 74, 0.16);
+      --accent-glow:    rgba(232, 178, 74, 0.07);
+      --border-color:   rgba(232, 178, 74, 0.2);
+      --border-subtle:  rgba(240, 237, 230, 0.08);
+      --green-accent:   #6ec98a;
+      --orange-accent:  #e88a4a;
+
+      --font-display: 'Playfair Display', Georgia, serif;
+      --font-body:    'Source Sans 3', system-ui, sans-serif;
+
+      --title-size:  clamp(2rem,   6vw,   4.5rem);
+      --h2-size:     clamp(1.4rem, 3.8vw, 2.7rem);
+      --h3-size:     clamp(0.95rem, 2vw,  1.4rem);
+      --body-size:   clamp(0.76rem, 1.35vw, 1.02rem);
+      --small-size:  clamp(0.6rem,  0.95vw, 0.8rem);
+      --label-size:  clamp(0.52rem, 0.85vw, 0.7rem);
+
+      --slide-padding: clamp(1.75rem, 4.5vw, 4.5rem);
+      --content-gap:   clamp(0.65rem, 1.8vw, 1.8rem);
+      --element-gap:   clamp(0.35rem, 0.9vw, 0.9rem);
+
+      --ease-expo:   cubic-bezier(0.16, 1, 0.3, 1);
+      --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+      --dur-normal:  0.65s;
+      --dur-slow:    0.9s;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    /* === VIEWPORT BASE (mandatory) === */
+    html, body { height: 100%; overflow-x: hidden; }
+    html { scroll-snap-type: y mandatory; scroll-behavior: smooth; }
+    .slide {
+      width: 100vw; height: 100vh; height: 100dvh;
+      overflow: hidden; scroll-snap-align: start;
+      display: flex; flex-direction: column; position: relative;
+    }
+    .slide-content {
+      flex: 1; display: flex; flex-direction: column;
+      justify-content: center; max-height: 100%; overflow: hidden;
+      padding: var(--slide-padding);
+    }
+    img, .image-container { max-width: 100%; max-height: min(50vh, 400px); object-fit: contain; }
+
+    @media (max-height: 700px) {
+      :root {
+        --slide-padding: clamp(0.75rem, 3vw, 2rem);
+        --content-gap:   clamp(0.35rem, 1.2vw, 0.85rem);
+        --title-size:    clamp(1.2rem, 4.5vw, 2.3rem);
+        --h2-size:       clamp(0.95rem, 2.8vw, 1.6rem);
+        --body-size:     clamp(0.65rem, 1.1vw, 0.88rem);
+        --small-size:    clamp(0.55rem, 0.85vw, 0.72rem);
+      }
+    }
+    @media (max-height: 600px) {
+      :root {
+        --slide-padding: clamp(0.5rem, 2.5vw, 1.25rem);
+        --content-gap:   clamp(0.25rem, 0.8vw, 0.6rem);
+      }
+      .nav-dots, .decorative { display: none; }
+    }
+    @media (max-height: 500px) {
+      :root {
+        --slide-padding: clamp(0.35rem, 1.8vw, 0.85rem);
+        --h2-size:       clamp(0.85rem, 2.2vw, 1.2rem);
+        --body-size:     clamp(0.6rem, 0.95vw, 0.78rem);
+      }
+    }
+    @media (max-width: 600px) {
+      :root { --title-size: clamp(1.2rem, 7vw, 2.5rem); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.2s !important; }
+      html { scroll-behavior: auto; }
+    }
+
+    /* === BASE STYLES === */
+    body { background: var(--bg-deep); color: var(--text-primary); font-family: var(--font-body); }
+
+    .slide { background: var(--bg-primary); }
+
+    /* Amber accent strip — left edge, all slides */
+    .slide::before {
+      content: ''; position: absolute; left: 0; top: 0;
+      width: 4px; height: 100%;
+      background: linear-gradient(to bottom, var(--accent), rgba(232,178,74,0.06));
+      z-index: 1;
+    }
+
+    /* Ambient top-right glow — all slides */
+    .slide::after {
+      content: ''; position: absolute; top: -80px; right: -80px;
+      width: 360px; height: 360px;
+      background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+      pointer-events: none; z-index: 0;
+    }
+
+    .slide > * { position: relative; z-index: 2; }
+
+    /* === SHARED COMPONENTS === */
+    .content-layout {
+      display: flex; flex-direction: column; justify-content: center;
+      gap: var(--content-gap);
+      padding: var(--slide-padding);
+      padding-left: calc(var(--slide-padding) + 14px);
+      height: 100%;
+    }
+
+    .eyebrow {
+      display: flex; align-items: center; gap: 0.7rem;
+    }
+    .eyebrow-line { width: 22px; height: 1px; background: var(--accent); flex-shrink: 0; }
+    .eyebrow-text {
+      font-size: var(--label-size); font-weight: 700; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--accent); font-family: var(--font-body);
+    }
+
+    .slide-heading {
+      font-family: var(--font-display); font-size: var(--h2-size);
+      font-weight: 700; color: var(--text-primary); line-height: 1.15;
+    }
+    .slide-heading em { font-style: italic; color: var(--accent); }
+
+    .amber-rule {
+      width: 100%; height: 1px;
+      background: linear-gradient(to right, rgba(232,178,74,0.45), transparent);
+    }
+
+    .slide-num {
+      position: absolute; bottom: clamp(0.8rem, 2.5vh, 1.5rem); right: var(--slide-padding);
+      font-size: var(--label-size); color: var(--text-muted); font-weight: 600; letter-spacing: 0.1em;
+    }
+    .slide-num span { color: var(--accent); }
+
+    /* Definition / quote box */
+    .def-box {
+      background: var(--bg-card); border: 1px solid var(--border-color);
+      border-left: 3px solid var(--accent);
+      padding: clamp(0.6rem, 1.8vw, 1.1rem) clamp(0.9rem, 2.2vw, 1.5rem);
+      border-radius: 0 4px 4px 0;
+      font-size: var(--body-size); color: var(--text-secondary); line-height: 1.65;
+      max-width: min(88%, 720px);
+    }
+    .def-box strong { color: var(--text-primary); }
+    .def-box em { color: var(--accent); }
+
+    /* === ANIMATION SYSTEM === */
+    .reveal {
+      opacity: 0; transform: translateY(20px);
+      transition: opacity var(--dur-normal) var(--ease-expo), transform var(--dur-normal) var(--ease-expo);
+    }
+    .slide.visible .reveal { opacity: 1; transform: translateY(0); }
+    .reveal:nth-child(1) { transition-delay: 0.06s; }
+    .reveal:nth-child(2) { transition-delay: 0.16s; }
+    .reveal:nth-child(3) { transition-delay: 0.26s; }
+    .reveal:nth-child(4) { transition-delay: 0.36s; }
+    .reveal:nth-child(5) { transition-delay: 0.46s; }
+    .reveal:nth-child(6) { transition-delay: 0.56s; }
+
+    .reveal-fade { opacity: 0; transition: opacity var(--dur-slow) var(--ease-smooth); }
+    .slide.visible .reveal-fade { opacity: 1; }
+
+    /* === PROGRESS BAR === */
+    .progress-bar {
+      position: fixed; top: 0; left: 0; height: 3px;
+      background: linear-gradient(to right, var(--accent), rgba(232,178,74,0.45));
+      width: 0%; z-index: 9999; transition: width 0.3s var(--ease-smooth);
+    }
+
+    /* === NAV DOTS === */
+    .nav-dots {
+      position: fixed; right: clamp(0.6rem, 1.8vw, 1.2rem); top: 50%;
+      transform: translateY(-50%);
+      display: flex; flex-direction: column; gap: clamp(5px, 0.8vh, 9px); z-index: 9998;
+    }
+    .nav-dot {
+      width: 6px; height: 6px; border-radius: 50%; background: var(--text-muted);
+      cursor: pointer; border: none; padding: 0; transition: all 0.3s var(--ease-smooth);
+    }
+    .nav-dot.active { background: var(--accent); transform: scale(1.5); }
+    .nav-dot:hover { background: rgba(232,178,74,0.55); }
+
+    /* =============================================
+       SLIDE 1 — COVER
+       ============================================= */
+    #slide-1 { justify-content: center; padding: var(--slide-padding); padding-left: calc(var(--slide-padding) + 14px); }
+
+    .cover-deco {
+      position: absolute; top: var(--slide-padding); right: calc(var(--slide-padding) + 20px);
+      font-family: var(--font-display); font-size: clamp(5rem, 16vw, 13rem);
+      font-weight: 700; line-height: 1; color: rgba(232,178,74,0.035);
+      letter-spacing: -0.04em; pointer-events: none; user-select: none;
+    }
+
+    .cover-label {
+      font-size: var(--label-size); font-weight: 700; letter-spacing: 0.22em;
+      text-transform: uppercase; color: var(--accent);
+      margin-bottom: clamp(0.75rem, 2vh, 1.5rem);
+    }
+    .cover-title {
+      font-family: var(--font-display);
+      font-size: clamp(2.8rem, 8vw, 6rem);
+      font-weight: 700; line-height: 1.0; color: var(--text-primary);
+      margin-bottom: clamp(0.2rem, 0.8vh, 0.6rem);
+    }
+    .cover-title em { font-style: italic; color: var(--accent); }
+    .cover-subtitle {
+      font-size: clamp(0.82rem, 1.7vw, 1.15rem); color: var(--text-secondary);
+      font-weight: 300; line-height: 1.65; max-width: 500px;
+      margin-bottom: clamp(1rem, 3vh, 2rem);
+    }
+    .cover-tags { display: flex; flex-wrap: wrap; gap: clamp(0.35rem, 0.9vw, 0.65rem); }
+    .cover-tag {
+      font-size: var(--label-size); font-weight: 600; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--text-secondary);
+      padding: 5px 12px; border: 1px solid var(--border-color); border-radius: 2px;
+    }
+    .cover-tag.hi { color: var(--accent); border-color: rgba(232,178,74,0.45); }
+
+    /* Decorative grid pattern — bottom right of cover */
+    .cover-grid {
+      position: absolute; bottom: 0; right: 0;
+      width: clamp(120px, 25vw, 240px); height: clamp(120px, 25vh, 240px);
+      overflow: hidden; z-index: 1; opacity: 0.35;
+    }
+    .cover-grid::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(var(--border-color) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border-color) 1px, transparent 1px);
+      background-size: 28px 28px;
+      mask-image: radial-gradient(circle at bottom right, black 30%, transparent 80%);
+    }
+
+    /* =============================================
+       SLIDE 2 — WHAT IS DESIGN THINKING?
+       ============================================= */
+    .traits-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr);
+      gap: clamp(0.45rem, 1.2vw, 0.9rem);
+      max-width: min(96%, 820px);
+    }
+    .trait-card {
+      background: var(--bg-card); border: 1px solid var(--border-subtle);
+      padding: clamp(0.55rem, 1.4vw, 0.95rem) clamp(0.7rem, 1.8vw, 1.2rem);
+      border-radius: 4px; display: flex; gap: 0.7rem; align-items: flex-start;
+      transition: border-color 0.25s, background 0.25s;
+    }
+    .trait-card:hover { border-color: var(--border-color); background: var(--bg-card-hover); }
+    .trait-icon { font-size: clamp(0.95rem, 1.8vw, 1.25rem); flex-shrink: 0; margin-top: 1px; }
+    .trait-name { font-size: var(--body-size); font-weight: 700; color: var(--accent); margin-bottom: 2px; }
+    .trait-desc { font-size: var(--small-size); color: var(--text-secondary); line-height: 1.55; }
+
+    /* =============================================
+       SLIDE 3 — 5 STAGES (with detail)
+       ============================================= */
+    .stages-flow {
+      display: grid; grid-template-columns: repeat(5, 1fr);
+      gap: clamp(0.4rem, 1.1vw, 0.8rem);
+      max-width: min(96%, 920px);
+    }
+    .stage-card {
+      background: var(--bg-card); border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: clamp(0.55rem, 1.3vw, 1rem) clamp(0.45rem, 1.1vw, 0.85rem);
+      display: flex; flex-direction: column; align-items: center; text-align: center;
+      gap: clamp(0.28rem, 0.7vh, 0.55rem); position: relative;
+      transition: border-color 0.3s, transform 0.3s;
+    }
+    .stage-card:hover { border-color: var(--border-color); transform: translateY(-3px); }
+    .stage-card:not(:last-child)::after {
+      content: '→'; position: absolute;
+      right: calc(-1 * clamp(0.28rem, 0.85vw, 0.55rem) - 9px);
+      top: 38%; color: var(--text-muted); font-size: clamp(0.65rem, 1.1vw, 0.9rem); z-index: 3;
+    }
+    .stage-card.hi { border-color: rgba(232,178,74,0.4); background: rgba(232,178,74,0.06); }
+    .stage-num {
+      width: clamp(20px, 3.5vw, 30px); height: clamp(20px, 3.5vw, 30px);
+      border-radius: 50%; background: var(--accent-dim); border: 1px solid var(--border-color);
+      display: flex; align-items: center; justify-content: center;
+      font-size: var(--label-size); font-weight: 700; color: var(--accent); flex-shrink: 0;
+    }
+    .stage-name {
+      font-family: var(--font-display); font-size: clamp(0.68rem, 1.25vw, 0.92rem);
+      font-weight: 700; color: var(--text-primary); line-height: 1.2;
+    }
+    .stage-sub { font-size: clamp(0.52rem, 0.85vw, 0.68rem); color: var(--text-secondary); line-height: 1.4; }
+    .stage-tool {
+      font-size: clamp(0.48rem, 0.78vw, 0.62rem); color: var(--accent);
+      font-weight: 600; letter-spacing: 0.06em; margin-top: auto;
+      background: var(--accent-dim); padding: 2px 7px; border-radius: 10px;
+    }
+    .stages-note { font-size: var(--small-size); color: var(--text-muted); font-style: italic; max-width: 640px; }
+
+    /* =============================================
+       SLIDE 4 — DT VS TRADITIONAL (new visual)
+       ============================================= */
+    .compare-layout {
+      display: grid; grid-template-columns: 1fr auto 1fr;
+      gap: clamp(0.75rem, 2.5vw, 2rem); align-items: start;
+      max-width: min(96%, 900px);
+    }
+    .compare-col-title {
+      font-size: var(--small-size); font-weight: 700; letter-spacing: 0.18em;
+      text-transform: uppercase; margin-bottom: clamp(0.5rem, 1.5vh, 1rem);
+      padding-bottom: clamp(0.3rem, 0.8vh, 0.5rem);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .compare-col-title.trad { color: var(--text-muted); }
+    .compare-col-title.dt { color: var(--accent); }
+
+    /* Waterfall visual: stacked sequential boxes */
+    .waterfall-steps {
+      display: flex; flex-direction: column; gap: clamp(3px, 0.5vh, 6px);
+    }
+    .wf-step {
+      background: rgba(240,237,230,0.05); border: 1px solid rgba(240,237,230,0.1);
+      border-radius: 3px;
+      padding: clamp(0.3rem, 0.8vw, 0.5rem) clamp(0.5rem, 1.2vw, 0.8rem);
+      font-size: var(--small-size); color: var(--text-muted); position: relative;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .wf-step::before {
+      content: ''; width: 5px; height: 5px; border-radius: 50%;
+      background: rgba(240,237,230,0.25); flex-shrink: 0;
+    }
+    .wf-step + .wf-step::after {
+      content: '↓'; position: absolute; top: calc(-1 * clamp(3px,0.5vh,6px) - 1px);
+      left: calc(0.5rem + 2px); font-size: 0.6rem; color: rgba(240,237,230,0.2);
+    }
+
+    /* DT visual: loop/cycle diagram */
+    .dt-cycle {
+      display: flex; flex-direction: column; gap: clamp(3px, 0.5vh, 5px);
+    }
+    .dt-step {
+      background: var(--accent-dim); border: 1px solid var(--border-color);
+      border-radius: 3px;
+      padding: clamp(0.3rem, 0.8vw, 0.5rem) clamp(0.5rem, 1.2vw, 0.8rem);
+      font-size: var(--small-size); color: var(--text-primary); position: relative;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .dt-step::before {
+      content: ''; width: 5px; height: 5px; border-radius: 50%;
+      background: var(--accent); flex-shrink: 0;
+    }
+    /* Feedback arrows on DT side */
+    .dt-loop-hint {
+      text-align: center; font-size: clamp(0.5rem, 0.78vw, 0.62rem);
+      color: var(--accent); letter-spacing: 0.08em; margin-top: 4px;
+      font-style: italic;
+    }
+
+    .compare-vs {
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-display); font-size: clamp(1.2rem, 3vw, 2rem);
+      font-weight: 700; color: rgba(232,178,74,0.2); align-self: center;
+      flex-shrink: 0;
+    }
+
+    .compare-insight {
+      grid-column: 1 / -1; font-size: var(--small-size); color: var(--text-secondary);
+      line-height: 1.6; max-width: 700px; font-style: italic;
+      border-left: 2px solid var(--accent); padding-left: 0.75rem;
+    }
+    .compare-insight strong { color: var(--text-primary); font-style: normal; }
+
+    /* =============================================
+       SLIDE 5 — DT IN REQUIREMENT ENGINEERING
+       ============================================= */
+    .shift-cards {
+      display: flex; flex-direction: column; gap: clamp(0.35rem, 0.9vh, 0.7rem);
+      max-width: min(92%, 700px);
+    }
+    .shift-row {
+      display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
+      gap: clamp(0.4rem, 1.3vw, 1.3rem); background: var(--bg-card);
+      border: 1px solid var(--border-subtle); border-radius: 4px;
+      padding: clamp(0.45rem, 1.1vw, 0.8rem) clamp(0.65rem, 1.8vw, 1.15rem);
+    }
+    .shift-from { font-size: var(--body-size); color: var(--text-muted); font-style: italic; }
+    .shift-arrow { font-size: var(--body-size); color: var(--accent); font-weight: 700; text-align: center; flex-shrink: 0; }
+    .shift-to { font-size: var(--body-size); color: var(--text-primary); font-weight: 600; }
+
+    /* =============================================
+       SLIDE 6 — EMPATHY MAP VISUAL (new)
+       ============================================= */
+    .empathy-map-wrap {
+      max-width: min(94%, 800px);
+      display: flex; flex-direction: column; gap: clamp(0.5rem, 1.2vh, 1rem);
+    }
+
+    .empathy-map {
+      display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto auto;
+      border: 1px solid var(--border-color); border-radius: 6px; overflow: hidden;
+      flex-shrink: 0;
+    }
+    .em-quadrant {
+      padding: clamp(0.55rem, 1.5vw, 1.1rem); position: relative;
+      border: 1px solid transparent;
+    }
+    .em-quadrant:nth-child(1) { border-right: 1px solid var(--border-subtle); border-bottom: 1px solid var(--border-subtle); background: rgba(110,201,138,0.05); }
+    .em-quadrant:nth-child(2) { border-bottom: 1px solid var(--border-subtle); background: rgba(232,178,74,0.05); }
+    .em-quadrant:nth-child(3) { border-right: 1px solid var(--border-subtle); background: rgba(168,140,220,0.05); }
+    .em-quadrant:nth-child(4) { background: rgba(232,138,74,0.05); }
+
+    .em-label {
+      font-size: var(--label-size); font-weight: 700; letter-spacing: 0.15em;
+      text-transform: uppercase; margin-bottom: clamp(0.25rem, 0.6vh, 0.5rem);
+    }
+    .em-quadrant:nth-child(1) .em-label { color: var(--green-accent); }
+    .em-quadrant:nth-child(2) .em-label { color: var(--accent); }
+    .em-quadrant:nth-child(3) .em-label { color: #a88cdc; }
+    .em-quadrant:nth-child(4) .em-label { color: var(--orange-accent); }
+
+    .em-items { list-style: none; display: flex; flex-direction: column; gap: 3px; }
+    .em-item {
+      font-size: var(--small-size); color: var(--text-secondary); line-height: 1.45;
+      padding-left: 0.8rem; position: relative;
+    }
+    .em-item::before { content: '"'; position: absolute; left: 0; color: var(--text-muted); }
+
+    /* Center user label */
+    .em-center {
+      grid-column: 1 / -1;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--bg-card); border-top: 1px solid var(--border-color);
+      padding: clamp(0.3rem, 0.8vh, 0.55rem);
+      gap: 0.5rem;
+    }
+    .em-center-icon { font-size: clamp(0.9rem, 1.6vw, 1.1rem); }
+    .em-center-text {
+      font-family: var(--font-display); font-size: clamp(0.7rem, 1.2vw, 0.9rem);
+      font-weight: 700; color: var(--accent); font-style: italic;
+    }
+
+    .em-note {
+      font-size: var(--small-size); color: var(--text-muted); font-style: italic;
+      padding-left: 0.5rem; border-left: 2px solid var(--border-subtle);
+    }
+
+    /* =============================================
+       SLIDE 7 — 4 TECHNIQUES IN RE
+       ============================================= */
+    .practices-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr);
+      gap: clamp(0.45rem, 1.3vw, 0.95rem);
+      max-width: min(96%, 860px);
+    }
+    .practice-card {
+      background: var(--bg-card); border: 1px solid var(--border-subtle);
+      border-radius: 6px; padding: clamp(0.65rem, 1.6vw, 1.15rem);
+      display: flex; flex-direction: column; gap: clamp(0.3rem, 0.7vh, 0.55rem);
+      transition: border-color 0.25s, transform 0.25s;
+    }
+    .practice-card:hover { border-color: var(--border-color); transform: translateY(-2px); }
+    .practice-card-header { display: flex; align-items: center; gap: 0.55rem; }
+    .practice-icon { font-size: clamp(0.95rem, 1.8vw, 1.3rem); }
+    .practice-name {
+      font-family: var(--font-display); font-size: clamp(0.82rem, 1.5vw, 1.05rem);
+      font-weight: 700; color: var(--accent);
+    }
+    .practice-desc { font-size: var(--small-size); color: var(--text-secondary); line-height: 1.58; }
+    .practice-example {
+      font-size: clamp(0.5rem, 0.78vw, 0.62rem); color: var(--text-primary);
+      background: rgba(232,178,74,0.08); border-left: 2px solid rgba(232,178,74,0.4);
+      padding: 3px 7px; line-height: 1.4; font-style: italic;
+    }
+    .practice-stage {
+      font-size: clamp(0.48rem, 0.75vw, 0.6rem); font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--text-muted); margin-top: auto;
+    }
+
+    /* =============================================
+       SLIDE 8 — DT IN INTENSIVE SOFTWARE DEV
+       ============================================= */
+    .key-points { display: flex; flex-direction: column; gap: clamp(0.35rem, 0.9vh, 0.65rem); max-width: min(92%, 720px); }
+    .key-point { display: flex; align-items: flex-start; gap: 0.7rem; font-size: var(--body-size); color: var(--text-secondary); line-height: 1.6; }
+    .key-point-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex-shrink: 0; margin-top: calc(var(--body-size) * 0.45); }
+    .key-point strong { color: var(--text-primary); }
+
+    .context-box {
+      background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 4px;
+      padding: clamp(0.65rem, 1.8vw, 1.15rem); max-width: min(92%, 720px);
+    }
+    .context-label {
+      font-size: var(--label-size); font-weight: 700; letter-spacing: 0.15em;
+      text-transform: uppercase; color: var(--accent); margin-bottom: 0.45rem;
+    }
+    .context-text { font-size: var(--body-size); color: var(--text-secondary); line-height: 1.6; }
+    .context-text strong { color: var(--text-primary); }
+
+    /* =============================================
+       SLIDE 9 — DT + SPRINT INTEGRATION (new visual)
+       ============================================= */
+    .sprint-timeline {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: clamp(0.4rem, 1.1vw, 0.8rem);
+      max-width: min(96%, 900px);
+    }
+    .sprint-col {
+      display: flex; flex-direction: column; gap: clamp(0.3rem, 0.7vh, 0.55rem);
+    }
+    .sprint-col-header {
+      background: var(--bg-card); border: 1px solid var(--border-subtle);
+      border-radius: 4px 4px 0 0;
+      padding: clamp(0.4rem, 1vw, 0.7rem);
+      text-align: center; border-bottom: 2px solid var(--border-subtle);
+    }
+    .sprint-col.dt-phase .sprint-col-header { border-bottom-color: var(--accent); }
+    .sprint-col.sprint-phase .sprint-col-header { border-bottom-color: rgba(110,201,138,0.5); }
+    .sprint-col.review-phase .sprint-col-header { border-bottom-color: rgba(168,140,220,0.5); }
+    .sprint-col.retro-phase .sprint-col-header { border-bottom-color: rgba(232,138,74,0.5); }
+
+    .sprint-col-title {
+      font-size: var(--label-size); font-weight: 700; letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .sprint-col.dt-phase .sprint-col-title { color: var(--accent); }
+    .sprint-col.sprint-phase .sprint-col-title { color: var(--green-accent); }
+    .sprint-col.review-phase .sprint-col-title { color: #a88cdc; }
+    .sprint-col.retro-phase .sprint-col-title { color: var(--orange-accent); }
+
+    .sprint-col-sub { font-size: clamp(0.48rem, 0.76vw, 0.6rem); color: var(--text-muted); margin-top: 2px; }
+
+    .sprint-activities { display: flex; flex-direction: column; gap: clamp(3px, 0.5vh, 5px); }
+    .sprint-activity {
+      background: var(--bg-card); border: 1px solid var(--border-subtle);
+      border-radius: 3px; padding: clamp(0.28rem, 0.7vw, 0.45rem) clamp(0.4rem, 0.9vw, 0.65rem);
+      font-size: clamp(0.5rem, 0.8vw, 0.65rem); color: var(--text-secondary); line-height: 1.4;
+      display: flex; gap: 0.4rem; align-items: flex-start;
+    }
+    .sprint-activity::before { content: '·'; color: var(--text-muted); flex-shrink: 0; }
+    .sprint-activity strong { color: var(--text-primary); }
+
+    .sprint-note {
+      font-size: var(--small-size); color: var(--text-muted); font-style: italic;
+      max-width: 680px;
+    }
+
+    /* =============================================
+       SLIDE 10 — BENEFITS & CHALLENGES
+       ============================================= */
+    .bc-columns { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(0.9rem, 2.8vw, 2.2rem); max-width: min(96%, 900px); }
+    .bc-col-header {
+      font-size: var(--small-size); font-weight: 700; letter-spacing: 0.15em;
+      text-transform: uppercase; padding-bottom: clamp(0.3rem, 0.8vh, 0.55rem);
+      margin-bottom: clamp(0.45rem, 1.2vh, 0.9rem); border-bottom: 1px solid;
+    }
+    .bc-col-header.benefit { color: var(--green-accent); border-color: rgba(110,201,138,0.3); }
+    .bc-col-header.challenge { color: var(--orange-accent); border-color: rgba(232,138,74,0.3); }
+    .bc-list { display: flex; flex-direction: column; gap: clamp(0.35rem, 0.9vh, 0.7rem); list-style: none; }
+    .bc-item { display: flex; gap: 0.55rem; font-size: var(--body-size); color: var(--text-secondary); line-height: 1.55; align-items: flex-start; }
+    .bc-icon { flex-shrink: 0; font-style: normal; }
+    .bc-item strong { color: var(--text-primary); }
+
+    /* "When to use" hint bar */
+    .when-to-use {
+      max-width: min(96%, 900px); background: var(--bg-card);
+      border: 1px solid var(--border-subtle); border-left: 3px solid var(--accent);
+      border-radius: 0 4px 4px 0;
+      padding: clamp(0.45rem, 1.1vw, 0.8rem) clamp(0.7rem, 1.8vw, 1.2rem);
+      display: flex; gap: 0.6rem; align-items: flex-start;
+    }
+    .when-icon { font-size: clamp(0.8rem, 1.4vw, 1rem); flex-shrink: 0; }
+    .when-text { font-size: var(--small-size); color: var(--text-secondary); line-height: 1.55; }
+    .when-text strong { color: var(--accent); }
+
+    /* =============================================
+       SLIDE 11 — KEY TAKEAWAYS (new)
+       ============================================= */
+    .takeaways { display: flex; flex-direction: column; gap: clamp(0.55rem, 1.5vh, 1.2rem); max-width: min(92%, 760px); }
+    .takeaway {
+      display: grid; grid-template-columns: auto 1fr; gap: clamp(0.8rem, 2.2vw, 1.6rem);
+      align-items: center;
+      background: var(--bg-card); border: 1px solid var(--border-subtle);
+      border-radius: 6px; padding: clamp(0.7rem, 1.8vw, 1.3rem);
+      transition: border-color 0.3s, transform 0.3s;
+    }
+    .takeaway:hover { border-color: var(--border-color); transform: translateX(4px); }
+    .takeaway-num {
+      font-family: var(--font-display); font-size: clamp(2rem, 4.5vw, 3.5rem);
+      font-weight: 700; color: rgba(232,178,74,0.14); line-height: 1;
+      min-width: 2ch; text-align: center;
+    }
+    .takeaway-title {
+      font-family: var(--font-display); font-size: clamp(0.9rem, 1.8vw, 1.2rem);
+      font-weight: 700; color: var(--accent); margin-bottom: 4px;
+    }
+    .takeaway-desc { font-size: var(--small-size); color: var(--text-secondary); line-height: 1.6; }
+    .takeaway-desc strong { color: var(--text-primary); }
+
+    /* =============================================
+       SLIDE 12 — Q&A / DISCUSSION
+       ============================================= */
+    .discussion-questions { display: flex; flex-direction: column; gap: clamp(0.5rem, 1.5vh, 1.1rem); max-width: min(92%, 800px); }
+    .dq-card {
+      background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 6px;
+      padding: clamp(0.65rem, 1.8vw, 1.2rem);
+      display: grid; grid-template-columns: auto 1fr; gap: clamp(0.65rem, 1.8vw, 1.2rem);
+      align-items: flex-start; transition: border-color 0.3s;
+    }
+    .dq-card:hover { border-color: var(--border-color); }
+    .dq-num {
+      font-family: var(--font-display); font-size: clamp(1.4rem, 2.8vw, 2rem);
+      font-weight: 700; color: rgba(232,178,74,0.18); line-height: 1; flex-shrink: 0; min-width: 2ch;
+    }
+    .dq-text { font-size: var(--body-size); color: var(--text-primary); line-height: 1.6; padding-top: 2px; }
+    .dq-text em { color: var(--accent); font-style: italic; }
+    .qa-footer { font-size: var(--small-size); color: var(--text-muted); font-style: italic; }
+
+    /* =============================================
+       INLINE EDITING SYSTEM
+       ============================================= */
+    .edit-hotzone { position: fixed; top: 0; left: 0; width: 80px; height: 80px; z-index: 10000; cursor: pointer; }
+    .edit-toggle {
+      position: fixed; top: 14px; left: 14px; width: 34px; height: 34px;
+      border-radius: 50%; background: var(--bg-card); border: 1px solid var(--border-color);
+      color: var(--accent); font-size: 0.85rem; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; opacity: 0; pointer-events: none; z-index: 10001;
+      transition: opacity 0.3s, background 0.3s;
+    }
+    .edit-toggle.show, .edit-toggle.active { opacity: 1; pointer-events: auto; }
+    .edit-toggle.active { background: var(--accent); color: var(--bg-deep); }
+    .edit-banner {
+      position: fixed; bottom: 0; left: 0; right: 0; height: 34px;
+      background: rgba(232,178,74,0.13); border-top: 1px solid rgba(232,178,74,0.28);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.7rem; font-family: var(--font-body); color: var(--accent);
+      letter-spacing: 0.08em; z-index: 10000; opacity: 0; pointer-events: none; transition: opacity 0.3s;
+    }
+    .edit-banner.active { opacity: 1; pointer-events: auto; }
+    body.edit-active [contenteditable="true"] { outline: 1px dashed rgba(232,178,74,0.38); border-radius: 2px; cursor: text; }
+    body.edit-active [contenteditable="true"]:focus { outline: 1.5px solid var(--accent); }
+
+  </style>
+</head>
+<body>
+
+  <div class="progress-bar" id="progressBar"></div>
+  <nav class="nav-dots" id="navDots" aria-label="Slide navigation"></nav>
+  <div class="edit-hotzone" id="editHotzone"></div>
+  <button class="edit-toggle" id="editToggle" title="Edit mode (E)">✏</button>
+  <div class="edit-banner" id="editBanner">EDIT MODE — Click text to edit &nbsp;·&nbsp; Ctrl+S to save &nbsp;·&nbsp; E to exit</div>
+
+
+  <!-- =============================================
+       SLIDE 01 — COVER
+       ============================================= -->
+  <section class="slide" id="slide-1" aria-label="Cover">
+    <div class="cover-grid" aria-hidden="true"></div>
+    <div class="cover-deco" aria-hidden="true">DT</div>
+
+    <div class="content-layout" style="justify-content:center;">
+      <div class="cover-label reveal">Open Talk · 2026</div>
+      <h1 class="cover-title reveal">Design<br><em>Thinking</em></h1>
+      <p class="cover-subtitle reveal">
+        From theory to practice — an open discussion with student groups and faculty on design thinking in modern software engineering.
+      </p>
+      <div class="amber-rule reveal"></div>
+      <div class="cover-tags reveal">
+        <span class="cover-tag hi">What is Design Thinking?</span>
+        <span class="cover-tag">DT in Requirement Engineering</span>
+        <span class="cover-tag">DT in Intensive Software Dev</span>
+      </div>
+    </div>
+    <div class="slide-num">01 <span>/ 12</span></div>
+  </section>
+
+
+  <!-- =============================================
+       SLIDE 02 — WHAT IS DESIGN THINKING?
+       ============================================= -->
+  <section class="slide" id="slide-2" aria-label="What is Design Thinking">
+    <div class="content-layout">
+      <div class="eyebrow reveal"><div class="eyebrow-line"></div><div class="eyebrow-text">Question 01</div></div>
+      <h2 class="slide-heading reveal">What is <em>Design Thinking?</em></h2>
+
+      <div class="def-box reveal">
+        A <strong>human-centered problem-solving approach</strong> — focused on deeply understanding user needs, reframing problems, and generating creative solutions through <strong>rapid, iterative experimentation</strong>. Not a rigid process — but a <em>flexible mindset</em>.
+      </div>
+
+      <div class="traits-grid reveal">
+        <div class="trait-card">
+          <div class="trait-icon">🧭</div>
+          <div>
+            <div class="trait-name">Human-centered</div>
+            <div class="trait-desc">Starts from the <strong>real needs</strong> of users — not from technology assumptions or team biases. Empathy is the foundation.</div>
+          </div>
+        </div>
+        <div class="trait-card">
+          <div class="trait-icon">🔄</div>
+          <div>
+            <div class="trait-name">Iterative</div>
+            <div class="trait-desc">Test early, fail fast, learn continuously. Each loop refines the team's <strong>understanding of the actual problem</strong>.</div>
+          </div>
+        </div>
+        <div class="trait-card">
+          <div class="trait-icon">🤝</div>
+          <div>
+            <div class="trait-name">Collaborative</div>
+            <div class="trait-desc">Combines diverse perspectives: engineering, design, business, end users — <strong>cross-functional thinking</strong> in one room.</div>
+          </div>
+        </div>
+        <div class="trait-card">
+          <div class="trait-icon">⚡</div>
+          <div>
+            <div class="trait-name">Action-oriented</div>
+            <div class="trait-desc">Turn ideas into <strong>tangible prototypes</strong> fast. "Show, don't tell" — bias toward action over endless analysis.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-num">02 <span>/ 12</span></div>
+  </section>
+
+
+  <!-- =============================================
+       SLIDE 03 — 5 STAGES
+       ============================================= -->
+  <section class="slide" id="slide-3" aria-label="5 Stages">
+    <div class="content-layout">
+      <div class="eyebrow reveal"><div class="eyebrow-line"></div><div class="eyebrow-text">Framework</div></div>
+      <h2 class="slide-heading reveal">The 5 Stages of <em>Design Thinking</em></h2>
+
+      <div class="stages-flow reveal">
+        <div class="stage-card hi">
+          <div class="stage-num">1</div>
+          <div class="stage-name">Empathize</div>
+          <div class="stage-sub">Observe and listen to users — no judgment, no assumptions</div>
+          <div class="stage-tool">User interview · Shadowing</div>
+        </div>
+        <div class="stage-card">
+          <div class="stage-num">2</div>
+          <div class="stage-name">Define</div>
+          <div class="stage-sub">Synthesize insights into a clear Point-of-View about the core problem</div>
+          <div class="stage-tool">HMW · POV Statement</div>
+        </div>
+        <div class="stage-card">
+          <div class="stage-num">3</div>
+          <div class="stage-name">Ideate</div>
+          <div class="stage-sub">Unconstrained brainstorming — diverge first, converge later</div>
+          <div class="stage-tool">Crazy 8 · Mind Map</div>
+        </div>
+        <div class="stage-card">
+          <div class="stage-num">4</div>
+          <div class="stage-name">Prototype</div>
+          <div class="stage-sub">Build fast, build cheap — good enough to learn from, not to ship</div>
+          <div class="stage-tool">Paper · Wireframe · PoC</div>
+        </div>
+        <div class="stage-card">
+          <div class="stage-num">5</div>
+          <div class="stage-name">Test</div>
+          <div class="stage-sub">Put prototypes in front of real users — observe, capture, iterate</div>
+          <div class="stage-tool">Usability Test · A/B</div>
+        </div>
+      </div>
+
+      <p class="stages-note reveal">
+        ⟳ &nbsp;Non-linear — insights from Test can send the team back to Empathize or Define. Iteration is a feature, not a failure.
+      </p>
+    </div>
+    <div class="slide-num">03 <span>/ 12</span></div>
+  </section>
+
+
+  <!-- =============================================
+       SLIDE 04 — DT VS TRADITIONAL (visual comparison)
+       ============================================= -->
+  <section class="slide" id="slide-4" aria-label="DT vs Traditional">
+    <div class="content-layout">
+      <div class="eyebrow reveal"><div class="eyebrow-line"></div><div class="eyebrow-text">Mindset Shift</div></div>
+      <h2 class="slide-heading reveal"><em>A different way of thinking</em> vs. traditional approaches</h2>
+
+      <div class="compare-layout reveal">
+        <div class="compare-col">
+          <div class="compare-col-title trad">Traditional / Waterfall</div>
+          <div class="waterfall-steps">
+            <div class="wf-step">Requirements gathering</div>
+            <div class="wf-step">System Analysis</div>
+            <div class="wf-step">Design Document</div>
+            <div class="wf-step">Development</div>
+            <div class="wf-step">Testing</div>
+            <div class="wf-step">Deployment</div>
+          </div>
+        </div>
+
+        <div class="compare-vs">vs</div>
+
+        <div class="compare-col">
+          <div class="compare-col-title dt">Design Thinking</div>
+          <div class="dt-cycle">
+            <div class="dt-step">Empathize — understand the user</div>
+            <div class="dt-step">Define — frame the right problem</div>
+            <div class="dt-step">Ideate — expand solution space</div>
+            <div class="dt-step">Prototype — make it tangible fast</div>
+            <div class="dt-step">Test — learn and loop back</div>
+            <div class="dt-loop-hint">↺ &nbsp;Can return to any stage at any time</div>
+          </div>
+        </div>
+
+        <p class="compare-insight">
+          Waterfall excels when <strong>requirements are stable and well-understood upfront</strong>. Design Thinking shines when <strong>the problem is ambiguous and users don't yet know what they need</strong> — especially during discovery and requirements definition.
+        </p>
+      </div>
+    </div>
+    <div class="slide-num">04 <span>/ 12</span></div>
+  </section>
+
+
+  <!-- =============================================
+       SLIDE 05 — DT IN REQUIREMENT ENGINEERING
+       ============================================= -->
+  <section class="slide" id="slide-5" aria-label="DT in RE">
+    <div class="content-layout">
+      <div class="eyebrow reveal"><div class="eyebrow-line"></div><div class="eyebrow-text">Question 02</div></div>
+      <h2 class="slide-heading reveal">Design Thinking in<br><em>Requirement Engineering</em></h2>
+
+      <div class="def-box reveal" style="font-style:normal;">
+        Traditional RE asks: <strong>"What does the system need to do?"</strong><br>
+        Design Thinking shifts the question to: <strong>"What do users actually need — and why?"</strong> Then the system gets defined.
+      </div>
+
+      <div class="shift-cards reveal">
+        <div class="shift-row">
+          <span class="shift-from">Collecting requirements from stakeholders</span>
+          <span class="shift-arrow">→</span>
+          <span class="shift-to">Uncovering hidden needs through observation</span>
+        </div>
+        <div class="shift-row">
+          <span class="shift-from">Writing hundred-page SRS documents</span>
+          <span class="shift-arrow">→</span>
+          <span class="shift-to">Lightweight prototypes to validate early</span>
+        </div>
+        <div class="shift-row">
+          <span class="shift-from">Modeling actors and use cases</span>
+          <span class="shift-arrow">→</span>
+          <span class="shift-to">Empathy mapping + User journey</span>
+        </div>
+        <div class="shift-row">
+          <span class="shift-from">Freezing requirements at project start</span>
+          <span class="shift-arrow">→</span>
+          <span class="shift-to">Iterative refinement across sprints</span>
+        </div>
+      </div>
+    </div>
+    <div class="slide-num">05 <span>/ 12</span></div>
+  </section>
+
+
+  <!-- =============================================
+       SLIDE 06 — EMPATHY MAP (visual deep-dive)
+       ============================================= -->
+  <section class="slide" id="slide-6" aria-label="Empathy Map">
+    <div class="content-layout">
+      <div class="eyebrow reveal"><div class="eyebrow-line"></div><div class="eyebrow-text">DT Tool in RE</div></div>
+      <h2 class="slide-heading reveal"><em>Empathy Map</em> — uncovering what users really need</h2>
+
+      <div class="empathy-map-wrap reveal">
+        <div class="empathy-map">
+          <div class="em-quadrant">
+            <div class="em-label">Says 🗣</div>
+            <ul class="em-items">
+              <li class="em-item">I just need the system to be faster"</li>
+              <li class="em-item">This feature is unnecessary"</li>
+              <li class="em-item">I don't understand why we have to do it this way"</li>
+            </ul>
+          </div>
+          <div class="em-quadrant">
+            <div class="em-label">Thinks 💭</div>
+            <ul class="em-items">
+              <li class="em-item">Why is this workflow so complicated?"</li>
+              <li class="em-item">I'm afraid of making mistakes with the system"</li>
+              <li class="em-item">The IT team doesn't understand my actual job"</li>
+            </ul>
+          </div>
+          <div class="em-quadrant">
+            <div class="em-label">Does 🖐</div>
+            <ul class="em-items">
+              <li class="em-item">Runs Excel in parallel with the system"</li>
+              <li class="em-item">Manually copy-pastes data every single day"</li>
+              <li class="em-item">Skips features they don't understand how to use"</li>
+            </ul>
+          </div>
+          <div class="em-quadrant">
+            <div class="em-label">Feels 💛</div>
+            <ul class="em-items">
+              <li class="em-item">Frustrated that the system doesn't match their workflow"</li>
+              <li class="em-item">Anxious when using new features"</li>
+              <li class="em-item">Satisfied only when they find personal shortcuts"</li>
+            </ul>
+          </div>
+          <div class="em-center">
+            <div class="em-center-icon">👤</div>
+            <div class="em-center-text">User: Accountant — age 35, uses the system 3h/day</div>
+          </div>
+        </div>
+        <p class="em-note">
+          The Empathy Map surfaces the <strong>gap</strong> between what users <em>say</em> and what they actually <em>think / feel / do</em> — hidden requirements that never appear in traditional interviews.
+        </p>
+      </div>
+    </div>
+    <div class="slide-num">06 <span>/ 12</span></div>
+  </section>
+
+
+  <!-- =============================================
+       SLIDE 07 — 4 TECHNIQUES IN RE
+       ============================================= -->
+  <section class="slide" id="slide-7" aria-label="4 Techniques in RE">
+    <div class="content-layout">
+      <div class="eyebrow reveal"><div class="eyebrow-line"></div><div class="eyebrow-text">In Practice</div></div>
+      <h2 class="slide-heading reveal"><em>4 DT Techniques</em> in Requirement Engineering</h2>
+
+      <div class="practices-grid reveal">
+        <div class="practice-card">
+          <div class="practice-card-header">
+            <span class="practice-icon">🗺</span>
+            <span class="practice-name">Empathy Mapping</span>
+          </div>
+          <p class="practice-desc">4 quadrants: Says / Thinks / Does / Feels — surfaces contradictions between what users say and what they actually do.</p>
+          <div class="practice-example">Ex: User says "I need better reports" — they actually just need a fast Excel export.</div>
+          <span class="practice-stage">→ Empathize stage</span>
+        </div>
+        <div class="practice-card">
+          <div class="practice-card-header">
+            <span class="practice-icon">💡</span>
+            <span class="practice-name">HMW Questions</span>
+          </div>
+          <p class="practice-desc">"How Might We…" reframes problems as design opportunities — expands the solution space instead of prematurely narrowing it.</p>
+          <div class="practice-example">Ex: "HMW help accountants stop copy-pasting data manually every day?"</div>
+          <span class="practice-stage">→ Define stage</span>
+        </div>
+        <div class="practice-card">
+          <div class="practice-card-header">
+            <span class="practice-icon">📋</span>
+            <span class="practice-name">User Story Mapping</span>
+          </div>
+          <p class="practice-desc">Lay out the user journey horizontally, tasks vertically — see the backlog by delivered value, not just effort.</p>
+          <div class="practice-example">Ex: Discovered 3 independent tasks that could release MVP 2 sprints earlier.</div>
+          <span class="practice-stage">→ Define + Ideate</span>
+        </div>
+        <div class="practice-card">
+          <div class="practice-card-header">
+            <span class="practice-icon">📄</span>
+            <span class="practice-name">Paper Prototyping</span>
+          </div>
+          <p class="practice-desc">Validate requirements with hand-drawn sketches before writing code — catch UX and flow errors at near-zero cost.</p>
+          <div class="practice-example">Ex: A 30-min sketch session caught a login flow confusion → saved 2 sprints of refactoring.</div>
+          <span class="practice-stage">→ Prototype + Test</span>
+        </div>
+      </div>
+    </div>
+    <div class="slide-num">07 <span>/ 12</span></div>
+  </section>
+
+
+  <!-- =============================================
+       SLIDE 08 — DT IN INTENSIVE SOFTWARE DEV
+       ============================================= -->
+  <section class="slide" id="slide-8" aria-label="DT in Intensive Dev">
+    <div class="content-layout">
+      <div class="eyebrow reveal"><div class="eyebrow-line"></div><div class="eyebrow-text">Question 03</div></div>
+      <h2 class="slide-heading reveal">DT in <em>Intensive Software</em><br>Development Projects</h2>
+
+      <div class="context-box reveal">
+        <div class="context-label">What is Intensive Software Development?</div>
+        <p class="context-text">
+          Projects with <strong>tight deadlines</strong>, large teams, constantly shifting scope, and pressure from all directions. This environment leads many teams to skip DT — and that is the classic mistake.
+          DT is not extra work — it's a <strong>different way of thinking that ensures you build the right thing from the start</strong>.
+        </p>
+      </div>
+
+      <div class="key-points reveal">
+        <div class="key-point">
+          <div class="key-point-dot"></div>
+          <span><strong>Fail fast, learn faster:</strong> Small prototypes expose mistakes in week 1, not sprint 10. The cost to fix issues early is up to 100× lower than fixing them late.</span>
+        </div>
+        <div class="key-point">
+          <div class="key-point-dot"></div>
+          <span><strong>Shared understanding beats long specs:</strong> A 2-hour DT workshop creates better alignment than a 50-page requirements document — everyone sees the same problem.</span>
+        </div>
+        <div class="key-point">
+          <div class="key-point-dot"></div>
+          <span><strong>User-centered backlog:</strong> Every user story grounded in real insight — reduces "build the wrong thing" mistakes that waste future sprints on rework.</span>
+        </div>
+        <div class="key-point">
+          <div class="key-point-dot"></div>
+          <span><strong>Creative confidence:</strong> DT practice builds a culture of "try instead of overthink" — perfectly suited to the pace of intensive projects.</span>
+        </div>
+      </div>
+    </div>
+    <div class="slide-num">08 <span>/ 12</span></div>
+  </section>
+
+
+  <!-- =============================================
+       SLIDE 09 — DT + SPRINT INTEGRATION (visual)
+       ============================================= -->
+  <section class="slide" id="slide-9" aria-label="DT Sprint Integration">
+    <div class="content-layout">
+      <div class="eyebrow reveal"><div class="eyebrow-line"></div><div class="eyebrow-text">Real Integration</div></div>
+      <h2 class="slide-heading reveal">DT integrated into<br><em>the Sprint Cycle</em></h2>
+
+      <div class="sprint-timeline reveal">
+        <div class="sprint-col dt-phase">
+          <div class="sprint-col-header">
+            <div class="sprint-col-title">Sprint 0</div>
+            <div class="sprint-col-sub">DT Foundation</div>
+          </div>
+          <div class="sprint-activities">
+            <div class="sprint-activity"><span><strong>Empathy Workshop</strong> — interview &amp; observe users (2–4h)</span></div>
+            <div class="sprint-activity"><span><strong>Empathy Maps</strong> — synthesize insights as a team</span></div>
+            <div class="sprint-activity"><span><strong>HMW session</strong> — reframe problems as opportunities</span></div>
+            <div class="sprint-activity"><span><strong>User Story Map</strong> — build a journey-anchored backlog</span></div>
+          </div>
+        </div>
+
+        <div class="sprint-col sprint-phase">
+          <div class="sprint-col-header">
+            <div class="sprint-col-title">Sprint Planning</div>
+            <div class="sprint-col-sub">Every sprint</div>
+          </div>
+          <div class="sprint-activities">
+            <div class="sprint-activity"><span><strong>Paper prototype</strong> each story before assigning</span></div>
+            <div class="sprint-activity"><span><strong>5-minute sketch</strong> to align team on UI/flow</span></div>
+            <div class="sprint-activity"><span>Refine acceptance criteria based on prototype</span></div>
+            <div class="sprint-activity"><span>Drop stories with no grounding in user insight</span></div>
+          </div>
+        </div>
+
+        <div class="sprint-col review-phase">
+          <div class="sprint-col-header">
+            <div class="sprint-col-title">Sprint Review</div>
+            <div class="sprint-col-sub">End of sprint</div>
+          </div>
+          <div class="sprint-activities">
+            <div class="sprint-activity"><span><strong>Demo with real users</strong>, not just stakeholders</span></div>
+            <div class="sprint-activity"><span>Observe actual usage behavior — don't just ask opinions</span></div>
+            <div class="sprint-activity"><span>Capture new insights for the next sprint</span></div>
+            <div class="sprint-activity"><span>Update Empathy Maps with new findings</span></div>
+          </div>
+        </div>
+
+        <div class="sprint-col retro-phase">
+          <div class="sprint-col-header">
+            <div class="sprint-col-title">Retrospective</div>
+            <div class="sprint-col-sub">After sprint</div>
+          </div>
+          <div class="sprint-activities">
+            <div class="sprint-activity"><span><strong>"What did we learn about users?"</strong> not just process</span></div>
+            <div class="sprint-activity"><span>Review which assumptions proved right or wrong</span></div>
+            <div class="sprint-activity"><span>Adjust story map if the user journey has shifted</span></div>
+            <div class="sprint-activity"><span>Identify DT activities needed next sprint</span></div>
+          </div>
+        </div>
+      </div>
+
+      <p class="sprint-note reveal">
+        DT doesn't replace Agile — it <strong>amplifies</strong> the quality of each sprint's input by ensuring the team always solves the right problem for the right users.
+      </p>
+    </div>
+    <div class="slide-num">09 <span>/ 12</span></div>
+  </section>
+
+
+  <!-- =============================================
+       SLIDE 10 — BENEFITS & CHALLENGES
+       ============================================= -->
+  <section class="slide" id="slide-10" aria-label="Benefits and Challenges">
+    <div class="content-layout">
+      <div class="eyebrow reveal"><div class="eyebrow-line"></div><div class="eyebrow-text">Assessment</div></div>
+      <h2 class="slide-heading reveal"><em>Benefits</em> &amp; Real-World Challenges</h2>
+
+      <div class="bc-columns reveal">
+        <div>
+          <div class="bc-col-header benefit">✦ Measurable Benefits</div>
+          <ul class="bc-list">
+            <li class="bc-item"><span class="bc-icon">✓</span><span><strong>Early risk detection</strong> — week-1 prototypes replace month-1 specs; problems surface before a line of code is written.</span></li>
+            <li class="bc-item"><span class="bc-icon">✓</span><span><strong>Dramatically less rework</strong> — continuous validation ensures the team builds what's actually needed, not what's assumed.</span></li>
+            <li class="bc-item"><span class="bc-icon">✓</span><span><strong>Faster team alignment</strong> — shared empathy creates a common language across dev, BA, and business stakeholders.</span></li>
+            <li class="bc-item"><span class="bc-icon">✓</span><span><strong>Innovation culture</strong> — DT mindset builds a culture of experimentation and reduces fear of failure within teams.</span></li>
+          </ul>
+        </div>
+
+        <div>
+          <div class="bc-col-header challenge">◆ Practical Challenges</div>
+          <ul class="bc-list">
+            <li class="bc-item"><span class="bc-icon">!</span><span><strong>Upfront time cost</strong> — Empathize and Define phases require investment before any tangible output appears.</span></li>
+            <li class="bc-item"><span class="bc-icon">!</span><span><strong>Hard to scale</strong> — DT workshops work best with teams of 5–9; 20+ people need an experienced facilitator.</span></li>
+            <li class="bc-item"><span class="bc-icon">!</span><span><strong>Mindset shift takes time</strong> — "solution-first" culture often resists "problem-first" thinking at the start.</span></li>
+            <li class="bc-item"><span class="bc-icon">!</span><span><strong>Deadline pressure</strong> — under squeeze, DT activities are first to get cut — requires strong management sponsorship.</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="when-to-use reveal">
+        <div class="when-icon">💡</div>
+        <div class="when-text">
+          <strong>When to apply DT?</strong> — Most effective when the problem is ambiguous, users don't yet know what they need, or the current solution has high friction. Less suited for well-defined technical tasks with stable, clear requirements.
+        </div>
+      </div>
+    </div>
+    <div class="slide-num">10 <span>/ 12</span></div>
+  </section>
+
+
+  <!-- =============================================
+       SLIDE 11 — KEY TAKEAWAYS
+       ============================================= -->
+  <section class="slide" id="slide-11" aria-label="Key Takeaways">
+    <div class="content-layout">
+      <div class="eyebrow reveal"><div class="eyebrow-line"></div><div class="eyebrow-text">Takeaways</div></div>
+      <h2 class="slide-heading reveal"><em>3 things to remember</em> from today's open talk</h2>
+
+      <div class="takeaways reveal">
+        <div class="takeaway">
+          <div class="takeaway-num">01</div>
+          <div class="takeaway-body">
+            <div class="takeaway-title">DT is a mindset, not a process</div>
+            <div class="takeaway-desc">You don't need to follow all 5 steps. What matters is <strong>starting from the user</strong>, not from the solution. Even spending 30 minutes observing users before coding is a DT mindset in action.</div>
+          </div>
+        </div>
+
+        <div class="takeaway">
+          <div class="takeaway-num">02</div>
+          <div class="takeaway-body">
+            <div class="takeaway-title">DT and Agile complement each other</div>
+            <div class="takeaway-desc">DT answers "build the right thing" — Agile answers "build the thing right". <strong>Sprint 0 + DT activities</strong> is the most effective integration point for intensive projects.</div>
+          </div>
+        </div>
+
+        <div class="takeaway">
+          <div class="takeaway-num">03</div>
+          <div class="takeaway-body">
+            <div class="takeaway-title">Early prototypes save the most</div>
+            <div class="takeaway-desc">The cost of fixing bugs grows <strong>exponentially over time</strong>. A 30-minute paper prototype saves more than 2 sprints of refactoring. Fail fast, learn faster — not a motto, a strategy.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-num">11 <span>/ 12</span></div>
+  </section>
+
+
+  <!-- =============================================
+       SLIDE 12 — Q&A / DISCUSSION
+       ============================================= -->
+  <section class="slide" id="slide-12" aria-label="Discussion">
+    <div class="content-layout">
+      <div class="eyebrow reveal"><div class="eyebrow-line"></div><div class="eyebrow-text">Open Discussion</div></div>
+      <h2 class="slide-heading reveal">Discussion<br><em>for groups &amp; faculty</em></h2>
+
+      <div class="discussion-questions reveal">
+        <div class="dq-card">
+          <div class="dq-num">01</div>
+          <p class="dq-text">In your group's project, <em>which stage of Design Thinking</em> was the hardest to apply — and how did you handle it under deadline pressure?</p>
+        </div>
+        <div class="dq-card">
+          <div class="dq-num">02</div>
+          <p class="dq-text">Traditional RE vs. DT-based RE — <em>when should you use which?</em> In a real project, how do you know when you've done enough Empathizing to move to Define?</p>
+        </div>
+        <div class="dq-card">
+          <div class="dq-num">03</div>
+          <p class="dq-text">How do you <em>convince management</em> to invest in Sprint 0 DT activities when the pressure to "start coding immediately" is overwhelming?</p>
+        </div>
+      </div>
+
+      <p class="qa-footer reveal">Do faculty or other groups have additional perspectives or real-world examples to share?</p>
+    </div>
+    <div class="slide-num">12 <span>/ 12</span></div>
+  </section>
+
+
+  <script>
+    /* === SLIDE PRESENTATION CONTROLLER === */
+    class SlidePresentation {
+      constructor() {
+        this.slides = Array.from(document.querySelectorAll('.slide'));
+        this.total  = this.slides.length;
+        this.current = 0;
+        this.isScrolling = false;
+        this.progressBar = document.getElementById('progressBar');
+        this.navDotsEl   = document.getElementById('navDots');
+
+        this.setupObserver();
+        this.setupNavDots();
+        this.setupKeyboard();
+        this.setupTouch();
+        this.setupWheel();
+      }
+
+      setupObserver() {
+        const obs = new IntersectionObserver(entries => {
+          entries.forEach(e => {
+            if (e.isIntersecting) {
+              e.target.classList.add('visible');
+              const i = this.slides.indexOf(e.target);
+              if (i !== -1) { this.current = i; this.updateUI(); }
+            }
+          });
+        }, { threshold: 0.5 });
+        this.slides.forEach(s => obs.observe(s));
+      }
+
+      setupNavDots() {
+        this.navDotsEl.innerHTML = '';
+        this.slides.forEach((_, i) => {
+          const d = document.createElement('button');
+          d.className = 'nav-dot' + (i === 0 ? ' active' : '');
+          d.setAttribute('aria-label', `Slide ${i + 1}`);
+          d.addEventListener('click', () => this.goTo(i));
+          this.navDotsEl.appendChild(d);
+        });
+      }
+
+      updateUI() {
+        const dots = this.navDotsEl.querySelectorAll('.nav-dot');
+        dots.forEach((d, i) => d.classList.toggle('active', i === this.current));
+        const pct = this.total <= 1 ? 100 : (this.current / (this.total - 1)) * 100;
+        this.progressBar.style.width = pct + '%';
+      }
+
+      goTo(i) {
+        const t = this.slides[Math.max(0, Math.min(i, this.total - 1))];
+        t.scrollIntoView({ behavior: 'smooth' });
+      }
+
+      setupKeyboard() {
+        document.addEventListener('keydown', e => {
+          if (e.target.getAttribute('contenteditable')) return;
+          switch (e.key) {
+            case 'ArrowDown': case 'ArrowRight': case ' ': e.preventDefault(); this.goTo(this.current + 1); break;
+            case 'ArrowUp':   case 'ArrowLeft':            e.preventDefault(); this.goTo(this.current - 1); break;
+            case 'PageDown': e.preventDefault(); this.goTo(this.current + 1); break;
+            case 'PageUp':   e.preventDefault(); this.goTo(this.current - 1); break;
+            case 'Home':     e.preventDefault(); this.goTo(0); break;
+            case 'End':      e.preventDefault(); this.goTo(this.total - 1); break;
+          }
+        });
+      }
+
+      setupTouch() {
+        let startY = 0;
+        document.addEventListener('touchstart', e => { startY = e.touches[0].clientY; }, { passive: true });
+        document.addEventListener('touchend', e => {
+          const dy = startY - e.changedTouches[0].clientY;
+          if (Math.abs(dy) > 50) this.goTo(dy > 0 ? this.current + 1 : this.current - 1);
+        }, { passive: true });
+      }
+
+      setupWheel() {
+        document.addEventListener('wheel', e => {
+          if (this.isScrolling) return;
+          this.isScrolling = true;
+          this.goTo(e.deltaY > 0 ? this.current + 1 : this.current - 1);
+          setTimeout(() => { this.isScrolling = false; }, 800);
+        }, { passive: true });
+      }
+    }
+
+    /* === INLINE EDITOR === */
+    class InlineEditor {
+      constructor() {
+        this.isActive = false;
+        this.editables = [];
+        this.setupUI();
+      }
+
+      getTargets() {
+        return Array.from(document.querySelectorAll([
+          '.cover-title','.cover-subtitle','.cover-label','.cover-tag',
+          '.slide-heading','.def-box','.eyebrow-text',
+          '.trait-name','.trait-desc',
+          '.stage-name','.stage-sub','.stage-tool','.stages-note',
+          '.shift-from','.shift-to',
+          '.compare-col-title','.wf-step','.dt-step','.compare-insight','.dt-loop-hint',
+          '.practice-name','.practice-desc','.practice-example','.practice-stage',
+          '.em-label','.em-item','.em-center-text','.em-note',
+          '.context-label','.context-text','.key-point',
+          '.sprint-col-title','.sprint-col-sub','.sprint-activity','.sprint-note',
+          '.bc-col-header','.bc-item','.when-text',
+          '.takeaway-title','.takeaway-desc',
+          '.dq-text','.qa-footer'
+        ].join(',')));
+      }
+
+      activate() {
+        this.isActive = true;
+        this.editables = this.getTargets();
+        this.editables.forEach(el => el.setAttribute('contenteditable', 'true'));
+        document.body.classList.add('edit-active');
+        document.getElementById('editToggle').classList.add('active');
+        document.getElementById('editBanner').classList.add('active');
+        this._save = e => { if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); this.export(); }};
+        document.addEventListener('keydown', this._save);
+      }
+
+      deactivate() {
+        this.isActive = false;
+        this.editables.forEach(el => el.removeAttribute('contenteditable'));
+        document.body.classList.remove('edit-active');
+        document.getElementById('editToggle').classList.remove('active');
+        document.getElementById('editBanner').classList.remove('active');
+        document.removeEventListener('keydown', this._save);
+      }
+
+      toggle() { this.isActive ? this.deactivate() : this.activate(); }
+
+      export() {
+        const els = Array.from(document.querySelectorAll('[contenteditable]'));
+        els.forEach(el => el.removeAttribute('contenteditable'));
+        document.body.classList.remove('edit-active');
+        const toggle = document.getElementById('editToggle');
+        const banner = document.getElementById('editBanner');
+        toggle?.classList.remove('active','show');
+        banner?.classList.remove('active');
+
+        const html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+
+        document.body.classList.add('edit-active');
+        els.forEach(el => el.setAttribute('contenteditable','true'));
+        toggle?.classList.add('active'); banner?.classList.add('active');
+
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
+        a.download = 'design-thinking-open-talk.html';
+        a.click(); URL.revokeObjectURL(a.href);
+      }
+
+      setupUI() {
+        const toggle = document.getElementById('editToggle');
+        const hotzone = document.getElementById('editHotzone');
+        let timer = null;
+
+        const show = () => { clearTimeout(timer); toggle.classList.add('show'); };
+        const hide = () => { timer = setTimeout(() => { if (!this.isActive) toggle.classList.remove('show'); }, 400); };
+
+        hotzone.addEventListener('mouseenter', show);
+        hotzone.addEventListener('mouseleave', hide);
+        hotzone.addEventListener('click', () => this.toggle());
+        toggle.addEventListener('mouseenter', show);
+        toggle.addEventListener('mouseleave', hide);
+        toggle.addEventListener('click', () => this.toggle());
+
+        document.addEventListener('keydown', e => {
+          if ((e.key === 'e' || e.key === 'E') && !e.target.getAttribute('contenteditable')) this.toggle();
+        });
+      }
+    }
+
+    /* === BOOT === */
+    const presentation = new SlidePresentation();
+    const editor = new InlineEditor();
+  </script>
+
+</body>
+</html>
