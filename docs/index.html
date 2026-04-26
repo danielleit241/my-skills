@@ -274,6 +274,22 @@
           <p class="plugin-desc">Manual context compaction at logical intervals to preserve context across phases.</p>
           <code class="plugin-install">/plugin install strategic-compact@my-skills</code>
         </div>
+        <div class="plugin-card">
+          <div class="plugin-card-header">
+            <span class="plugin-name">playwright-skill</span>
+            <span class="badge">testing</span>
+          </div>
+          <p class="plugin-desc">Browser automation and UI testing — fill forms, take screenshots, validate responsive design, test interactions end-to-end.</p>
+          <code class="plugin-install">/plugin install playwright-skill@my-skills</code>
+        </div>
+        <div class="plugin-card">
+          <div class="plugin-card-header">
+            <span class="plugin-name">threejs</span>
+            <span class="badge">frontend</span>
+          </div>
+          <p class="plugin-desc">Build 3D web applications with Three.js — WebGL/WebGPU scenes, PBR materials, custom shaders, animations, VR/XR experiences.</p>
+          <code class="plugin-install">/plugin install threejs@my-skills</code>
+        </div>
       </div>
     </section>
 
@@ -475,9 +491,9 @@
             </div>
             <span class="cmd-chevron" aria-hidden="true">›</span>
           </div>
-          <p>Reads an existing plan and executes it phase by phase. Spawns tester, debugger, and
-          git-manager sub-agents per phase. Marks each phase <code>[x]</code> on completion.
-          Pauses for review at each gate unless <code>--auto</code> is set.</p>
+          <p>Reads an existing plan and executes it phase by phase: implement → test → auto-simplify
+          (Step 3.S, threshold-triggered) → code review → finalize. Marks each phase <code>[x]</code>
+          on completion. Pauses for review at each gate unless <code>--auto</code> is set.</p>
           <div class="token-cost">
             <span class="token-cost-icon">◎</span>
             <span class="token-cost-range">25–50K</span>
@@ -718,19 +734,41 @@ CLAUDE.local.md (gitignored) — personal preferences that shouldn't be committe
         </div>
       </div>
 
+      <h2>.ck.json</h2>
+      <p>Project-level runtime config for the skill system. Stored at the repo root (committed).
+      Controls the coding level and auto-simplify thresholds for the <code>code-simplifier</code> hook.</p>
+      <pre><code>{
+  "codingLevel": 3,
+  "simplify": {
+    "threshold": {
+      "enabled": true,
+      "totalLoc": 400,
+      "fileCount": 8,
+      "singleFileLoc": 200
+    }
+  }
+}</code></pre>
+      <div class="callout">
+        <p><strong>Simplify thresholds:</strong> When any threshold is breached during a <code>/cook</code>
+        run, Step 3.S automatically invokes the <code>simplify</code> skill on the edited files before
+        proceeding to code review. Set <code>enabled: false</code> to disable.</p>
+      </div>
+
       <h2>settings.json</h2>
       <p>Hook registrations and tool permissions live in <code>.claude/settings.json</code>.
       Each hook entry maps an event to a command string executed by the shell.</p>
       <pre><code>{
   "hooks": {
-    "PreToolUse": [{
-      "matcher": "Bash",
-      "hooks": [{ "type": "command", "command": "python .claude/hooks/build-check.py" }]
-    }],
-    "PostToolUse": [{
-      "matcher": "*",
-      "hooks": [{ "type": "command", "command": "python .claude/hooks/observe.py" }]
-    }],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [{ "type": "command", "command": "python .claude/hooks/build-check.py" }]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [{ "type": "command", "command": "python .claude/hooks/code-simplifier.py" }]
+      }
+    ],
     "Stop": [{
       "hooks": [{ "type": "command", "command": "python .claude/hooks/session-end.py" }]
     }]
@@ -756,11 +794,21 @@ CLAUDE.local.md (gitignored) — personal preferences that shouldn't be committe
         <div class="hook-card">
           <div class="hook-card-header">
             <code class="hook-name">build-check.py</code>
-            <span class="badge accent">PreToolUse</span>
+            <span class="badge accent">PostToolUse</span>
           </div>
-          <p>Runs before Bash tool calls. Detects the project language (Node, Python, .NET, Go)
-          and validates the build passes. Blocks on failure with a structured error report
-          rather than letting Claude execute against a broken environment.</p>
+          <p>Fires after every Write or Edit call. Detects the edited file's language (CS, TS/TSX,
+          Py, Go, Rust) and runs the appropriate type-checker or compiler. Injects errors as
+          <code>additionalContext</code> so Claude sees and fixes them in the next turn.</p>
+        </div>
+        <div class="hook-card">
+          <div class="hook-card-header">
+            <code class="hook-name">code-simplifier.py</code>
+            <span class="badge accent">PostToolUse</span>
+          </div>
+          <p>Tracks cumulative edit metrics per session — total LOC written, unique files touched,
+          and max single-file LOC. When any threshold defined in <code>.ck.json</code> is
+          breached, emits <code>SIMPLIFY_TRIGGERED</code> so <code>/cook</code> Step 3.S invokes
+          the <code>simplify</code> skill before code review. Skips sub-agent calls automatically.</p>
         </div>
         <div class="hook-card">
           <div class="hook-card-header">
@@ -975,6 +1023,9 @@ CLAUDE.local.md (gitignored) — personal preferences that shouldn't be committe
             { type: 'agent', ms: 2200, icon: '⚙',  agent: 'implement',
               running: 'Implementing auth middleware (phase-01)...',
               done:    'auth.ts + session.ts written · 142 lines' },
+            { type: 'hook',  ms: 500,  icon: '⚡', agent: 'code-simplifier.py',
+              running: 'Checking edit thresholds (totalLoc: 142, files: 2)...',
+              done:    'Below threshold — no simplify trigger' },
             { type: 'main',  ms: 500,  icon: '◈',  agent: 'claude (main)',
               running: 'Implementation done, dispatching tester to validate criteria...',
               done:    'Tester spawned' },
