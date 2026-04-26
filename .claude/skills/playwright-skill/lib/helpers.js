@@ -1,16 +1,5 @@
-// playwright-helpers.js
-// Reusable utility functions for Playwright automation
-
 const { chromium, firefox, webkit } = require('playwright');
 
-/**
- * Parse extra HTTP headers from environment variables.
- * Supports two formats:
- * - PW_HEADER_NAME + PW_HEADER_VALUE: Single header (simple, common case)
- * - PW_EXTRA_HEADERS: JSON object for multiple headers (advanced)
- * Single header format takes precedence if both are set.
- * @returns {Object|null} Headers object or null if none configured
- */
 function getExtraHeadersFromEnv() {
   const headerName = process.env.PW_HEADER_NAME;
   const headerValue = process.env.PW_HEADER_VALUE;
@@ -35,14 +24,9 @@ function getExtraHeadersFromEnv() {
   return null;
 }
 
-/**
- * Launch browser with standard configuration
- * @param {string} browserType - 'chromium', 'firefox', or 'webkit'
- * @param {Object} options - Additional launch options
- */
 async function launchBrowser(browserType = 'chromium', options = {}) {
   const defaultOptions = {
-    headless: process.env.HEADLESS !== 'false',
+    headless: false,
     slowMo: process.env.SLOW_MO ? parseInt(process.env.SLOW_MO) : 0,
     args: ['--no-sandbox', '--disable-setuid-sandbox']
   };
@@ -57,11 +41,6 @@ async function launchBrowser(browserType = 'chromium', options = {}) {
   return await browser.launch({ ...defaultOptions, ...options });
 }
 
-/**
- * Create a new page with viewport and user agent
- * @param {Object} context - Browser context
- * @param {Object} options - Page options
- */
 async function createPage(context, options = {}) {
   const page = await context.newPage();
   
@@ -81,11 +60,6 @@ async function createPage(context, options = {}) {
   return page;
 }
 
-/**
- * Smart wait for page to be ready
- * @param {Object} page - Playwright page
- * @param {Object} options - Wait options
- */
 async function waitForPageReady(page, options = {}) {
   const waitOptions = {
     waitUntil: options.waitUntil || 'networkidle',
@@ -108,12 +82,6 @@ async function waitForPageReady(page, options = {}) {
   }
 }
 
-/**
- * Safe click with retry logic
- * @param {Object} page - Playwright page
- * @param {string} selector - Element selector
- * @param {Object} options - Click options
- */
 async function safeClick(page, selector, options = {}) {
   const maxRetries = options.retries || 3;
   const retryDelay = options.retryDelay || 1000;
@@ -140,13 +108,6 @@ async function safeClick(page, selector, options = {}) {
   }
 }
 
-/**
- * Safe text input with clear before type
- * @param {Object} page - Playwright page
- * @param {string} selector - Input selector
- * @param {string} text - Text to type
- * @param {Object} options - Type options
- */
 async function safeType(page, selector, text, options = {}) {
   await page.waitForSelector(selector, { 
     state: 'visible',
@@ -164,11 +125,6 @@ async function safeType(page, selector, text, options = {}) {
   }
 }
 
-/**
- * Extract text from multiple elements
- * @param {Object} page - Playwright page
- * @param {string} selector - Elements selector
- */
 async function extractTexts(page, selector) {
   await page.waitForSelector(selector, { timeout: 10000 });
   return await page.$$eval(selector, elements => 
@@ -176,12 +132,6 @@ async function extractTexts(page, selector) {
   );
 }
 
-/**
- * Take screenshot with timestamp
- * @param {Object} page - Playwright page
- * @param {string} name - Screenshot name
- * @param {Object} options - Screenshot options
- */
 async function takeScreenshot(page, name, options = {}) {
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
   const filename = `${name}-${timestamp}.png`;
@@ -196,12 +146,6 @@ async function takeScreenshot(page, name, options = {}) {
   return filename;
 }
 
-/**
- * Handle authentication
- * @param {Object} page - Playwright page
- * @param {Object} credentials - Username and password
- * @param {Object} selectors - Login form selectors
- */
 async function authenticate(page, credentials, selectors = {}) {
   const defaultSelectors = {
     username: 'input[name="username"], input[name="email"], #username, #email',
@@ -224,12 +168,6 @@ async function authenticate(page, credentials, selectors = {}) {
   });
 }
 
-/**
- * Scroll page
- * @param {Object} page - Playwright page
- * @param {string} direction - 'down', 'up', 'top', 'bottom'
- * @param {number} distance - Pixels to scroll (for up/down)
- */
 async function scrollPage(page, direction = 'down', distance = 500) {
   switch (direction) {
     case 'down':
@@ -248,11 +186,6 @@ async function scrollPage(page, direction = 'down', distance = 500) {
   await page.waitForTimeout(500); // Wait for scroll animation
 }
 
-/**
- * Extract table data
- * @param {Object} page - Playwright page
- * @param {string} tableSelector - Table selector
- */
 async function extractTableData(page, tableSelector) {
   await page.waitForSelector(tableSelector);
   
@@ -280,11 +213,6 @@ async function extractTableData(page, tableSelector) {
   }, tableSelector);
 }
 
-/**
- * Wait for and dismiss cookie banners
- * @param {Object} page - Playwright page
- * @param {number} timeout - Max time to wait
- */
 async function handleCookieBanner(page, timeout = 3000) {
   const commonSelectors = [
     'button:has-text("Accept")',
@@ -316,12 +244,6 @@ async function handleCookieBanner(page, timeout = 3000) {
   return false;
 }
 
-/**
- * Retry a function with exponential backoff
- * @param {Function} fn - Function to retry
- * @param {number} maxRetries - Maximum retry attempts
- * @param {number} initialDelay - Initial delay in ms
- */
 async function retryWithBackoff(fn, maxRetries = 3, initialDelay = 1000) {
   let lastError;
   
@@ -339,11 +261,6 @@ async function retryWithBackoff(fn, maxRetries = 3, initialDelay = 1000) {
   throw lastError;
 }
 
-/**
- * Create browser context with common settings
- * @param {Object} browser - Browser instance
- * @param {Object} options - Context options
- */
 async function createContext(browser, options = {}) {
   const envHeaders = getExtraHeadersFromEnv();
 
@@ -369,11 +286,6 @@ async function createContext(browser, options = {}) {
   return await browser.newContext({ ...defaultOptions, ...options });
 }
 
-/**
- * Detect running dev servers on common ports
- * @param {Array<number>} customPorts - Additional ports to check
- * @returns {Promise<Array>} Array of detected server URLs
- */
 async function detectDevServers(customPorts = []) {
   const http = require('http');
 

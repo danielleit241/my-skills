@@ -1,15 +1,4 @@
 #!/usr/bin/env node
-/**
- * Universal Playwright Executor for Claude Code
- *
- * Executes Playwright automation code from:
- * - File path: node run.js script.js
- * - Inline code: node run.js 'await page.goto("...")'
- * - Stdin: cat script.js | node run.js
- *
- * Ensures proper module resolution by running from skill directory.
- */
-
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
@@ -17,9 +6,6 @@ const { execSync } = require('child_process');
 // Change to skill directory for proper module resolution
 process.chdir(__dirname);
 
-/**
- * Check if Playwright is installed
- */
 function checkPlaywrightInstalled() {
   try {
     require.resolve('playwright');
@@ -29,9 +15,6 @@ function checkPlaywrightInstalled() {
   }
 }
 
-/**
- * Install Playwright if missing
- */
 function installPlaywright() {
   console.log('📦 Playwright not found. Installing...');
   try {
@@ -46,9 +29,6 @@ function installPlaywright() {
   }
 }
 
-/**
- * Get code to execute from various sources
- */
 function getCodeToExecute() {
   const args = process.argv.slice(2);
 
@@ -80,9 +60,6 @@ function getCodeToExecute() {
   process.exit(1);
 }
 
-/**
- * Clean up old temporary execution files from previous runs
- */
 function cleanupOldTempFiles() {
   try {
     const files = fs.readdirSync(__dirname);
@@ -103,9 +80,6 @@ function cleanupOldTempFiles() {
   }
 }
 
-/**
- * Wrap code in async IIFE if not already wrapped
- */
 function wrapCodeIfNeeded(code) {
   // Check if code already has require() and async structure
   const hasRequire = code.includes('require(');
@@ -176,9 +150,6 @@ function getContextOptionsWithHeaders(options = {}) {
   return code;
 }
 
-/**
- * Main execution
- */
 async function main() {
   console.log('🎭 Playwright Skill - Universal Executor\n');
 
