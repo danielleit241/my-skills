@@ -696,6 +696,60 @@ pre code {
   user-select: all;
 }
 
+/* ─── Install All Block ──────────────────────────────────────── */
+.install-all-block {
+  background: var(--bg-surface);
+  border: 1px solid var(--bg-border);
+  border-radius: var(--radius-md);
+  max-width: var(--content-max);
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.install-all-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.875rem;
+  background: var(--bg-hover);
+  border-bottom: 1px solid var(--bg-border);
+}
+
+.install-all-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.install-all-code {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-primary);
+  padding: 0.875rem;
+  margin: 0;
+  line-height: 1.8;
+  white-space: pre;
+  overflow-x: auto;
+}
+
+.copy-btn {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.2rem 0.55rem;
+  border: 1px solid var(--bg-border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-base);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.copy-btn:hover { border-color: var(--accent-primary); color: var(--accent-primary); }
+.copy-btn.copied { border-color: #4a9c5c; color: #4a9c5c; }
+
 /* ─── Feature Grid ───────────────────────────────────────────── */
 .feature-grid {
   display: grid;

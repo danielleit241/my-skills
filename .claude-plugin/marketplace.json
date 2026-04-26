@@ -136,6 +136,28 @@
       "keywords": ["learning", "instincts", "adaptation", "memory"]
     },
     {
+      "name": "all",
+      "description": "Install the complete my-skills suite — commands, agents, and all skills in one shot",
+      "dependencies": [
+        "commands-bundle",
+        "agents-bundle",
+        "frontend-slides",
+        "backend-mindset",
+        "dotnet",
+        "mermaidjs-v11",
+        "skill-creator",
+        "code-review",
+        "problem-solving",
+        "sequential-thinking",
+        "continuous-learning-v2",
+        "strategic-compact",
+        "playwright-skill",
+        "threejs"
+      ],
+      "category": "meta",
+      "keywords": ["all", "complete", "bundle", "full", "everything"]
+    },
+    {
       "name": "commands-bundle",
       "description": "Full slash command suite: /plan, /cook, /fix, /learn, /code-review, /docs-fe, /coding-level",
       "source": {

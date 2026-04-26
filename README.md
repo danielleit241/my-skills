@@ -151,13 +151,13 @@ EXAMPLES.md          # C# examples for backend coding principles
 /plugin marketplace add danielleit241/my-skills
 ```
 
-Then install individual plugins:
+Install everything:
 
 ```
-/plugin install frontend-slides@my-skills
-/plugin install commands-bundle@my-skills
-/plugin install agents-bundle@my-skills
+/plugin install all@my-skills
 ```
+
+Or install individual plugins (see [plugin list](https://danielleit241.github.io/my-skills/)).
 
 ### Manual
 

@@ -173,9 +173,18 @@
       </div>
 
       <h2>Available Plugins</h2>
-      <p style="font-size:0.875rem;color:var(--text-secondary);margin-bottom:0.25rem">
-        After adding the marketplace, install individual plugins:
-        <code style="font-size:0.8rem">/plugin install &lt;name&gt;@my-skills</code>
+      <p style="font-size:0.875rem;color:var(--text-secondary);margin-bottom:1rem">
+        Install everything with one command, or cherry-pick individual plugins from the grid below.
+      </p>
+      <div class="install-all-block">
+        <div class="install-all-header">
+          <span class="install-all-label">Install everything</span>
+          <button class="copy-btn" onclick="copyInstallAll(this)" aria-label="Copy install all command">Copy</button>
+        </div>
+        <pre class="install-all-code" id="install-all-code">/plugin install all@my-skills</pre>
+      </div>
+      <p style="font-size:0.8rem;color:var(--text-tertiary,var(--text-secondary));margin-bottom:0.5rem;margin-top:1.5rem">
+        Or install individually:
       </p>
       <div class="plugin-grid">
         <div class="plugin-card">
@@ -875,6 +884,19 @@ CLAUDE.local.md (gitignored) — personal preferences that shouldn't be committe
 
   <script>
     (function () {
+
+      // ── Copy all install commands ────────────────────────────────────
+      window.copyInstallAll = function (btn) {
+        var text = document.getElementById('install-all-code').textContent;
+        navigator.clipboard.writeText(text).then(function () {
+          btn.textContent = 'Copied!';
+          btn.classList.add('copied');
+          setTimeout(function () {
+            btn.textContent = 'Copy all';
+            btn.classList.remove('copied');
+          }, 2000);
+        });
+      };
 
       // ── Theme toggle ────────────────────────────────────────────────
       var btn = document.getElementById('theme-toggle');
