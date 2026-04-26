@@ -1,3 +1,11 @@
 {
-  "codingLevel": 3
+  "codingLevel": 3,
+  "simplify": {
+    "threshold": {
+      "enabled": true,
+      "totalLoc": 400,
+      "fileCount": 8,
+      "singleFileLoc": 200
+    }
+  }
 }

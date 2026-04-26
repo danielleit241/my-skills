@@ -72,6 +72,16 @@
             "timeout": 30
           }
         ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .claude/hooks/code-simplifier.py",
+            "timeout": 5
+          }
+        ]
       }
     ],
     "Stop": [

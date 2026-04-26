@@ -93,6 +93,39 @@ If 3 cycles exhausted without passing: **stop and report to user**.
 
 ---
 
+### Step 3.S — Auto-Simplify (threshold gate)
+
+Before spawning the code-reviewer, check if `SIMPLIFY_TRIGGERED` appears in context (emitted by the `code-simplifier` PostToolUse hook).
+
+**If triggered:**
+1. Invoke the `simplify` skill on the files edited in this phase
+2. Delete `.claude/session-data/simplify-tracker-{session_id}.json` to reset for the next phase
+3. Proceed to Step 4
+
+**If not triggered:** skip silently.
+
+```
+// [Step 3.S — threshold check]
+// SIMPLIFY_TRIGGERED: total LOC 423 ≥ 400 — invoking simplify skill
+//   simplify → 3 files reviewed, 38 lines removed
+//   tracker reset ✓
+
+// OR
+
+// [Step 3.S — threshold check] → not triggered → proceed to Step 4
+```
+
+Thresholds are configured in `.ck.json` under `simplify.threshold`:
+
+| Key | Default | Meaning |
+|-----|---------|---------|
+| `totalLoc` | 400 | Cumulative lines written/edited this session |
+| `fileCount` | 8 | Unique files touched |
+| `singleFileLoc` | 200 | Lines in a single Write/Edit call |
+| `enabled` | true | Set `false` to disable entirely |
+
+---
+
 ### Step 4 — Code Review (code-reviewer sub-agent)
 
 Spawn the **`code-reviewer`** sub-agent after tests pass:
@@ -142,10 +175,11 @@ Step 5 is **always required** — cook is incomplete without all 3 sub-agents:
 
 ## Agents
 
-| Agent | Step | Modes |
-|-------|------|-------|
+| Agent / Skill | Step | Modes |
+|---------------|------|-------|
 | `tester` | 3 — write + run tests | All except --fast |
 | `debugger` | 3 — root cause analysis | When tests fail |
+| `simplify` skill | 3.S — auto-simplify on threshold breach | All (hook-driven) |
 | `code-reviewer` | 4 — review implementation | All except --fast |
 | `project-manager` | 5 — sync plan + tasks | Always (mandatory) |
 | `docs-manager` | 5 — update docs | Always (mandatory) |
