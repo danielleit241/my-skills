@@ -39,3 +39,5 @@ projects/
 
 # Generated plan output
 plans/*
+
+tmp/*

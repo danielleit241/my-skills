@@ -25,6 +25,7 @@ Three main pipelines cover the full development loop:
 | `/plan`        | Research → write plan files → red-team → validate. Auto-detects complexity.                   |
 | `/cook`        | Implement a phase from a plan file. Scout → implement → test → auto-simplify → review → finalize. |
 | `/fix`         | Bug-fix pipeline. Scout → diagnose + fix → review → finalize.                                 |
+| `/show-off`    | Generate a social-ready HTML presentation → review gate → capture as 1:1/16:9/9:16 PNGs.    |
 | `/code-review` | Review local uncommitted changes or a GitHub PR by number/URL.                                |
 | `/docs-fe`     | Generate a FE handoff doc for changed endpoints (contracts, params, errors).                  |
 | `/learn`       | Extract a reusable pattern from the current session and save it as a skill file.              |
@@ -45,12 +46,13 @@ Sub-agents spawned by the pipelines. Never called directly.
 
 **Implementation**
 
-| Agent           | Role                                                         | Model  |
-| --------------- | ------------------------------------------------------------ | ------ |
-| `scout`         | Codebase reconnaissance — maps files, patterns, dependencies | haiku  |
-| `debugger`      | Root-cause diagnosis + fix application                       | sonnet |
-| `tester`        | Write and run tests, report pass/fail                        | sonnet |
-| `code-reviewer` | Code review against project conventions                      | sonnet |
+| Agent                  | Role                                                         | Model  |
+| ---------------------- | ------------------------------------------------------------ | ------ |
+| `scout`                | Codebase reconnaissance — maps files, patterns, dependencies | haiku  |
+| `debugger`             | Root-cause diagnosis + fix application                       | sonnet |
+| `tester`               | Write and run tests, report pass/fail                        | sonnet |
+| `code-reviewer`        | Code review against project conventions                      | sonnet |
+| `playwright-capture`   | Capture show-off HTML sections — one section per 1:1/16:9/9:16 PNG, centered card on bokeh background | sonnet |
 
 **Finalize (shared by /cook and /fix)**
 

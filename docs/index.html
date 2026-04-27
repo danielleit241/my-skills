@@ -107,7 +107,7 @@
             <span class="feature-title">Slash Commands</span>
             <span class="badge accent">pipeline</span>
           </div>
-          <p class="feature-desc">/plan, /cook, /fix, /code-review, /learn — structured workflows that hand off
+          <p class="feature-desc">/plan, /cook, /fix, /show-off, /code-review, /learn — structured workflows that hand off
           artifacts between stages without re-explaining context.</p>
         </div>
         <div class="feature-card">
@@ -192,7 +192,7 @@
             <span class="plugin-name">commands-bundle</span>
             <span class="badge accent">pipeline</span>
           </div>
-          <p class="plugin-desc">/plan, /cook, /fix, /learn, /code-review, /docs-fe, /coding-level — the full slash command suite.</p>
+          <p class="plugin-desc">/plan, /cook, /fix, /show-off, /learn, /code-review, /docs-fe, /coding-level — the full slash command suite.</p>
           <code class="plugin-install">/plugin install commands-bundle@my-skills</code>
         </div>
         <div class="plugin-card">
@@ -649,6 +649,62 @@
             <span class="token-cost-range">~15–30K</span>
             <span class="token-cost-sep">·</span>
             <span class="token-cost-note">scales with number of changed endpoints</span>
+          </div>
+        </div>
+        <div class="cmd-card cmd-expandable">
+          <div class="cmd-card-header cmd-toggle" aria-expanded="false">
+            <div class="cmd-card-title">
+              <code class="cmd-name">/show-off</code>
+              <div class="mode-badges" style="margin:0">
+                <span class="badge accent">--html-only</span>
+                <span class="badge accent">--capture-only</span>
+                <span class="badge accent">--viewport=1x1</span>
+              </div>
+            </div>
+            <span class="cmd-chevron" aria-hidden="true">›</span>
+          </div>
+          <p>Generates a self-contained HTML presentation from a topic description, pauses for
+          human review and feedback, then captures each section as a social-ready PNG via Playwright.
+          Supports 1:1, 16:9, and 9:16 viewports. Bilingual (VI/EN) and dark/light theme built in.</p>
+          <div class="token-cost">
+            <span class="token-cost-icon">◎</span>
+            <span class="token-cost-range">~15–40K</span>
+            <span class="token-cost-sep">·</span>
+            <span class="token-cost-note">HTML generation + capture agent · scales with section count</span>
+          </div>
+          <div class="cmd-detail">
+            <div class="cmd-detail-inner">
+              <div class="cmd-agent-flow">
+                <div class="caf-node"><span class="caf-icon">H</span><span class="caf-name">HTML generation</span><span class="caf-desc">4 sections: hero, features, demo, cta — compact, one message each</span></div>
+                <div class="caf-arrow">↓</div>
+                <div class="caf-node"><span class="caf-icon">R</span><span class="caf-name">Review gate</span><span class="caf-desc">previews path, waits for user approval or change requests</span></div>
+                <div class="caf-arrow">↓</div>
+                <div class="caf-node"><span class="caf-icon">C</span><span class="caf-name">playwright-capture</span><span class="caf-desc">isolates each section, captures PNG with bokeh background</span></div>
+              </div>
+              <div class="token-breakdown">
+                <div class="token-breakdown-title">Flags</div>
+                <div class="token-breakdown-row">
+                  <span class="token-breakdown-flag">--html-only</span>
+                  <span class="token-breakdown-cost" style="font-size:0.75rem">skip capture</span>
+                  <span class="token-breakdown-agents">generate HTML + review, stop before PNG</span>
+                </div>
+                <div class="token-breakdown-row">
+                  <span class="token-breakdown-flag">--capture-only</span>
+                  <span class="token-breakdown-cost" style="font-size:0.75rem">skip HTML</span>
+                  <span class="token-breakdown-agents">re-capture existing index.html, skip review gate</span>
+                </div>
+                <div class="token-breakdown-row">
+                  <span class="token-breakdown-flag">--viewport=</span>
+                  <span class="token-breakdown-cost" style="font-size:0.75rem">1x1 · 16x9 · 9x16</span>
+                  <span class="token-breakdown-agents">repeatable — combine for multiple aspect ratios</span>
+                </div>
+                <div class="token-breakdown-row">
+                  <span class="token-breakdown-flag">--lang=vi|en</span>
+                  <span class="token-breakdown-cost" style="font-size:0.75rem">bilingual</span>
+                  <span class="token-breakdown-agents">sets active language for capture (default: en)</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         <div class="cmd-card">

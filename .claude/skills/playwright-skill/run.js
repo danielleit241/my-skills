@@ -165,23 +165,35 @@ async function main() {
   }
 
   // Get code to execute
+  const args = process.argv.slice(2);
+  const isCompleteFile = args.length > 0 && fs.existsSync(args[0]);
+
   const rawCode = getCodeToExecute();
   const code = wrapCodeIfNeeded(rawCode);
 
-  // Create temporary file for execution
+  // Complete files (already have require + async IIFE) run directly — no temp file needed
+  const hasRequire = code.includes('require(');
+  const hasAsyncIIFE = code.includes('(async () => {') || code.includes('(async()=>{');
+  if (isCompleteFile && hasRequire && hasAsyncIIFE) {
+    console.log('🚀 Starting automation...\n');
+    try {
+      require(path.resolve(args[0]));
+    } catch (error) {
+      console.error('❌ Execution failed:', error.message);
+      if (error.stack) console.error(error.stack);
+      process.exit(1);
+    }
+    return;
+  }
+
+  // Wrapped/inline code — write temp file
   const tempFile = path.join(__dirname, `.temp-execution-${Date.now()}.js`);
+  process.on('exit', () => { try { fs.unlinkSync(tempFile); } catch (_) {} });
 
   try {
-    // Write code to temp file
     fs.writeFileSync(tempFile, code, 'utf8');
-
-    // Execute the code
     console.log('🚀 Starting automation...\n');
     require(tempFile);
-
-    // Note: Temp file will be cleaned up on next run
-    // This allows long-running async operations to complete safely
-
   } catch (error) {
     console.error('❌ Execution failed:', error.message);
     if (error.stack) {

@@ -159,7 +159,7 @@
     },
     {
       "name": "commands-bundle",
-      "description": "Full slash command suite: /plan, /cook, /fix, /learn, /code-review, /docs-fe, /coding-level",
+      "description": "Full slash command suite: /plan, /cook, /fix, /learn, /code-review, /docs-fe, /coding-level, /show-off",
       "source": {
         "source": "git-subdir",
         "url": "https://github.com/danielleit241/my-skills",
@@ -172,7 +172,8 @@
         "learn.md",
         "code-review.md",
         "docs-fe.md",
-        "coding-level.md"
+        "coding-level.md",
+        "show-off.md"
       ],
       "category": "productivity",
       "keywords": ["commands", "plan", "cook", "fix", "workflow"]
@@ -195,7 +196,8 @@
         "code-reviewer.md",
         "project-manager.md",
         "docs-manager.md",
-        "git-manager.md"
+        "git-manager.md",
+        "playwright-capture.md"
       ],
       "category": "automation",
       "keywords": ["agents", "pipeline", "automation", "sub-agents"]
