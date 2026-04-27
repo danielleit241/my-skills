@@ -1,174 +1,201 @@
 ---
 name: playwright-capture
-description: Captures show-off HTML sections as social-ready PNGs — one section per image, centered card on bokeh background. Spawned by /show-off.
+description: General-purpose Playwright screenshot agent. Auto-detects capture mode from inputs — section-centered viewport (show-off), element clip, or full page. Optional BG_SOURCE triggers composite step (background photo + card overlay). Spawned by /show-off and any task needing screenshots.
 tools: ["Write", "Bash"]
 model: sonnet
 ---
 
-Capture sections of a show-off HTML page as high-res PNG images. Each image shows exactly **one section** centered as a floating card on a blurred bokeh background.
+Screenshot pages or elements using Playwright. Auto-detect the capture mode from what's provided.
 
 ## Input
 
-You will receive:
+All fields optional — agent infers mode from what's present:
 
-- `HTML_PATH` — absolute path to `index.html`
-- `OUTPUT_DIR` — absolute path to `images/` output directory
-- `RUNNER` — absolute path to `run.js` (playwright-skill executor)
-- `SECTIONS` — comma-separated IDs (e.g. `hero,features,demo,cta`)
-- `VIEWPORTS` — comma-separated names from: `16x9`, `9x16`, `1x1`
-- `THEME` — `dark` or `light`
-- `LANG` — `en` or `vi`
+| Field | Description |
+|---|---|
+| `HTML_PATH` | Absolute path to an HTML file (or URL) |
+| `OUTPUT_DIR` | Absolute path for PNG output |
+| `RUNNER` | Absolute path to `playwright-skill/run.js` |
+| `SECTIONS` | CSS IDs to capture (e.g. `hero,features,demo,cta`) — triggers section mode |
+| `SELECTOR` | Single CSS selector — triggers element clip mode |
+| `VIEWPORTS` | `16x9`, `9x16`, `1x1` (comma-separated, default: `16x9`) |
+| `THEME` | `dark`, `light`, or `both` (sets `data-theme` on `<html>`) |
+| `LANG` | `en`, `vi`, or `both` (calls `window.applyLang(lang)` if available) |
+| `BG_SOURCE` | Folder path or `auto` — enables composite step |
+| `SCALE` | Device scale factor (default: `2`) |
+
+## Auto-detect Mode
+
+| Condition | Mode |
+|---|---|
+| `SECTIONS` provided | **Section** — scroll each section to viewport center, screenshot full viewport |
+| `SELECTOR` provided | **Element** — clip to element bounding box |
+| Neither | **Page** — full-page screenshot |
 
 ## Steps
 
-### 1. Ensure output directory
+### 1. Resolve inputs + create output dir
 
-Create `OUTPUT_DIR` with `mkdir -p` if it doesn't exist.
+```bash
+mkdir -p "<OUTPUT_DIR>"
+```
+
+Expand `both` values: `THEME=both` → `['dark','light']` · `LANG=both` → `['en','vi']`
+
+If `BG_SOURCE=auto`: set `BG_DIR = OUTPUT_DIR + '/backgrounds'`, `mkdir -p` it, then download one JPG per section:
+
+```bash
+curl -L -o "<BG_DIR>/bg-<N>.jpg" "https://source.unsplash.com/1080x1080/?nature,bokeh&sig=<N>"
+```
+
+If `BG_SOURCE` is a folder path: set `BG_DIR = BG_SOURCE`.
 
 ### 2. Write capture script
 
-Derive `CAPTURE_DIR` = parent directory of `OUTPUT_DIR`.
+Write `<OUTPUT_DIR>/../capture.js` — substitute all `<PLACEHOLDERS>` before writing. Substitution rules:
 
-> **CRITICAL**: Write `<CAPTURE_DIR>/capture.js` by copying the code block below **character-for-character**. Do NOT generate, rewrite, or reinterpret the code from memory. The ONLY allowed changes are substituting the six labeled placeholders. Any other deviation will break the output.
-
-Placeholders to substitute before writing:
-- `<HTML_PATH>` → actual HTML_PATH value (forward slashes, no trailing slash)
-- `<OUTPUT_DIR>` → actual OUTPUT_DIR value (forward slashes)
-- `<SECTIONS_ARRAY>` → JS string literals, e.g. `'hero', 'features', 'demo', 'cta'`
-- `<VIEWPORTS_ARRAY>` → JS string literals, e.g. `'16x9', '9x16', '1x1'`
-- `<THEME>` → `dark` or `light`
-- `<LANG>` → `en` or `vi`
+- `<HTML_PATH>` → actual path value, forward slashes
+- `<OUTPUT_DIR>` → actual output dir, forward slashes
+- `<SECTIONS_ARRAY>` → JS string literals e.g. `'hero','features'` or empty
+- `<SELECTOR>` → CSS selector string, or `''` if not provided
+- `<THEMES_ARRAY>` → e.g. `'dark','light'`
+- `<LANGS_ARRAY>` → e.g. `'en','vi'`
+- `<VIEWPORTS_ARRAY>` → e.g. `'1x1'`
+- `<BG_DIR>` → absolute path to backgrounds folder, or `''` if no composite
+- `<SCALE>` → numeric value e.g. `2`
 
 ```javascript
 const { chromium } = require('playwright');
-const fs = require('fs');
+const fs   = require('fs');
+const path = require('path');
 
-const HTML_PATH = '<HTML_PATH>';
-const TARGET    = 'file:///' + HTML_PATH.replace(/\\/g, '/');
-const OUT       = '<OUTPUT_DIR>';
-const SECTIONS  = [<SECTIONS_ARRAY>];
-const THEME     = '<THEME>';
-const LANG      = '<LANG>';
+const SRC      = '<HTML_PATH>';
+const TARGET   = SRC.startsWith('http') ? SRC : 'file:///' + SRC.replace(/\\/g, '/');
+const OUT      = '<OUTPUT_DIR>';
+const SECTIONS = [<SECTIONS_ARRAY>];
+const SELECTOR = '<SELECTOR>';
+const THEMES   = [<THEMES_ARRAY>];
+const LANGS    = [<LANGS_ARRAY>];
+const BG_DIR   = '<BG_DIR>';
+const SCALE    = <SCALE>;
 
 const VIEWPORT_MAP = {
   '16x9': { width: 1920, height: 1080 },
   '9x16': { width: 1080, height: 1920 },
   '1x1':  { width: 1080, height: 1080 },
 };
-const VIEWPORTS = [<VIEWPORTS_ARRAY>].map(name => ({ name, ...VIEWPORT_MAP[name] }));
+const VIEWPORTS = [<VIEWPORTS_ARRAY>].map(n => ({ name: n, ...VIEWPORT_MAP[n] }));
 
-// 3 bokeh background themes — one picked at random per run
-const BG_THEMES = [
-  // Deep ocean blue
-  `radial-gradient(ellipse 70% 90% at 30% 70%, rgba(10,60,180,0.9) 0%, rgba(5,30,100,0.6) 40%, transparent 70%),
-   radial-gradient(ellipse 90% 70% at 70% 30%, rgba(20,80,200,0.8) 0%, rgba(8,40,120,0.5) 50%, transparent 75%),
-   radial-gradient(ellipse 100% 100% at 50% 50%, rgba(2,10,40,1) 0%, rgba(1,5,20,1) 100%)`,
-  // Forest emerald
-  `radial-gradient(ellipse 65% 85% at 25% 75%, rgba(10,150,80,0.9) 0%, rgba(5,80,40,0.6) 40%, transparent 70%),
-   radial-gradient(ellipse 85% 65% at 75% 25%, rgba(20,170,90,0.8) 0%, rgba(8,90,45,0.5) 50%, transparent 75%),
-   radial-gradient(ellipse 100% 100% at 50% 50%, rgba(2,20,10,1) 0%, rgba(1,10,5,1) 100%)`,
-  // Purple nebula
-  `radial-gradient(ellipse 70% 90% at 30% 60%, rgba(120,30,200,0.9) 0%, rgba(70,15,120,0.6) 40%, transparent 70%),
-   radial-gradient(ellipse 90% 70% at 70% 40%, rgba(150,40,220,0.8) 0%, rgba(90,20,150,0.5) 50%, transparent 75%),
-   radial-gradient(ellipse 100% 100% at 50% 50%, rgba(15,5,30,1) 0%, rgba(8,2,15,1) 100%)`,
-];
-const BG = BG_THEMES[Math.floor(Math.random() * BG_THEMES.length)];
+const bgFiles = BG_DIR && fs.existsSync(BG_DIR)
+  ? fs.readdirSync(BG_DIR).filter(f => /\.(jpg|jpeg|png)$/i.test(f)).map(f => path.join(BG_DIR, f))
+  : [];
 
-const INJECT_CSS = `
-  body::before {
-    content: '';
-    position: fixed;
-    inset: -60px;
-    z-index: 0;
-    background: ${BG};
-    filter: blur(55px) saturate(1.4);
+async function applyState(page, theme, lang) {
+  if (theme) await page.evaluate(t => document.documentElement.setAttribute('data-theme', t), theme);
+  if (lang)  await page.evaluate(l => { if (typeof window.applyLang === 'function') window.applyLang(l); }, lang);
+  await page.waitForTimeout(300);
+}
+
+async function composite(compositePage, cardPath, bgPath, outPath, vp) {
+  await compositePage.setViewportSize({ width: vp.width, height: vp.height });
+  // base64 data URIs required — setContent() runs at about:blank which blocks file:// loads
+  const bg   = 'data:image/jpeg;base64,' + fs.readFileSync(bgPath).toString('base64');
+  const card = 'data:image/png;base64,'  + fs.readFileSync(cardPath).toString('base64');
+  await compositePage.setContent(`<!DOCTYPE html><html><head><style>
+    *    { margin:0; padding:0; box-sizing:border-box; }
+    body { width:${vp.width}px; height:${vp.height}px; overflow:hidden;
+           background:url('${bg}') center/cover no-repeat; }
+    img  { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+           width:86%; max-height:86%; object-fit:contain;
+           border-radius:24px;
+           box-shadow:0 24px 80px rgba(0,0,0,0.45),0 0 0 1px rgba(255,255,255,0.08); }
+  </style></head><body><img src="${card}"></body></html>`,
+  { waitUntil: 'domcontentloaded' });
+  await compositePage.waitForTimeout(200);
+  await compositePage.screenshot({ path: outPath });
+}
+
+async function captureSection(page, compositePage, sectionId, vp, theme, lang, bgFile) {
+  await page.evaluate(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    window.scrollTo({ top: Math.max(0, window.scrollY + rect.top + rect.height / 2 - window.innerHeight / 2), behavior: 'instant' });
+  }, sectionId);
+  await page.waitForTimeout(150);
+
+  const suffix = [sectionId, vp.name, theme, lang].filter(Boolean).join('-');
+  const finalPath = `${OUT}/${suffix}.png`;
+  const capturePath = bgFile ? `${OUT}/${suffix}-raw.png` : finalPath;
+  await page.screenshot({ path: capturePath });
+
+  if (bgFile) {
+    await composite(compositePage, capturePath, bgFile, finalPath, vp);
+    fs.unlinkSync(capturePath);
   }
-  body { background: #07040f !important; }
-  #controls { display: none !important; }
-  #hero, #features, #demo, #cta {
-    position: relative;
-    z-index: 1;
-    border-radius: 14px;
-    overflow: hidden;
-    margin: 5% auto;
-    max-width: 84%;
-    min-height: 78vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    box-shadow:
-      0 2px 0 rgba(255,255,255,0.07) inset,
-      0 50px 140px rgba(0,0,0,0.75),
-      0 0 0 1px rgba(255,255,255,0.06);
-  }
-`;
+  console.log(`✓ ${suffix}${bgFile ? ' (composited)' : ''}`);
+}
+
+async function captureElement(page, selector, vp, theme, lang) {
+  const el = await page.$(selector);
+  if (!el) { console.warn(`selector "${selector}" not found`); return; }
+  const suffix = [selector.replace(/[^a-z0-9]/gi, '_'), vp.name, theme, lang].filter(Boolean).join('-');
+  await el.screenshot({ path: `${OUT}/${suffix}.png` });
+  console.log(`✓ ${suffix}`);
+}
+
+async function capturePage(page, vp, theme, lang) {
+  const suffix = [vp.name, theme, lang].filter(Boolean).join('-');
+  await page.screenshot({ path: `${OUT}/${suffix}.png`, fullPage: true });
+  console.log(`✓ page ${suffix}`);
+}
 
 if (!fs.existsSync(OUT)) fs.mkdirSync(OUT, { recursive: true });
 
 (async () => {
   const browser = await chromium.launch({ headless: true });
 
-  for (const vp of VIEWPORTS) {
-    const ctx = await browser.newContext({
-      viewport: { width: vp.width, height: vp.height },
-      deviceScaleFactor: 1.75,
-    });
+  const compositeCtx = bgFiles.length
+    ? await browser.newContext({ viewport: { width: 1080, height: 1080 }, deviceScaleFactor: SCALE })
+    : null;
+  const compositePage = compositeCtx ? await compositeCtx.newPage() : null;
+
+  const combos = VIEWPORTS.flatMap(vp =>
+    THEMES.flatMap(theme => LANGS.map(lang => ({ vp, theme, lang })))
+  );
+
+  for (const { vp, theme, lang } of combos) {
+    const ctx  = await browser.newContext({ viewport: { width: vp.width, height: vp.height }, deviceScaleFactor: SCALE });
     const page = await ctx.newPage();
-    await page.goto(TARGET, { waitUntil: 'networkidle' });
+    // 'load' avoids blocking on external fonts (Google Fonts etc.) in headless
+    await page.goto(TARGET, { waitUntil: 'load' });
     await page.waitForTimeout(1500);
+    await applyState(page, theme, lang);
 
-    await page.evaluate(theme => {
-      document.documentElement.setAttribute('data-theme', theme);
-    }, THEME);
-
-    if (LANG) {
-      await page.evaluate(lang => {
-        if (typeof window.applyLang === 'function') window.applyLang(lang);
-      }, LANG);
-    }
-
-    await page.addStyleTag({ content: INJECT_CSS });
-
-    for (const id of SECTIONS) {
-      const el = await page.$(`#${id}`);
-      if (!el) { console.warn(`#${id} not found, skipping`); continue; }
-
-      // Show only this section — hide all others
-      await page.evaluate(({ sections, targetId }) => {
-        sections.forEach(s => {
-          const el = document.getElementById(s);
-          if (el) el.style.display = s === targetId ? '' : 'none';
-        });
-        window.scrollTo({ top: 0, behavior: 'instant' });
-      }, { sections: SECTIONS, targetId: id });
-
-      await page.waitForTimeout(300);
-
-      await page.screenshot({ path: `${OUT}/${id}-${vp.name}.png` });
-      console.log(`✓ ${id} @ ${vp.name}`);
-
-      // Restore all sections for next iteration
-      await page.evaluate(sections => {
-        sections.forEach(s => {
-          const el = document.getElementById(s);
-          if (el) el.style.display = '';
-        });
-      }, SECTIONS);
+    if (SECTIONS.length > 0) {
+      for (let i = 0; i < SECTIONS.length; i++) {
+        const bg = bgFiles.length ? bgFiles[i % bgFiles.length] : null;
+        await captureSection(page, compositePage, SECTIONS[i], vp, theme, lang, bg);
+      }
+    } else if (SELECTOR) {
+      await captureElement(page, SELECTOR, vp, theme, lang);
+    } else {
+      await capturePage(page, vp, theme, lang);
     }
 
     await ctx.close();
   }
 
+  if (compositeCtx) await compositeCtx.close();
   await browser.close();
+  console.log('\nDone.');
 })();
 ```
 
 ### 3. Execute
 
-Run via Bash using **absolute paths only** — no `cd`, no cwd change:
-
 ```bash
-node "<RUNNER>" "<CAPTURE_DIR>/capture.js"
+node "<RUNNER>" "<OUTPUT_DIR>/../capture.js"
 ```
 
 ### 4. Report
@@ -176,15 +203,13 @@ node "<RUNNER>" "<CAPTURE_DIR>/capture.js"
 ```
 ## Capture Results
 
+Mode: section | element | page
 Images: <OUTPUT_DIR>
-Theme: <THEME>   Lang: <LANG>
+Composite: yes (bg from <BG_SOURCE>) | no
 
-✓ hero @ 16x9   ✓ hero @ 9x16   ✓ hero @ 1x1
-✓ features @ 16x9  ...
-✓ demo @ 16x9   ...
-✓ cta @ 16x9    ...
+✓ hero-1x1-dark-en.png
+✓ hero-1x1-dark-vi.png
+...
 
-Total: <N>/<expected> images created
+Total: <N>/<expected>  Failed: <list with error>
 ```
-
-List any skipped or failed items with the error message.

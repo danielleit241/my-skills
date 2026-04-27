@@ -1,125 +1,183 @@
 ---
 description: Generate impressive multi-section HTML presentations with parallax, theme toggle, bilingual VI/EN — then auto-capture as 16:9, 9:16, 1:1 social-ready images
-argument-hint: [--html-only|--capture-only] [--dark|--light] [--lang=en|vi] [--viewport=16x9|9x16|1x1] <topic>
+argument-hint: [--auto|--fast|--clone] <topic>
 ---
 
-Create a show-off HTML presentation and auto-capture sections as social-ready images.
+# /show-off — HTML Presentation + Social Capture
 
-**Input:** `$ARGUMENTS`
+## Usage
 
-## Flags
+```
+/show-off [--auto | --fast | --clone] <topic>
+```
 
-| Flag              | Effect                                                                 |
-| ----------------- | ---------------------------------------------------------------------- |
-| `--html-only`     | Generate HTML only, skip capture                                       |
-| `--capture-only`  | Re-capture existing HTML, skip HTML generation                         |
-| `--dark`          | Force dark theme for captures (default)                                |
-| `--light`         | Force light theme for captures                                         |
-| `--lang=vi`       | Set Vietnamese language for captures                                   |
-| `--lang=en`       | Set English language for captures (default)                            |
-| `--viewport=16x9` | Capture only 16:9 (repeatable — combine with other `--viewport` flags) |
-| `--viewport=9x16` | Capture only 9:16                                                      |
-| `--viewport=1x1`  | Capture only 1:1                                                       |
-| `--sections=a,b`  | Capture only specified sections (default: hero,features,demo,cta)      |
+- **_(none)_** — Interactive: ask style/content, review gate before capture
+- **`--auto`** — Skip all prompts, use defaults (gradient, 16x9+9x16+1x1, dark, en)
+- **`--fast`** — Ask style only, skip review gate, capture immediately
+- **`--clone`** — Re-capture existing HTML in `tmp/show-off-<slug>/`, skip generation
 
 ---
 
-## Steps
+### Step 1 — Parse
 
-### 1. Parse flags and resolve slug
-
-Strip all flags from `$ARGUMENTS`. Derive `<slug>` (kebab-case) and `<title>` (human-readable) from remaining text. Fallback: current git branch name.
-
-Resolve `<project-root>` = current working directory (the project root).
+Strip flag from `$ARGUMENTS`. Derive `<slug>` (kebab-case) and `<title>`. Fallback: git branch name.
 
 Output dir: `<project-root>/tmp/show-off-<slug>/`
 
 ---
 
-### 2. Generate HTML
+### Step 2 — Ask (interactive only)
 
-**Skip if `--capture-only`.**
+**Skip if `--auto`, `--fast`, or `--clone`.**
 
-Write `<project-root>/tmp/show-off-<slug>/index.html` — fully self-contained, no build step.
+Single message — do not ask one-by-one:
 
-**Sections** (in order):
+```
+🎨 Show-off setup for "<title>"
 
-| ID          | Purpose                                                     |
-| ----------- | ----------------------------------------------------------- |
-| `#hero`     | Large title, tagline, CTA button                            |
-| `#features` | 3 highlight cards with icons                                |
-| `#demo`     | Main content — code block, screenshot embed, or rich detail |
-| `#cta`      | Social CTA, share links, badge                              |
+Visual
+  1. Style      gradient · minimal · neon · glass · editorial  [gradient]
+  2. Viewports  16x9 · 9x16 · 1x1 · all                       [all]
+  3. Theme      dark · light                                    [dark]
+  4. Language   en · vi                                         [en]
 
-**Capture layout constraints** — each section is captured as one independent image:
+Content
+  5. Key message   One sentence — the headline value prop
+  6. Highlights    3 features/points to showcase (comma-separated)
+  7. Demo type     code · pipeline · screenshot · table          [code]
 
-- **No `min-height: 100vh`** — sections must be naturally compact; never force viewport height
-- **One message per section** — title + 3–4 supporting elements max; no scrolling content
-- **Target ≤ 80vh of content** at 1080px height so the capture agent's 5% top/bottom margin is visible
-- **No `background-attachment: fixed`** — Playwright headless doesn't scroll, so fixed backgrounds anchor incorrectly; use `background` with static gradients only
+Background
+  8. Background    folder path · auto                            [auto]
 
-**Required features:**
+Example: "neon, 1x1, dark, en / Fastest way to ship · /plan, /cook, /fix · pipeline / auto"
+```
 
-- **Parallax (browser only)**: `#hero` and `#cta` may use `background-attachment: fixed` for the live HTML experience, but this does not affect capture (the capture agent overrides backgrounds)
-- **Theme toggle**: `#theme-toggle` button — `data-theme="dark"` on `<html>`, CSS custom properties (`--bg`, `--fg`, `--accent`) switch under `[data-theme="dark"]`
-- **Bilingual**: every user-facing string has `data-vi` and `data-en` attributes; `#lang-toggle` button swaps visible text; expose `applyLang(lang)` as a global function on `window`
-- **Typography**: Inter via Google Fonts CDN or system font stack fallback
-- **No frameworks** — vanilla JS only; all styles in `<style>`, all scripts in one `<script>` block before `</body>`
-- **Controls bar**: `#controls` wrapper around `#theme-toggle` + `#lang-toggle` (hidden during capture)
+For any content field left blank — ask a targeted follow-up before generating. Do **not** invent content from the repo without asking.
+
+`auto` background: search for a royalty-free photo via Unsplash API or pick randomly from `tmp/show-off-<slug>/backgrounds/` if it exists.
+
+`--fast`: ask style only (one line), skip the rest.
 
 ---
 
-### 3. Review gate
+### Step 3 — Generate
 
-**Skip if `--capture-only` or `--html-only`.**
+**Skip if `--clone`.**
 
-Print the preview path and wait for user approval:
+Write `tmp/show-off-<slug>/index.html` — fully self-contained, no build step.
+
+Sections in order: `#hero` (title, tagline, CTA) · `#features` (3 cards) · `#demo` (code/pipeline/detail) · `#cta` (share, install, stats)
+
+#### Style recipes
+
+**`gradient`** — Modern dev-tool / Inter 400/700/900 + JetBrains Mono
 
 ```
-📄 Preview ready: tmp/show-off-<slug>/index.html
-
-Open it in your browser to review. When ready:
-  • type "ok" or "capture" to proceed
-  • describe changes to apply first (e.g. "change hero title", "make features darker")
+Dark  --bg:#0a0a0f --bg2:#111118 --bg3:#1a1a24 --fg:#e8e8f0 --fg2:#9999bb
+      --accent:#7c6af5 --accent2:#a78bfa --accent3:#34d399
+      --border:rgba(124,106,245,0.2) --card:rgba(26,26,36,0.8)
+      --glow:rgba(124,106,245,0.15) --code-bg:#0d0d1a
+Light --bg:#f5f5ff --bg2:#ebebff --bg3:#ddddf8 --fg:#111128 --fg2:#4444aa
+      --accent:#5b47e0 --accent2:#7c5ce8 --accent3:#059669
+      --border:rgba(91,71,224,0.25) --card:rgba(255,255,255,0.85)
+      --glow:rgba(91,71,224,0.1) --code-bg:#1a1a2e  ← always dark, even in light
 ```
 
-**Wait for user input** — do not proceed automatically.
+Techniques: gradient text via `-webkit-background-clip:text` (white→accent dark, `#111`→accent light — separate `[data-theme="light"] h1` rule required) · hero bg `radial-gradient` no `fixed` attachment · card `translateY(-4px)` + accent border + glow shadow on hover · `::before` 2px gradient top-border reveal · glow CTA button
 
-- If the user approves (`ok`, `yes`, `capture`, `lgtm`, or equivalent): proceed to Step 4.
-- If the user requests changes: apply them to `index.html`, then re-print the preview path and wait again. Repeat until approved.
+**`minimal`** — Claude Code docs / Inter + JetBrains Mono + Playfair Display (hero)
+
+Light `--bg-base:#faf9f7 --accent:#c15f3c --accent-sub:rgba(193,95,60,0.08) --bg-border:#ddd8d0` / Dark `--bg-base:#0a0a0a --bg-surface:#111111 --bg-border:#2a2a2a`
+
+Techniques: `── LABEL ──` cover rule via flanking `<span class="rule">` · JetBrains Mono eyebrow uppercase · Playfair Display italic hero heading · bordered cards with accent glow on hover · `◈` section kicker
+
+**`neon`** — Cyberpunk / Orbitron + Share Tech Mono · `--bg:#000 --green:#00ff41 --cyan:#00f5ff --magenta:#ff00aa`
+
+Techniques: double `text-shadow` glow · CRT scanlines `body::after repeating-linear-gradient` · rolling scan beam animation · `@keyframes glitch` clip-path on h1 · corner bracket `::before/::after`
+
+**`glass`** — Frosted future / Plus Jakarta Sans · mesh blobs (`#7c3aed #06b6d4 #ec4899`, blur:100px, position:fixed)
+
+Techniques: `backdrop-filter:blur(16px)` glass cards · shimmer box-shadow border on hover · deeper blur on hover · `rgba` CTA button
+
+**`editorial`** — Print magazine / DM Serif Display + Inter · `--bg:#fafaf8 --accent:#d4231a` (dark: `--bg:#111`)
+
+Techniques: `border-top:3px` rule openers · oversized h1 `clamp(3.5rem,10vw,8rem)` · pull-quote `border-left:4px` · magazine dateline badge
+
+#### Universal rules
+
+- z-index: `::before`/`::after` → 0, text content → 1
+- Hero: `max-width:720px` container, `font-size:clamp(2rem,6vw,5rem)`
+- Sections: `padding:clamp(48px,8vw,96px) clamp(28px,6vw,80px)` — no fixed px
+- Capture height: ~600–800px per section, no forced scroll
+- Cards: `grid-template-columns:repeat(3,1fr)` with separator lines
+- Code: JetBrains Mono, `line-height:1.8`, `padding:20px 24px`
+- Theme: all tokens in `:root` (dark), ALL overridden in `[data-theme="light"]`; `--code-bg` always dark; gradient text needs separate light rule; deepen accents for light contrast
+- Required: `#theme-toggle` + `#lang-toggle` in `#controls`; `data-en`/`data-vi` on every string; `applyLang(lang)` global; vanilla JS only; no `background-attachment:fixed`; no `min-height:100vh` on sections
 
 ---
 
-### 4. Capture images
+### Step 4 — Review gate
 
-**Skip if `--html-only`.**
-
-Spawn the **`playwright-capture`** agent with:
+**Skip if `--auto`, `--fast`, or `--clone`.**
 
 ```
-HTML_PATH    = <project-root>/tmp/show-off-<slug>/index.html
-OUTPUT_DIR   = <project-root>/tmp/show-off-<slug>/images
-RUNNER       = <project-root>/.claude/skills/playwright-skill/run.js
-SECTIONS     = (from --sections flag, default: hero,features,demo,cta)
-VIEWPORTS    = (from --viewport flags, default: 16x9,9x16,1x1)
-THEME        = light if --light, else dark
-LANG         = from --lang=..., default: en
+📄 Preview ready: tmp/show-off-<slug>/index.html  Style: <style>
+Open in browser — "ok" to capture · describe changes to iterate
 ```
+
+Wait for user. Loop until approved.
 
 ---
 
-### 5. Report
+### Step 5 — Capture + Composite
+
+Spawn the **`playwright-capture`** agent:
+
+```
+HTML_PATH   = <project-root>/tmp/show-off-<slug>/index.html
+OUTPUT_DIR  = <project-root>/tmp/show-off-<slug>/images
+RUNNER      = <project-root>/.claude/skills/playwright-skill/run.js
+SECTIONS    = hero, features, demo, cta
+VIEWPORTS   = <chosen>  THEME = <chosen>  LANG = <chosen>
+BG_SOURCE   = <folder path> | auto
+```
+
+**Capture method** — render page naturally, scroll to center each section in viewport, screenshot viewport (not element clip). This preserves the page's own CSS background.
+
+**Composite** — for each captured PNG:
+1. Resize/crop one background image to the target viewport dimensions (cover)
+2. Place the section PNG centered on the background with ~7% padding each side
+3. Apply `border-radius: 24px` + `box-shadow: 0 24px 80px rgba(0,0,0,0.35)` to the card
+4. Save final composite as `{section}-{viewport}-{theme}-{lang}.png`
+
+**Background source resolution:**
+- User path → use JPGs from that folder (rotate per section)
+- `auto` → download a suitable photo from Unsplash (`https://source.unsplash.com/1080x1080/?nature,bokeh`) per section
+
+---
+
+### Step 6 — Report
 
 ```
 ✅ Show-off ready: tmp/show-off-<slug>/
-
-  Preview  : tmp/show-off-<slug>/index.html
-  Images   : tmp/show-off-<slug>/images/  (<N> files)
-
-    hero-16x9.png    hero-9x16.png    hero-1x1.png
-    features-16x9.png  features-9x16.png  features-1x1.png
-    demo-16x9.png    demo-9x16.png    demo-1x1.png
-    cta-16x9.png     cta-9x16.png     cta-1x1.png
+   Style: <style> · <viewports> · <theme> · <lang>
+   Preview : tmp/show-off-<slug>/index.html
+   Images  : tmp/show-off-<slug>/images/  (<N> files)
 ```
 
-If any capture failed, list which section/viewport and the error.
+List any failed captures with section/viewport and error.
+
+---
+
+## Agents
+
+| Agent                | Step                          | Modes                     |
+| -------------------- | ----------------------------- | ------------------------- |
+| `playwright-capture` | 5 — capture + composite       | All (after HTML is ready) |
+
+---
+
+## Integration
+
+- `/show-off --clone` — re-capture after manual HTML edits
+- `/show-off --auto <topic>` — zero-prompt batch generation
