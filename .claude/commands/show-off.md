@@ -142,7 +142,7 @@ VIEWPORTS   = <chosen>  THEME = <chosen>  LANG = <chosen>
 BG_SOURCE   = <folder path> | auto
 ```
 
-**Capture method** — render page naturally, scroll to center each section in viewport, screenshot viewport (not element clip). This preserves the page's own CSS background.
+**Capture method** — for each section: resize viewport height to the section's exact pixel height, scroll section to `top: 0`, screenshot. Each image contains exactly one section — no bleed from adjacent sections.
 
 **Composite** — for each captured PNG:
 1. Resize/crop one background image to the target viewport dimensions (cover)

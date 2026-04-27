@@ -28,7 +28,7 @@ All fields optional — agent infers mode from what's present:
 
 | Condition | Mode |
 |---|---|
-| `SECTIONS` provided | **Section** — scroll each section to viewport center, screenshot full viewport |
+| `SECTIONS` provided | **Section** — resize viewport to section height, scroll section to top, screenshot |
 | `SELECTOR` provided | **Element** — clip to element bounding box |
 | Neither | **Page** — full-page screenshot |
 
@@ -116,18 +116,28 @@ async function composite(compositePage, cardPath, bgPath, outPath, vp) {
 }
 
 async function captureSection(page, compositePage, sectionId, vp, theme, lang, bgFile) {
-  await page.evaluate(id => {
+  // Get document-absolute position using getBoundingClientRect + scrollY (reliable across all layouts)
+  const metrics = await page.evaluate(id => {
     const el = document.getElementById(id);
-    if (!el) return;
+    if (!el) return null;
     const rect = el.getBoundingClientRect();
-    window.scrollTo({ top: Math.max(0, window.scrollY + rect.top + rect.height / 2 - window.innerHeight / 2), behavior: 'instant' });
+    return { top: Math.round(rect.top + window.scrollY), height: Math.ceil(rect.height) };
   }, sectionId);
-  await page.waitForTimeout(150);
+
+  if (!metrics) { console.warn(`#${sectionId} not found`); return; }
+
+  // Resize viewport to exact section height — eliminates adjacent-section bleed
+  await page.setViewportSize({ width: vp.width, height: metrics.height });
+  await page.evaluate(y => window.scrollTo({ top: y, behavior: 'instant' }), metrics.top);
+  await page.waitForTimeout(200);
 
   const suffix = [sectionId, vp.name, theme, lang].filter(Boolean).join('-');
   const finalPath = `${OUT}/${suffix}.png`;
   const capturePath = bgFile ? `${OUT}/${suffix}-raw.png` : finalPath;
   await page.screenshot({ path: capturePath });
+
+  // Restore nominal viewport width so next section's layout is computed at full width
+  await page.setViewportSize({ width: vp.width, height: vp.height });
 
   if (bgFile) {
     await composite(compositePage, capturePath, bgFile, finalPath, vp);
@@ -174,7 +184,7 @@ if (!fs.existsSync(OUT)) fs.mkdirSync(OUT, { recursive: true });
 
     if (SECTIONS.length > 0) {
       for (let i = 0; i < SECTIONS.length; i++) {
-        const bg = bgFiles.length ? bgFiles[i % bgFiles.length] : null;
+        const bg = bgFiles.length ? bgFiles[0] : null;
         await captureSection(page, compositePage, SECTIONS[i], vp, theme, lang, bg);
       }
     } else if (SELECTOR) {
