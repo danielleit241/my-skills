@@ -1,5 +1,6 @@
 {
   "codingLevel": 3,
+  "compactDay": 3,
   "simplify": {
     "threshold": {
       "enabled": true,
@@ -7,5 +8,6 @@
       "fileCount": 8,
       "singleFileLoc": 200
     }
-  }
+  },
+  "lastCompaction": "2026-04-27 14:50:37"
 }

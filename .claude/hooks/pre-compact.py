@@ -2,22 +2,72 @@
 """
 PreCompact Hook — save state before context compaction.
 """
+import json
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "lib"))
 from utils import (
     append_file, ensure_dir, find_files,
-    get_datetime_string, get_sessions_dir, get_time_string, log,
+    get_datetime_string, get_project_root, get_sessions_dir, get_time_string, log,
 )
+
+
+def load_ck_json() -> dict:
+    root = get_project_root()
+    if not root:
+        return {}
+    ck = root / ".ck.json"
+    try:
+        return json.loads(ck.read_text(encoding="utf-8")) if ck.exists() else {}
+    except Exception:
+        return {}
+
+
+def stamp_ck_json(timestamp: str) -> None:
+    root = get_project_root()
+    if not root:
+        return
+    ck = root / ".ck.json"
+    data = load_ck_json()
+    data["lastCompaction"] = timestamp
+    ck.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+
+
+def purge_outdated(sessions_dir: Path, compact_day: int) -> None:
+    """Remove all session files older than compact_day days."""
+    now = __import__("time").time()
+    cutoff = compact_day * 86400
+    removed = 0
+    try:
+        for entry in sessions_dir.iterdir():
+            if not entry.is_file():
+                continue
+            try:
+                age = now - entry.stat().st_mtime
+            except OSError:
+                continue
+            if age > cutoff:
+                entry.unlink(missing_ok=True)
+                removed += 1
+    except Exception:
+        pass
+    if removed:
+        log(f"[PreCompact] Purged {removed} session file(s) older than {compact_day}d")
 
 
 def main() -> None:
     sessions_dir = get_sessions_dir()
     ensure_dir(sessions_dir)
 
+    config = load_ck_json()
+    compact_day: int = int(config.get("compactDay", 3))
+
     timestamp = get_datetime_string()
     append_file(sessions_dir / "compaction-log.txt", f"[{timestamp}] Context compaction triggered\n")
+
+    stamp_ck_json(timestamp)
+    purge_outdated(sessions_dir, compact_day)
 
     active = find_files(sessions_dir, "*-session.tmp")
     if active:
