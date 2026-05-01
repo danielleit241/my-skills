@@ -2,7 +2,7 @@
 name: playwright-capture
 description: General-purpose Playwright screenshot agent. Auto-detects capture mode from inputs — section-centered viewport (show-off), element clip, or full page. Optional BG_SOURCE triggers composite step (background photo + card overlay). Spawned by /show-off and any task needing screenshots.
 tools: ["Write", "Bash"]
-model: sonnet
+model: haiku
 ---
 
 Screenshot pages or elements using Playwright. Auto-detect the capture mode from what's provided.
@@ -11,26 +11,26 @@ Screenshot pages or elements using Playwright. Auto-detect the capture mode from
 
 All fields optional — agent infers mode from what's present:
 
-| Field | Description |
-|---|---|
-| `HTML_PATH` | Absolute path to an HTML file (or URL) |
-| `OUTPUT_DIR` | Absolute path for PNG output |
-| `RUNNER` | Absolute path to `playwright-skill/run.js` |
-| `SECTIONS` | CSS IDs to capture (e.g. `hero,features,demo,cta`) — triggers section mode |
-| `SELECTOR` | Single CSS selector — triggers element clip mode |
-| `VIEWPORTS` | `16x9`, `9x16`, `1x1` (comma-separated, default: `16x9`) |
-| `THEME` | `dark`, `light`, or `both` (sets `data-theme` on `<html>`) |
-| `LANG` | `en`, `vi`, or `both` (calls `window.applyLang(lang)` if available) |
-| `BG_SOURCE` | Folder path or `auto` — enables composite step |
-| `SCALE` | Device scale factor (default: `2`) |
+| Field        | Description                                                                |
+| ------------ | -------------------------------------------------------------------------- |
+| `HTML_PATH`  | Absolute path to an HTML file (or URL)                                     |
+| `OUTPUT_DIR` | Absolute path for PNG output                                               |
+| `RUNNER`     | Absolute path to `playwright-skill/run.js`                                 |
+| `SECTIONS`   | CSS IDs to capture (e.g. `hero,features,demo,cta`) — triggers section mode |
+| `SELECTOR`   | Single CSS selector — triggers element clip mode                           |
+| `VIEWPORTS`  | `16x9`, `9x16`, `1x1` (comma-separated, default: `16x9`)                   |
+| `THEME`      | `dark`, `light`, or `both` (sets `data-theme` on `<html>`)                 |
+| `LANG`       | `en`, `vi`, or `both` (calls `window.applyLang(lang)` if available)        |
+| `BG_SOURCE`  | Folder path or `auto` — enables composite step                             |
+| `SCALE`      | Device scale factor (default: `2`)                                         |
 
 ## Auto-detect Mode
 
-| Condition | Mode |
-|---|---|
+| Condition           | Mode                                                                               |
+| ------------------- | ---------------------------------------------------------------------------------- |
 | `SECTIONS` provided | **Section** — resize viewport to section height, scroll section to top, screenshot |
-| `SELECTOR` provided | **Element** — clip to element bounding box |
-| Neither | **Page** — full-page screenshot |
+| `SELECTOR` provided | **Element** — clip to element bounding box                                         |
+| Neither             | **Page** — full-page screenshot                                                    |
 
 ## Steps
 

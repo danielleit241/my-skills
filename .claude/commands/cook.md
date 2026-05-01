@@ -1,5 +1,5 @@
 ---
-description: Guided feature development with codebase understanding and architecture focus. Accepts an optional plan file path: /cook plans/260418-auth/plan.md
+description: Guided feature development with codebase understanding and architecture focus. Modes: --auto (auto-approve ≥9.5), --fast (skip test/review), --parallel (multi-agent). Flags: --no-test (skip tester), --tdd (tests-first). Accepts an optional plan file path: /cook plans/260418-auth/plan.md
 ---
 
 # /cook — Structured Implementation Pipeline
@@ -7,7 +7,7 @@ description: Guided feature development with codebase understanding and architec
 ## Usage
 
 ```
-/cook [--auto | --fast | --parallel] [plan-file-path | feature-description]
+/cook [--auto | --fast | --parallel] [--no-test | --tdd] [plan-file-path | feature-description]
 ```
 
 Auto-detect mode if no flag given:
@@ -15,6 +15,10 @@ Auto-detect mode if no flag given:
 - **Auto** (`--auto`) — auto-approve if score ≥ 9.5 with 0 critical
 - **Fast** (`--fast`) — skip tester/reviewer loop, single-pass implement
 - **Parallel** (`--parallel`) — multi-agent execution for 3+ independent phases
+
+Test flags (orthogonal to execution mode):
+- **`--no-test`** — skip the tester sub-agent entirely; proceed directly to Step 3.S → Step 4
+- **`--tdd`** — invert Step 3: write failing tests first, then implement until they pass
 
 ---
 
@@ -26,6 +30,7 @@ When a plan file path is provided, report what will be cooked:
 Plan: {Feature Name}
 Status: {status from plan.md}
 Mode: {Interactive | Auto | Fast | Parallel}
+Test:  {default | --no-test | --tdd}
 Phases remaining:
   [ ] Phase 1: Setup
   [ ] Phase 2: Backend
@@ -72,21 +77,34 @@ Stop between phases if:
 
 ### Step 3 — Test (tester sub-agent)
 
-Spawn the **`tester`** sub-agent after each phase (or all phases in --fast-skip):
+**`--no-test`**: skip this step entirely — proceed directly to Step 3.S.
 
+**Default / `--tdd`**:
+
+Default flow — spawn **`tester`** sub-agent after implementation:
 - Writes comprehensive tests for implemented code
 - Runs the full test suite — **100% pass required**
 - If tests fail → spawns **`debugger`** sub-agent to investigate root cause
 - Fix → re-test loop, **max 3 cycles**
 
-```
-// main agent → spawns tester sub-agent
-//
-// Test results: 18/18 passed ✓
+**`--tdd` flow** — invert the order per phase:
+1. Spawn **`tester`** to write failing tests — use the phase's `### Tests to Write First` section if present, otherwise derive test cases from the phase's success criteria
+2. Confirm tests fail (red) before implementing
+3. Implement until tests go green
+4. Run full suite — 100% pass required
 
-// If failed:
-//   main agent → spawns debugger sub-agent
-//   debugger → root cause found → fix → re-test
+```
+// Default:
+// main agent → spawns tester sub-agent
+// Test results: 18/18 passed ✓
+//
+// --tdd:
+// tester → writes failing tests (red) ✓
+// main agent → implements
+// tester → re-runs → 18/18 passed ✓
+//
+// --no-test:
+// [Step 3 skipped] → proceed to Step 3.S
 ```
 
 If 3 cycles exhausted without passing: **stop and report to user**.
@@ -128,7 +146,7 @@ Thresholds are configured in `.ck.json` under `simplify.threshold`:
 
 ### Step 4 — Code Review (code-reviewer sub-agent)
 
-Spawn the **`code-reviewer`** sub-agent after tests pass:
+Spawn the **`code-reviewer`** sub-agent after tests pass (or after Step 3.S if `--no-test`):
 
 - Reviews correctness, security, regressions, code quality
 - Produces a score and verdict: APPROVED / WARNING / BLOCK
@@ -177,7 +195,7 @@ Step 5 is **always required** — cook is incomplete without all 3 sub-agents:
 
 | Agent / Skill | Step | Modes |
 |---------------|------|-------|
-| `tester` | 3 — write + run tests | All except --fast |
+| `tester` | 3 — write failing tests (--tdd) or verify after impl | All except --fast, --no-test |
 | `debugger` | 3 — root cause analysis | When tests fail |
 | `simplify` skill | 3.S — auto-simplify on threshold breach | All (hook-driven) |
 | `code-reviewer` | 4 — review implementation | All except --fast |

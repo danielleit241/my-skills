@@ -1,5 +1,5 @@
 ---
-description: Plan a feature or system with auto-detected complexity. Modes: --fast (quick plan → cook), --hard (research + red-team + validate), --parallel (hard + file ownership per phase), --two (hard + 2 approaches, user selects). Always starts with Scope Challenge.
+description: Plan a feature or system with auto-detected complexity. Modes: --fast (quick plan → cook), --hard (research + red-team + validate), --parallel (hard + file ownership per phase), --two (hard + 2 approaches, user selects). Flags: --no-test (skip testing in cook), --tdd (tests-first per phase). Always starts with Scope Challenge.
 ---
 
 # /plan — Structured Planning Pipeline
@@ -7,7 +7,7 @@ description: Plan a feature or system with auto-detected complexity. Modes: --fa
 ## Usage
 
 ```
-/plan [--fast | --hard | --parallel | --two] <description>
+/plan [--fast | --hard | --parallel | --two] [--no-test | --tdd] <description>
 ```
 
 Auto-detect mode if no flag given:
@@ -16,6 +16,11 @@ Auto-detect mode if no flag given:
 - **Hard** — multi-file, unfamiliar domain, security-sensitive, or ≥ 3 phases
 - **Parallel** — Hard + per-phase file ownership map
 - **Two** — Hard + 2 approaches for user to select
+
+Test flags (propagate to `/cook`):
+
+- **`--no-test`** — mark plan so cook skips the tester sub-agent entirely
+- **`--tdd`** — instruct planner to add a "Tests to Write First" section to each phase; cook will write failing tests before implementing
 
 ---
 
@@ -30,6 +35,7 @@ Before spawning any agents, challenge scope inline:
 #   Complexity? → [Fast | Hard] — reasons: multi-file? unfamiliar? security?
 #
 # Mode: [Fast | Hard | Parallel | Two]
+# Test:  [default | --no-test | --tdd]
 ```
 
 If scope is too large: suggest splitting and **wait for user confirmation**.
@@ -54,7 +60,10 @@ Spawn **2 `plan-researcher` agents in parallel**:
 
 ### Step 2 — Plan Creation
 
-Spawn the **`planner` agent** with feature description + mode + research reports.
+Spawn the **`planner` agent** with feature description + mode + research reports + active test flag (`--no-test` or `--tdd` if set).
+
+- **`--tdd`**: planner adds a `### Tests to Write First` section to each phase file listing the key failing tests to write before implementation
+- **`--no-test`**: planner notes `testing: skipped` in each phase header
 
 Agent writes:
 
@@ -117,11 +126,11 @@ Then hydrate tasks via TodoWrite:
 // T3: {Phase 3} (blocked by T2)
 ```
 
-Output the exact cook command:
+Output the exact cook command, including any test flag that was passed to `/plan`:
 
 ```
 Ready to cook:
-/cook /abs/path/plans/{date}-{slug}/plan.md
+/cook [--no-test | --tdd] /abs/path/plans/{date}-{slug}/plan.md
 ```
 
 ---
