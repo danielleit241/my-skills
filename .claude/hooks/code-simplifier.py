@@ -82,6 +82,10 @@ def main() -> None:
     if not file_path:
         return
 
+    source_extensions = set(cfg.get("sourceExtensions", []))
+    if source_extensions and Path(file_path).suffix.lower() not in source_extensions:
+        return
+
     content = tool_input.get("content") or tool_input.get("new_string") or ""
     lines = len(content.splitlines()) if content else 0
 
