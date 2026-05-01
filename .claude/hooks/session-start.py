@@ -16,13 +16,11 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "lib"))
 from utils import (
     ensure_dir, find_files, get_claude_dir, get_homunculus_dir,
     get_learned_skills_dir, get_project_name, get_project_root,
-    get_session_search_dirs, get_sessions_dir, log,
-    read_file, sanitize_session_id, strip_ansi,
+    get_sessions_dir, log, sanitize_session_id, strip_ansi,
 )
 
 INSTINCT_CONFIDENCE_THRESHOLD = 0.7
 MAX_INJECTED_INSTINCTS = 6
-DEFAULT_SESSION_RETENTION_DAYS = 30
 
 
 # ── observer session lease ─────────────────────────────────────────────────────
@@ -193,88 +191,6 @@ def summarize_active_instincts(observer_context: dict) -> str:
     return "Active instincts:\n" + "\n".join(lines)
 
 
-# ── session selection ──────────────────────────────────────────────────────────
-
-def _normalize_path(p: str) -> str:
-    try:
-        return os.path.realpath(p)
-    except Exception:
-        return p
-
-
-def dedupe_recent_sessions(search_dirs: list[Path]) -> list[dict]:
-    by_name: dict[str, dict] = {}
-    for dir_idx, d in enumerate(search_dirs):
-        for match in find_files(d, "*-session.tmp", max_age_days=7):
-            name = match["path"].name
-            current = {**match, "dir_index": dir_idx}
-            existing = by_name.get(name)
-            if (
-                not existing
-                or current["mtime"] > existing["mtime"]
-                or (current["mtime"] == existing["mtime"] and current["dir_index"] < existing["dir_index"])
-            ):
-                by_name[name] = current
-    return sorted(by_name.values(), key=lambda x: (-x["mtime"], x["dir_index"]))
-
-
-def select_matching_session(sessions: list[dict], cwd: str, current_project: str) -> dict | None:
-    if not sessions:
-        return None
-    norm_cwd = _normalize_path(cwd)
-    project_match: dict | None = None
-    project_content: str | None = None
-    fallback: dict | None = None
-    fallback_content: str | None = None
-
-    for session in sessions:
-        content = read_file(session["path"])
-        if content is None:
-            continue
-        if fallback is None:
-            fallback, fallback_content = session, content
-
-        m = re.search(r"\*\*Worktree:\*\*\s*(.+)$", content, re.MULTILINE)
-        worktree = m.group(1).strip() if m else ""
-        if worktree and _normalize_path(worktree) == norm_cwd:
-            return {"session": session, "content": content, "match_reason": "worktree"}
-
-        if project_match is None and current_project:
-            pm = re.search(r"\*\*Project:\*\*\s*(.+)$", content, re.MULTILINE)
-            if pm and pm.group(1).strip() == current_project:
-                project_match, project_content = session, content
-
-    if project_match:
-        return {"session": project_match, "content": project_content, "match_reason": "project"}
-    if fallback:
-        return {"session": fallback, "content": fallback_content, "match_reason": "recency-fallback"}
-    log("[SessionStart] All session files were unreadable")
-    return None
-
-
-def prune_expired_sessions(search_dirs: list[Path], retention_days: int) -> int:
-    removed = 0
-    seen: set[Path] = set()
-    for d in search_dirs:
-        if d in seen or not d.exists():
-            continue
-        seen.add(d)
-        try:
-            for entry in d.iterdir():
-                if not entry.is_file() or not entry.name.endswith("-session.tmp"):
-                    continue
-                try:
-                    age = (datetime.now().timestamp() - entry.stat().st_mtime) / 86400
-                    if age > retention_days:
-                        entry.unlink()
-                        removed += 1
-                except Exception as err:
-                    log(f"[SessionStart] Warning: failed to prune {entry}: {err}")
-        except Exception:
-            pass
-    return removed
-
-
 # ── project type detection ─────────────────────────────────────────────────────
 
 _LANGUAGE_MARKERS: list[tuple[str, list[str], set[str]]] = [
@@ -382,19 +298,12 @@ def read_coding_level() -> str | None:
 
 def main() -> None:
     sessions_dir = get_sessions_dir()
-    search_dirs = get_session_search_dirs()
     learned_dir = get_learned_skills_dir()
     context_parts: list[str] = []
     observer_context = resolve_project_context()
 
     ensure_dir(sessions_dir)
     ensure_dir(learned_dir)
-
-    # Prune expired sessions
-    retention = int(os.environ.get("ECC_SESSION_RETENTION_DAYS") or DEFAULT_SESSION_RETENTION_DAYS)
-    pruned = prune_expired_sessions(search_dirs, retention)
-    if pruned:
-        log(f"[SessionStart] Pruned {pruned} expired session(s) older than {retention} day(s)")
 
     # Register observer session lease
     session_id = resolve_session_id()
@@ -414,18 +323,18 @@ def main() -> None:
     if instinct_summary:
         context_parts.append(instinct_summary)
 
-    # Previous session summary
-    recent = dedupe_recent_sessions(search_dirs)
-    if recent:
-        log(f"[SessionStart] Found {len(recent)} recent session(s)")
-        result = select_matching_session(recent, os.getcwd(), get_project_name() or "")
-        if result:
-            log(f"[SessionStart] Selected: {result['session']['path']} (match: {result['match_reason']})")
-            content = strip_ansi(result["content"] or "")
-            if content and "[Session context goes here]" not in content:
-                context_parts.append(f"Previous session summary:\n{content}")
-        else:
-            log("[SessionStart] No matching session found")
+    # Previous session state
+    state_file = sessions_dir / ".last-state.md"
+    if state_file.exists():
+        try:
+            state_content = strip_ansi(state_file.read_text(encoding="utf-8").strip())
+            if state_content:
+                context_parts.append(f"Previous session state:\n{state_content}")
+                log(f"[SessionStart] Loaded session state from .last-state.md")
+        except Exception as e:
+            log(f"[SessionStart] Warning: could not read session state: {e}")
+    else:
+        log("[SessionStart] No previous session state found")
 
     # Learned skills count (log only)
     learned = find_files(learned_dir, "*.md")

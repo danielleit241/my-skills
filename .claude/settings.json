@@ -96,6 +96,19 @@
           }
         ]
       }
+    ],
+    "SubagentStop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .claude/hooks/session-end.py",
+            "async": true,
+            "timeout": 10
+          }
+        ]
+      }
     ]
   },
   "ignorePatterns": [
