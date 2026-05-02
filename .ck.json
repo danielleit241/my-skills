@@ -6,8 +6,13 @@
       "enabled": true,
       "totalLoc": 400,
       "fileCount": 8,
-      "singleFileLoc": 200
+      "singleFileLoc": 200,
+      "sourceExtensions": [
+        ".py", ".js", ".ts", ".tsx", ".jsx",
+        ".go", ".rs", ".java", ".cs", ".cpp", ".c",
+        ".rb", ".php", ".swift", ".kt", ".vue", ".svelte"
+      ]
     }
   },
-  "lastCompaction": "2026-05-01 22:52:32"
+  "lastCompaction": "2026-05-02 16:15:38"
 }

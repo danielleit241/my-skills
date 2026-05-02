@@ -1,82 +1,146 @@
 # Security — Backend Principles
 
-Secrets, input validation, injection, auth, error responses, PII, rate limiting.
-
-## 1. Secrets Management
-
-Never hardcode secrets in source code or config files committed to version control.
-
-- Dev: use environment-local secret stores (dotenv, user secrets, OS keychain)
-- Prod: environment variables or a secrets vault (Vault, AWS Secrets Manager, etc.)
-- Rotate regularly; never log secrets
+OWASP Top 10 mitigation, input validation, rate limiting, secrets, and security headers. Language-independent. For auth-specific security (JWT, OAuth, MFA, passwords) see authentication.md.
 
 ---
 
-## 2. Input Validation
+## OWASP Top 10
 
-Validate all input at the transport boundary before it reaches business logic:
-- Required fields present
-- Type and format correct (length, pattern, enum values)
-- File uploads: validate size + MIME type + extension
+### 1. Broken Access Control
+- Enforce authorization on the server — never trust client-side checks
+- RBAC + deny by default; verify ownership before mutations
+- Log every access control failure
 
-Validators check **shape** only — business rule violations (uniqueness, ownership) belong in the service layer.
+### 2. Cryptographic Failures
+- TLS 1.3 minimum in transit — no HTTP, no TLS 1.0/1.1
+- Encrypt sensitive data at rest (AES-256)
+- Use CSPRNG for all tokens and nonces — never `Math.random()` or `rand()`
+- Password hashing: Argon2id (see authentication.md)
+
+### 3. Injection
+- **SQL**: parameterized queries always — never string-interpolate user input
+- **NoSQL**: typed query builders or ODM; reject raw user-supplied operators
+- **Command injection**: never pass user input to shell commands; use library APIs
+- **Path traversal**: sanitize file paths; reject `../` components
+
+### 4. Insecure Design
+- Threat model during design — identify trust boundaries before writing code
+- Defense in depth: authentication + authorization + input validation + rate limiting, not just one layer
+- Principle of least privilege at every layer: services, DB users, IAM roles, API scopes
+
+### 5. Security Misconfiguration
+- Remove default credentials and unused endpoints before deployment
+- CORS: explicit allow-list of origins — never `*` in production
+- Disable directory listing, stack traces in error responses, verbose error messages
+
+### 6. Vulnerable & Outdated Components
+- Run dependency audit in CI (`npm audit`, `pip-audit`, `govulncheck`, etc.)
+- Automate update PRs via Renovate or Dependabot
+- Lock files committed and verified in CI (SCA scan); fail build on out-of-sync lock file
+
+### 7. Authentication Failures
+See authentication.md for full detail. Critical controls:
+- Rate limiting on login, OTP, and password reset (≤10 attempts / 15 min)
+- Progressive delay or lockout after repeated failures
+- Session regeneration on login and privilege elevation
+
+### 8. Software & Data Integrity Failures
+- Verify signatures and checksums for external artifacts (packages, Docker images)
+- CI/CD pipelines run in isolated, immutable environments — no manual SSH into build agents
+- Code signing for release artifacts
+
+### 9. Logging & Monitoring Failures
+- Log: auth events (success/fail), access control failures, sensitive data mutations
+- Do NOT log: passwords, tokens, PII, raw credit card numbers
+- Centralized log aggregation with alerting on anomalies
+- Retain security logs ≥90 days
+
+### 10. Server-Side Request Forgery (SSRF)
+- Allow-list outbound URLs — reject anything not explicitly permitted
+- Block requests to internal IP ranges (169.254.x.x, 10.x.x.x, 172.16–31.x.x, 127.x.x.x)
+- Disable unnecessary URL schemes (`file://`, `gopher://`, `ftp://`)
+- Network segmentation: backend services unreachable from the public internet
+
+### Supply Chain Failures (2025)
+- Audit dependencies before adding: check maintenance activity, ownership, CVE history
+- Hash pinning for critical packages; monitor CVE databases for packages in use
 
 ---
 
-## 3. Injection Prevention
+## Input Validation
 
-- Use parameterized queries / ORM — never string-interpolate user input into SQL, shell commands, or HTML
-- Escape output in templating engines
-- Validate and sanitize file paths (no `../` traversal)
+Validate at every system boundary — API handler, event consumer, file parser:
 
----
+- **Allow-list over deny-list**: define what's valid; reject everything else
+- **Check presence, type, format, length** before using any value
+- **File uploads**: validate size + MIME type + magic bytes (not just extension)
+- **Structural only at transport layer**: no business rules in validators — uniqueness, ownership live in the service layer
 
-## 4. Authentication & Authorization
-
-- Every endpoint must explicitly declare auth requirement — no implicit defaults
-- Check **ownership** before mutations: verify the caller owns the resource or has the required role
-- Use a centralized identity abstraction (`ICurrentUserService`, middleware) — never parse raw auth tokens in business logic
-- Use role/permission constants — never magic strings
+Never trust data from headers, query strings, cookies, or inter-service calls without validation.
 
 ---
 
-## 5. Error Responses
+## Rate Limiting
 
-Never expose stack traces, exception messages, or internal structure to clients.
+| Endpoint type | Limit |
+|---------------|-------|
+| Login / OTP / password reset | ≤10 attempts / 15 min |
+| File upload | ≤10 requests / min |
+| Public API (unauthenticated) | ≤100 requests / 15 min |
+| Authenticated API | ≤1000 requests / 15 min |
+| Admin endpoints | ≤50 requests / 15 min |
 
-- Expected failures (404, 400, 409): return a structured error envelope
-- Unexpected failures (500): return a generic message, log the detail server-side
-- Global exception handler catches anything that escapes the service layer
-
----
-
-## 6. PII & Credentials in Logs
-
-Never log: passwords, tokens, full credit card numbers, SSNs, raw emails if sensitive.
-
-Log identifiers (userId, orderId), not values. Mask partial data when needed (e.g., last 4 digits only).
+Apply per user/IP. Return `429` with `Retry-After` header. Use a distributed counter (Redis) across instances — per-process counters reset on restart.
 
 ---
 
-## 7. Rate Limiting
+## Security Headers
 
-Mandatory on:
-- Auth endpoints (login, OTP, password reset)
-- File upload endpoints
-- Any endpoint callable by unauthenticated users
+```
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Content-Security-Policy: default-src 'self'
+X-Frame-Options: DENY
+X-Content-Type-Options: nosniff
+Referrer-Policy: strict-origin-when-cross-origin
+Permissions-Policy: geolocation=(), microphone=()
+```
+
+CSP is the most impactful for XSS mitigation. Start with `default-src 'self'` and relax only as needed with specific hashes or nonces.
 
 ---
 
-## Pre-Deployment Checklist
+## Secrets Management
 
-- [ ] No hardcoded secrets — env vars or vault
-- [ ] All mutating endpoints validate input before service call
-- [ ] No raw SQL string interpolation
-- [ ] Every endpoint has explicit auth declaration
-- [ ] Ownership checked before mutations
-- [ ] No stack traces in error responses
-- [ ] No credentials or PII in logs
-- [ ] Rate limiting on auth + upload endpoints
-- [ ] HTTPS enforced in production
-- [ ] Soft delete only — queries filter deleted records
-- [ ] Dependencies audited for known CVEs
+- Never commit secrets — `.env` (gitignored) locally; env vars or vault in CI/production
+- Use a secrets manager (Vault, AWS Secrets Manager, Azure Key Vault) for production credentials
+- Fail hard on missing secrets at startup — never fall back to hardcoded defaults
+- Rotate regularly; revoke and rotate immediately on any suspected exposure
+- Separate credentials per environment — dev/staging/prod never share secrets
+
+---
+
+## Checklist
+
+- [ ] TLS enforced; no HTTP in production
+- [ ] Parameterized queries everywhere — no string interpolation
+- [ ] Input validated at all system boundaries
+- [ ] Auth on every non-public endpoint; ownership checked on mutations
+- [ ] Rate limiting on auth and public endpoints
+- [ ] Security headers on all responses
+- [ ] CORS locked to explicit origins
+- [ ] No secrets in source control
+- [ ] Dependency audit in CI
+- [ ] Errors don't leak stack traces or internal paths
+- [ ] Auth and access-control failures logged
+- [ ] MFA for admin accounts
+
+---
+
+## Common Pitfalls
+
+- **Client-side validation only**: client checks are UX, not security — always re-validate server-side
+- **`Math.random()` for tokens**: use CSPRNG; `Math.random()` is predictable
+- **Trusting forwarded headers**: `X-Forwarded-For`, `X-User-Id` are spoofable without a controlled proxy
+- **Over-broad CORS (`*`)**: allows any origin to read authenticated API responses via browser
+- **Verbose error responses**: stack traces in production responses leak internal structure to attackers
+- **Insufficient logging**: missing auth failures makes breach detection and forensics impossible
