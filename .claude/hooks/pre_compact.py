@@ -24,15 +24,6 @@ def load_ck_json() -> dict:
         return {}
 
 
-def stamp_ck_json(timestamp: str) -> None:
-    root = get_project_root()
-    if not root:
-        return
-    ck = root / ".ck.json"
-    data = load_ck_json()
-    data["lastCompaction"] = timestamp
-    ck.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
-
 
 def purge_outdated(sessions_dir: Path, compact_day: int) -> None:
     """Remove all session files older than compact_day days."""
@@ -66,7 +57,6 @@ def main() -> None:
     timestamp = get_datetime_string()
     append_file(sessions_dir / "compaction-log.txt", f"[{timestamp}] Context compaction triggered\n")
 
-    stamp_ck_json(timestamp)
     purge_outdated(sessions_dir, compact_day)
 
     active = find_files(sessions_dir, "*-session.tmp")

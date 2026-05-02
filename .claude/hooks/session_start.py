@@ -267,7 +267,7 @@ def list_aliases(limit: int = 5) -> list[dict]:
 
 # ── coding level ──────────────────────────────────────────────────────────────
 
-_LEVEL_NAMES = {0: "ELI5", 1: "Junior", 2: "Mid-level", 3: "Senior", 4: "Tech Lead", 5: "God Mode"}
+_LEVEL_NAMES = {-1: "Default", 0: "ELI5", 1: "Junior", 2: "Mid-level", 3: "Senior", 4: "Tech Lead", 5: "God Mode"}
 _LEVEL_FILES = {0: "0-eli5.md", 1: "1-junior.md", 2: "2-midlevel.md", 3: "3-senior.md", 4: "4-techlead.md", 5: "5-godmode.md"}
 
 
@@ -283,12 +283,14 @@ def read_coding_level() -> str | None:
         level = int(cfg.get("codingLevel", 5))
         if level not in _LEVEL_NAMES:
             return None
-        style_file = root / ".claude" / "coding-levels" / _LEVEL_FILES[level]
-        if not style_file.exists():
-            return None
-        content = style_file.read_text(encoding="utf-8").strip()
         log(f"[SessionStart] Coding level: {level} ({_LEVEL_NAMES[level]})")
-        return content
+        if level == -1:
+            return None  # explicit default — no style injection
+        style_file = root / ".claude" / "coding-levels" / _LEVEL_FILES[level]
+        try:
+            return style_file.read_text(encoding="utf-8").strip()
+        except FileNotFoundError:
+            raise FileNotFoundError(f"Level file not found: {style_file}") from None
     except Exception as err:
         log(f"[SessionStart] Warning: failed to read .ck.json: {err}")
         return None
