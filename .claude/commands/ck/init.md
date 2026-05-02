@@ -76,7 +76,7 @@ Use the conflict answer directly in Step 5 execution — Merge skips existing fi
 "Which dev workflow bundles do you want?"
 Options:
 - `plan / cook / fix` — Full guided dev workflow
-- `code-review` — Standalone /code-review command
+- `code-review` — Standalone /ck:code-review command
 - `learn` — Extract session patterns → skill files
 - `docs-fe` — Frontend endpoint handoff doc
 
@@ -193,11 +193,11 @@ mkdir -p <target>/.claude/rules
 
 From `$CLAUDE_PROJECT_DIR/.claude/` → `<target>/.claude/`:
 
-- `hooks/session-start.py`, `hooks/session-end.py`, `hooks/pre-compact.py`, `hooks/suggest_compact.py`, `hooks/plan-context.py`
+- `hooks/session-start.py`, `hooks/session-end.py`, `hooks/pre-compact.py`, `hooks/suggest_compact.py`, `hooks/ck:plan-context.py`
 - `lib/utils.py`
 - All files in `coding-levels/` (enumerate with Glob — do not hardcode names)
 - `rules/agents.md`, `rules/commands.md`, `rules/skills.md`
-- `commands/ck/init.md`, `commands/coding-level.md`
+- `commands/ck/init.md`, `commands/ck:coding-level.md`
 
 **5c. Copy bundle files**
 

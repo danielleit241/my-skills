@@ -3,7 +3,7 @@ description: Code review — local uncommitted changes or GitHub PR (pass PR num
 argument-hint: [pr-number | pr-url | blank for local review]
 ---
 
-# /code-review
+# /ck:code-review
 
 **Input**: $ARGUMENTS
 

@@ -1,13 +1,13 @@
 ---
-description: Guided feature development with codebase understanding and architecture focus. Modes: --auto (auto-approve ≥9.5), --fast (skip test/review), --parallel (multi-agent). Flags: --no-test (skip tester), --tdd (tests-first). Accepts an optional plan file path: /cook plans/260418-auth/plan.md
+description: Guided feature development with codebase understanding and architecture focus. Modes: --auto (auto-approve ≥9.5), --fast (skip test/review), --parallel (multi-agent). Flags: --no-test (skip tester), --tdd (tests-first). Accepts an optional plan file path: /ck:cook plans/260418-auth/plan.md
 ---
 
-# /cook — Structured Implementation Pipeline
+# /ck:cook — Structured Implementation Pipeline
 
 ## Usage
 
 ```
-/cook [--auto | --fast | --parallel] [--no-test | --tdd] [plan-file-path | feature-description]
+/ck:cook [--auto | --fast | --parallel] [--no-test | --tdd] [plan-file-path | feature-description]
 ```
 
 Auto-detect mode if no flag given:
@@ -207,6 +207,6 @@ Step 5 is **always required** — cook is incomplete without all 3 sub-agents:
 
 ## Integration
 
-- `/plan --hard <description>` — create a plan file first, then pass it to `/cook`
-- `/fix --quick` — fix build errors during implementation
-- `/code-review` — standalone review if you skipped --fast
+- `/ck:plan --hard <description>` — create a plan file first, then pass it to `/ck:cook`
+- `/ck:fix --quick` — fix build errors during implementation
+- `/ck:code-review` — standalone review if you skipped --fast

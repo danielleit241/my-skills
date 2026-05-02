@@ -2,12 +2,12 @@
 description: Structured bug-fix pipeline. Scout → Diagnose+Fix → Review → Finalize. Replaces build-fix. Modes: --auto (auto-approve ≥9.5), --quick (fast cycle, skip review), --review (pause at each step).
 ---
 
-# /fix — Structured Bug-Fix Pipeline
+# /ck:fix — Structured Bug-Fix Pipeline
 
 ## Usage
 
 ```
-/fix [--auto | --quick | --review] <bug description>
+/ck:fix [--auto | --quick | --review] <bug description>
 ```
 
 Auto-detect mode if no flag given based on description:
@@ -130,5 +130,5 @@ Always required — fix is incomplete without git-manager:
 
 ## Integration
 
-- `/plan` → `/cook` → `/fix` — fix regressions found after cooking
-- `/code-review` — standalone review without the full fix pipeline
+- `/ck:plan` → `/ck:cook` → `/ck:fix` — fix regressions found after cooking
+- `/ck:code-review` — standalone review without the full fix pipeline

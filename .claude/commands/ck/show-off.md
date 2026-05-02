@@ -3,18 +3,18 @@ description: Generate impressive multi-section HTML presentations with parallax,
 argument-hint: [--auto|--fast|--clone] <topic>
 ---
 
-# /show-off — HTML Presentation + Social Capture
+# /ck:show-off — HTML Presentation + Social Capture
 
 ## Usage
 
 ```
-/show-off [--auto | --fast | --clone] <topic>
+/ck:show-off [--auto | --fast | --clone] <topic>
 ```
 
 - **_(none)_** — Interactive: ask style/content, review gate before capture
 - **`--auto`** — Skip all prompts, use defaults (gradient, 16x9+9x16+1x1, dark, en)
 - **`--fast`** — Ask style only, skip review gate, capture immediately
-- **`--clone`** — Re-capture existing HTML in `tmp/show-off-<slug>/`, skip generation
+- **`--clone`** — Re-capture existing HTML in `tmp/ck:show-off-<slug>/`, skip generation
 
 ---
 
@@ -22,7 +22,7 @@ argument-hint: [--auto|--fast|--clone] <topic>
 
 Strip flag from `$ARGUMENTS`. Derive `<slug>` (kebab-case) and `<title>`. Fallback: git branch name.
 
-Output dir: `<project-root>/tmp/show-off-<slug>/`
+Output dir: `<project-root>/tmp/ck:show-off-<slug>/`
 
 ---
 
@@ -49,12 +49,12 @@ Content
 Background
   8. Background    folder path · auto                            [auto]
 
-Example: "neon, 1x1, dark, en / Fastest way to ship · /plan, /cook, /fix · pipeline / auto"
+Example: "neon, 1x1, dark, en / Fastest way to ship · /ck:plan, /ck:cook, /ck:fix · pipeline / auto"
 ```
 
 For any content field left blank — ask a targeted follow-up before generating. Do **not** invent content from the repo without asking.
 
-`auto` background: search for a royalty-free photo via Unsplash API or pick randomly from `tmp/show-off-<slug>/backgrounds/` if it exists.
+`auto` background: search for a royalty-free photo via Unsplash API or pick randomly from `tmp/ck:show-off-<slug>/backgrounds/` if it exists.
 
 `--fast`: ask style only (one line), skip the rest.
 
@@ -64,7 +64,7 @@ For any content field left blank — ask a targeted follow-up before generating.
 
 **Skip if `--clone`.**
 
-Write `tmp/show-off-<slug>/index.html` — fully self-contained, no build step.
+Write `tmp/ck:show-off-<slug>/index.html` — fully self-contained, no build step.
 
 Sections in order: `#hero` (title, tagline, CTA) · `#features` (3 cards) · `#demo` (code/pipeline/detail) · `#cta` (share, install, stats)
 
@@ -121,7 +121,7 @@ Techniques: `border-top:3px` rule openers · oversized h1 `clamp(3.5rem,10vw,8re
 **Skip if `--auto`, `--fast`, or `--clone`.**
 
 ```
-📄 Preview ready: tmp/show-off-<slug>/index.html  Style: <style>
+📄 Preview ready: tmp/ck:show-off-<slug>/index.html  Style: <style>
 Open in browser — "ok" to capture · describe changes to iterate
 ```
 
@@ -134,8 +134,8 @@ Wait for user. Loop until approved.
 Spawn the **`playwright-capture`** agent:
 
 ```
-HTML_PATH   = <project-root>/tmp/show-off-<slug>/index.html
-OUTPUT_DIR  = <project-root>/tmp/show-off-<slug>/images
+HTML_PATH   = <project-root>/tmp/ck:show-off-<slug>/index.html
+OUTPUT_DIR  = <project-root>/tmp/ck:show-off-<slug>/images
 RUNNER      = <project-root>/.claude/skills/playwright-skill/run.js
 SECTIONS    = hero, features, demo, cta
 VIEWPORTS   = <chosen>  THEME = <chosen>  LANG = <chosen>
@@ -159,10 +159,10 @@ BG_SOURCE   = <folder path> | auto
 ### Step 6 — Report
 
 ```
-✅ Show-off ready: tmp/show-off-<slug>/
+✅ Show-off ready: tmp/ck:show-off-<slug>/
    Style: <style> · <viewports> · <theme> · <lang>
-   Preview : tmp/show-off-<slug>/index.html
-   Images  : tmp/show-off-<slug>/images/  (<N> files)
+   Preview : tmp/ck:show-off-<slug>/index.html
+   Images  : tmp/ck:show-off-<slug>/images/  (<N> files)
 ```
 
 List any failed captures with section/viewport and error.
@@ -179,5 +179,5 @@ List any failed captures with section/viewport and error.
 
 ## Integration
 
-- `/show-off --clone` — re-capture after manual HTML edits
-- `/show-off --auto <topic>` — zero-prompt batch generation
+- `/ck:show-off --clone` — re-capture after manual HTML edits
+- `/ck:show-off --auto <topic>` — zero-prompt batch generation

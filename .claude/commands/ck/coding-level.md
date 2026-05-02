@@ -19,16 +19,16 @@ Set the coding explanation depth. Levels 0–5 control how much context, rationa
 ## Usage
 
 ```
-/coding-level          # show current level + interactive menu
-/coding-level 3        # set directly
-/coding-level reset    # remove config (back to God Mode default)
+/ck:coding-level          # show current level + interactive menu
+/ck:coding-level 3        # set directly
+/ck:coding-level reset    # remove config (back to God Mode default)
 ```
 
 ## How to execute this command
 
 Read the argument `$ARGUMENTS`:
 
-**No argument** — show the current level (read `.claude/coding-level.json` if it exists, else level 5) and print the level table above. Ask the user to pick a number 0–5.
+**No argument** — show the current level (read `.claude/ck:coding-level.json` if it exists, else level 5) and print the level table above. Ask the user to pick a number 0–5.
 
 **Argument is a number 0–5** — write `.ck.json` at the project root:
 ```json

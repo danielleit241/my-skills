@@ -2,12 +2,12 @@
 description: Plan a feature or system with auto-detected complexity. Modes: --fast (quick plan → cook), --hard (research + red-team + validate), --parallel (hard + file ownership per phase), --two (hard + 2 approaches, user selects). Flags: --no-test (skip testing in cook), --tdd (tests-first per phase). Always starts with Scope Challenge.
 ---
 
-# /plan — Structured Planning Pipeline
+# /ck:plan — Structured Planning Pipeline
 
 ## Usage
 
 ```
-/plan [--fast | --hard | --parallel | --two] [--no-test | --tdd] <description>
+/ck:plan [--fast | --hard | --parallel | --two] [--no-test | --tdd] <description>
 ```
 
 Auto-detect mode if no flag given:
@@ -17,7 +17,7 @@ Auto-detect mode if no flag given:
 - **Parallel** — Hard + per-phase file ownership map
 - **Two** — Hard + 2 approaches for user to select
 
-Test flags (propagate to `/cook`):
+Test flags (propagate to `/ck:cook`):
 
 - **`--no-test`** — mark plan so cook skips the tester sub-agent entirely
 - **`--tdd`** — instruct planner to add a "Tests to Write First" section to each phase; cook will write failing tests before implementing
@@ -44,16 +44,16 @@ If scope is too large: suggest splitting and **wait for user confirmation**.
 
 ### Step 1 — Research (Hard / Parallel / Two only)
 
-Spawn **2 `plan-researcher` agents in parallel**:
+Spawn **2 `researcher` agents in parallel**:
 
-- **Instance A** — primary approach and best practices
-- **Instance B** — alternative approach and tradeoffs
+- **Instance A** — role: `Primary` — recommended approach and best practices
+- **Instance B** — role: `Alternative` — alternative approach and tradeoffs
 
 ```
-// spawning 2 plan-researcher agents in parallel
+// spawning 2 researcher agents in parallel
 //
-// Researcher A: [approach] → [verdict]
-// Researcher B: [approach] → [verdict]
+// Researcher A (Primary): [approach] → [verdict]
+// Researcher B (Alternative): [approach] → [verdict]
 ```
 
 ---
@@ -126,11 +126,11 @@ Then hydrate tasks via TodoWrite:
 // T3: {Phase 3} (blocked by T2)
 ```
 
-Output the exact cook command, including any test flag that was passed to `/plan`:
+Output the exact cook command, including any test flag that was passed to `/ck:plan`:
 
 ```
 Ready to cook:
-/cook [--no-test | --tdd] /abs/path/plans/{date}-{slug}/plan.md
+/ck:cook [--no-test | --tdd] /abs/path/plans/{date}-{slug}/plan.md
 ```
 
 ---
@@ -139,7 +139,7 @@ Ready to cook:
 
 | Agent             | Step                       | Modes               |
 | ----------------- | -------------------------- | ------------------- |
-| `plan-researcher` | 1 — research (×2 parallel) | Hard, Parallel, Two |
+| `researcher`      | 1 — research (×2 parallel) | Hard, Parallel, Two |
 | `planner`         | 2 — creates plan files     | All                 |
 | `plan-reviewer`   | 3 — red-team review        | Hard, Parallel, Two |
 
@@ -147,6 +147,6 @@ Ready to cook:
 
 ## Integration
 
-- `/cook <plan-file>` — implement phase by phase
-- `/code-review` — review implementation after cooking
-- `/fix --quick` — fix build errors during cook
+- `/ck:cook <plan-file>` — implement phase by phase
+- `/ck:code-review` — review implementation after cooking
+- `/ck:fix --quick` — fix build errors during cook

@@ -2,7 +2,7 @@
 description: Extract reusable patterns from the current session and save them as skill files. Run after solving a non-trivial problem.
 ---
 
-# /learn — Extract Reusable Patterns
+# /ck:learn — Extract Reusable Patterns
 
 Analyze the current session and save any patterns worth reusing as skill files.
 
