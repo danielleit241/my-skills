@@ -14,6 +14,7 @@ Usage:
 """
 import argparse
 import json
+import os
 import subprocess
 import sys
 import textwrap
@@ -86,8 +87,9 @@ def run_level(level: int, prompt: str, model: str) -> dict:
     if system_prompt:
         cmd += ["--append-system-prompt", system_prompt]
 
+    env = {**os.environ, "BENCHMARK_MODE": "1"}
     start = time.perf_counter()
-    result = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8")
+    result = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", env=env)
     elapsed = round(time.perf_counter() - start, 2)
 
     # CLI writes JSON to stderr when there are warnings; stdout is the JSON result

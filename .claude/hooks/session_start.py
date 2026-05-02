@@ -296,6 +296,21 @@ def read_coding_level() -> str | None:
         return None
 
 
+# ── helpers ───────────────────────────────────────────────────────────────────
+
+_CODING_LEVEL_RE = re.compile(r"coding.?level|codingLevel", re.IGNORECASE)
+
+
+def _strip_coding_level_lines(text: str) -> str:
+    """Remove lines mentioning coding level from injected session state.
+
+    The active level is already set authoritatively by the hook above;
+    historical mentions in session state would create conflicting context.
+    """
+    lines = [ln for ln in text.splitlines() if not _CODING_LEVEL_RE.search(ln)]
+    return "\n".join(lines)
+
+
 # ── main ───────────────────────────────────────────────────────────────────────
 
 def main() -> None:
@@ -325,18 +340,22 @@ def main() -> None:
     if instinct_summary:
         context_parts.append(instinct_summary)
 
-    # Previous session state
-    state_file = sessions_dir / ".last-state.md"
-    if state_file.exists():
-        try:
-            state_content = strip_ansi(state_file.read_text(encoding="utf-8").strip())
-            if state_content:
-                context_parts.append(f"Previous session state:\n{state_content}")
-                log(f"[SessionStart] Loaded session state from .last-state.md")
-        except Exception as e:
-            log(f"[SessionStart] Warning: could not read session state: {e}")
+    # Previous session state (skip in benchmark mode to avoid context bleed)
+    if os.environ.get("BENCHMARK_MODE") == "1":
+        log("[SessionStart] BENCHMARK_MODE — skipping session state injection")
     else:
-        log("[SessionStart] No previous session state found")
+        state_file = sessions_dir / ".last-state.md"
+        if state_file.exists():
+            try:
+                state_content = strip_ansi(state_file.read_text(encoding="utf-8").strip())
+                if state_content:
+                    state_content = _strip_coding_level_lines(state_content)
+                    context_parts.append(f"Previous session state:\n{state_content}")
+                    log(f"[SessionStart] Loaded session state from .last-state.md")
+            except Exception as e:
+                log(f"[SessionStart] Warning: could not read session state: {e}")
+        else:
+            log("[SessionStart] No previous session state found")
 
     # Learned skills count (log only)
     learned = find_files(learned_dir, "*.md")
