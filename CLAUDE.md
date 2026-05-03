@@ -25,6 +25,14 @@ Path-scoped — each file loads only when touching its directory:
 | `.claude/rules/commands.md` | `.claude/commands/**` |
 | `.claude/rules/skills.md` | `.claude/skills/**` |
 
+## Config
+
+`.ck.json` — project-level config for hooks and pipeline behavior:
+- `cavemanMode` — thresholds for auto-triggering caveman terse mode
+- `artifactFolding` — thresholds for folding large tool outputs
+- `simplify.threshold` — LOC/file-count limits before auto-simplify triggers
+- `codingLevel` — response verbosity (-1 = auto)
+
 ## Personal overrides
 
 `CLAUDE.local.md` (gitignored) — personal preferences that shouldn't be committed.

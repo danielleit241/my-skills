@@ -205,27 +205,11 @@
         </div>
         <div class="plugin-card">
           <div class="plugin-card-header">
-            <span class="plugin-name">frontend-slides</span>
-            <span class="badge">frontend</span>
-          </div>
-          <p class="plugin-desc">Create animation-rich HTML presentations from scratch or convert PowerPoint files.</p>
-          <code class="plugin-install">/plugin install frontend-slides@my-skills</code>
-        </div>
-        <div class="plugin-card">
-          <div class="plugin-card-header">
             <span class="plugin-name">backend-mindset</span>
             <span class="badge">backend</span>
           </div>
           <p class="plugin-desc">Clean Architecture, REST API design, TDD, event-driven patterns — language-agnostic.</p>
           <code class="plugin-install">/plugin install backend-mindset@my-skills</code>
-        </div>
-        <div class="plugin-card">
-          <div class="plugin-card-header">
-            <span class="plugin-name">dotnet</span>
-            <span class="badge">backend</span>
-          </div>
-          <p class="plugin-desc">C#, ASP.NET Core Minimal API, EF Core, xUnit, .NET Aspire, MassTransit.</p>
-          <code class="plugin-install">/plugin install dotnet@my-skills</code>
         </div>
         <div class="plugin-card">
           <div class="plugin-card-header">
@@ -290,14 +274,6 @@
           </div>
           <p class="plugin-desc">Browser automation and UI testing — fill forms, take screenshots, validate responsive design, test interactions end-to-end.</p>
           <code class="plugin-install">/plugin install playwright-skill@my-skills</code>
-        </div>
-        <div class="plugin-card">
-          <div class="plugin-card-header">
-            <span class="plugin-name">threejs</span>
-            <span class="badge">frontend</span>
-          </div>
-          <p class="plugin-desc">Build 3D web applications with Three.js — WebGL/WebGPU scenes, PBR materials, custom shaders, animations, VR/XR experiences.</p>
-          <code class="plugin-install">/plugin install threejs@my-skills</code>
         </div>
       </div>
     </section>
@@ -376,53 +352,56 @@
       </div>
 
       <h2>The Core Pipeline</h2>
-      <div class="pipeline-3d-wrap" id="pipeline-3d">
-        <div class="p3d-stage">
-          <div class="p3d-node" data-cmd="plan" role="button" tabindex="0" aria-label="Demo /plan pipeline">
-            <div class="p3d-pulse-ring"></div>
-            <div class="p3d-step-num">01</div>
-            <div class="p3d-cmd">/plan</div>
-            <div class="p3d-role">Design</div>
-            <div class="p3d-sub">researcher · planner · reviewer</div>
-            <div class="p3d-click-hint">click to demo</div>
-          </div>
-          <div class="p3d-conn">
-            <div class="p3d-flow-line"><div class="p3d-flow-dot" style="animation-delay:0s"></div></div>
-            <span class="p3d-conn-label">plan.md</span>
-          </div>
-          <div class="p3d-node" data-cmd="cook" role="button" tabindex="0" aria-label="Demo /cook pipeline">
-            <div class="p3d-pulse-ring" style="animation-delay:1s"></div>
-            <div class="p3d-step-num">02</div>
-            <div class="p3d-cmd">/cook</div>
-            <div class="p3d-role">Implement</div>
-            <div class="p3d-sub">tester · debugger · git-manager</div>
-            <div class="p3d-click-hint">click to demo</div>
-          </div>
-          <div class="p3d-conn">
-            <div class="p3d-flow-line"><div class="p3d-flow-dot" style="animation-delay:0.9s"></div></div>
-            <span class="p3d-conn-label">patch</span>
-          </div>
-          <div class="p3d-node" data-cmd="fix" role="button" tabindex="0" aria-label="Demo /fix pipeline">
-            <div class="p3d-pulse-ring" style="animation-delay:2s"></div>
-            <div class="p3d-step-num">03</div>
-            <div class="p3d-cmd">/fix</div>
-            <div class="p3d-role">Repair</div>
-            <div class="p3d-sub">scout · debugger · reviewer</div>
-            <div class="p3d-click-hint">click to demo</div>
-          </div>
-        </div>
+      <p style="font-size:0.875rem;color:var(--text-secondary);margin-bottom:0.5rem">
+        Full delivery loop: explore → design → implement → repair.
+        Use <code>/init</code> to bootstrap <code>.claude/</code> config for a new project.
+      </p>
 
-        <!-- Demo terminal panel -->
-        <div class="pipeline-demo" id="pipeline-demo" aria-live="polite">
-          <div class="demo-header">
-            <span class="demo-cmd-label" id="demo-cmd-label"></span>
-            <span class="demo-status" id="demo-status"></span>
-            <button class="demo-close" id="demo-close" aria-label="Close demo">✕</button>
-          </div>
-          <div class="demo-steps" id="demo-steps"></div>
+      <!-- Full flow strip -->
+      <div class="full-flow-strip" id="pipeline-strip">
+        <div class="ffs-node ffs-optional" data-cmd="brainstorm" role="button" tabindex="0">
+          <span class="ffs-cmd">/brainstorm</span>
+          <span class="ffs-role">Explore</span>
+          <span class="ffs-note">optional · no code written</span>
         </div>
+        <div class="ffs-arrow">
+          <div class="ffs-arrow-line"></div>
+          <span class="ffs-arrow-label">report.md</span>
+        </div>
+        <div class="ffs-node" data-cmd="plan" role="button" tabindex="0">
+          <span class="ffs-cmd">/plan</span>
+          <span class="ffs-role">Design</span>
+          <span class="ffs-note">phases + plan.md</span>
+        </div>
+        <div class="ffs-arrow">
+          <div class="ffs-arrow-line"></div>
+          <span class="ffs-arrow-label">plan.md</span>
+        </div>
+        <div class="ffs-node" data-cmd="cook" role="button" tabindex="0">
+          <span class="ffs-cmd">/cook</span>
+          <span class="ffs-role">Implement</span>
+          <span class="ffs-note">test · review · commit</span>
+        </div>
+        <div class="ffs-arrow">
+          <div class="ffs-arrow-line"></div>
+          <span class="ffs-arrow-label">bug found</span>
+        </div>
+        <div class="ffs-node" data-cmd="fix" role="button" tabindex="0">
+          <span class="ffs-cmd">/fix</span>
+          <span class="ffs-role">Repair</span>
+          <span class="ffs-note">scout · patch · commit</span>
+        </div>
+      </div>
+      <p class="ffs-hint-below">Click a node to run the demo</p>
 
-        <p class="p3d-hint">Hover to rotate &nbsp;·&nbsp; Click a node to run the demo</p>
+      <!-- Demo terminal panel -->
+      <div class="pipeline-demo" id="pipeline-demo" aria-live="polite">
+        <div class="demo-header">
+          <span class="demo-cmd-label" id="demo-cmd-label"></span>
+          <span class="demo-status" id="demo-status"></span>
+          <button class="demo-close" id="demo-close" aria-label="Close demo">✕</button>
+        </div>
+        <div class="demo-steps" id="demo-steps"></div>
       </div>
 
       <p>Commands are stateless — they read files, write files, and exit.
@@ -496,49 +475,78 @@
                 <span class="badge accent">--auto</span>
                 <span class="badge accent">--fast</span>
                 <span class="badge accent">--parallel</span>
+                <span class="badge accent">--full</span>
+                <span class="badge accent">--nano</span>
+                <span class="badge accent">--no-test</span>
+                <span class="badge accent">--tdd</span>
               </div>
             </div>
             <span class="cmd-chevron" aria-hidden="true">›</span>
           </div>
-          <p>Reads an existing plan and executes it phase by phase: implement → test → auto-simplify
-          (Step 3.S, threshold-triggered) → code review → finalize. Marks each phase <code>[x]</code>
-          on completion. Pauses for review at each gate unless <code>--auto</code> is set.</p>
+          <p>Reads an existing plan and executes it phase by phase. Scores the change across 6
+          signals (files, cross-module impact, security, public API, DB schema, new deps) to
+          select a pipeline tier — Nano, Fast, Standard, or Full — then: implement → test →
+          auto-simplify (Step 3.S) → code review → finalize. Marks each phase <code>[x]</code>
+          and writes <code>## Session Notes</code> to <code>plan.md</code> after each phase for
+          resume capability. Phase gates (Build, Test, Approval) block progression on failure.
+          Remediation cycles enforce strategy rotation after cycle 2 and escalate at cycle 4.</p>
           <div class="token-cost">
             <span class="token-cost-icon">◎</span>
-            <span class="token-cost-range">25–50K</span>
+            <span class="token-cost-range">10–50K</span>
             <span class="token-cost-sep">·</span>
-            <span class="token-cost-note">per phase · multiply by phase count</span>
+            <span class="token-cost-note">per phase · varies by tier</span>
           </div>
           <div class="cmd-detail">
             <div class="cmd-detail-inner">
               <div class="cmd-agent-flow">
-                <div class="caf-node"><span class="caf-icon">T</span><span class="caf-name">tester</span><span class="caf-desc">runs success criteria, reports pass/fail</span></div>
+                <div class="caf-node"><span class="caf-icon">T</span><span class="caf-name">tester</span><span class="caf-desc">runs success criteria, reports pass/fail (Standard/Full tier)</span></div>
                 <div class="caf-arrow">↓</div>
                 <div class="caf-node"><span class="caf-icon">D</span><span class="caf-name">debugger</span><span class="caf-desc">diagnoses failure, applies minimal patch</span></div>
                 <div class="caf-arrow">↓</div>
-                <div class="caf-node"><span class="caf-icon">G</span><span class="caf-name">git-manager</span><span class="caf-desc">conventional commit after each phase</span></div>
+                <div class="caf-node"><span class="caf-icon">G</span><span class="caf-name">git-manager</span><span class="caf-desc">conventional commit — always required</span></div>
               </div>
               <div class="token-breakdown">
-                <div class="token-breakdown-title">Token cost per mode</div>
+                <div class="token-breakdown-title">Pipeline tiers (auto-selected by rigor score)</div>
                 <div class="token-breakdown-row">
-                  <span class="token-breakdown-flag">default</span>
+                  <span class="token-breakdown-flag">Nano (0)</span>
+                  <span class="token-breakdown-cost">~10–20K</span>
+                  <span class="token-breakdown-agents">implement → git-manager only</span>
+                </div>
+                <div class="token-breakdown-row">
+                  <span class="token-breakdown-flag">Fast (1–2)</span>
+                  <span class="token-breakdown-cost">~15–25K</span>
+                  <span class="token-breakdown-agents">implement → git-manager only</span>
+                </div>
+                <div class="token-breakdown-row">
+                  <span class="token-breakdown-flag">Standard (3–5)</span>
                   <span class="token-breakdown-cost">~25–50K</span>
-                  <span class="token-breakdown-agents">implement + tester + git-manager</span>
+                  <span class="token-breakdown-agents">implement + tester + reviewer + finalize</span>
                 </div>
                 <div class="token-breakdown-row">
-                  <span class="token-breakdown-flag">--auto</span>
-                  <span class="token-breakdown-cost">~25–50K</span>
-                  <span class="token-breakdown-agents">same pipeline, no review pauses</span>
-                </div>
-                <div class="token-breakdown-row">
-                  <span class="token-breakdown-flag">--fast</span>
-                  <span class="token-breakdown-cost">~20–35K</span>
-                  <span class="token-breakdown-agents">skips optional review agents</span>
-                </div>
-                <div class="token-breakdown-row">
-                  <span class="token-breakdown-flag">--parallel</span>
+                  <span class="token-breakdown-flag">Full (6+)</span>
                   <span class="token-breakdown-cost">~40–80K</span>
-                  <span class="token-breakdown-agents">concurrent phase implementation</span>
+                  <span class="token-breakdown-agents">Standard + plan-reviewer + mandatory reviewer</span>
+                </div>
+                <div class="token-breakdown-title" style="margin-top:0.75rem">Flag overrides</div>
+                <div class="token-breakdown-row">
+                  <span class="token-breakdown-flag">--nano</span>
+                  <span class="token-breakdown-cost" style="font-size:0.75rem">force Nano</span>
+                  <span class="token-breakdown-agents">bypass scoring — git-manager only</span>
+                </div>
+                <div class="token-breakdown-row">
+                  <span class="token-breakdown-flag">--full</span>
+                  <span class="token-breakdown-cost" style="font-size:0.75rem">force Full</span>
+                  <span class="token-breakdown-agents">bypass scoring — plan-reviewer + mandatory review</span>
+                </div>
+                <div class="token-breakdown-row">
+                  <span class="token-breakdown-flag">--no-test</span>
+                  <span class="token-breakdown-cost" style="font-size:0.75rem">skip tester</span>
+                  <span class="token-breakdown-agents">orthogonal to tier — skip Step 3 entirely</span>
+                </div>
+                <div class="token-breakdown-row">
+                  <span class="token-breakdown-flag">--tdd</span>
+                  <span class="token-breakdown-cost" style="font-size:0.75rem">tests first</span>
+                  <span class="token-breakdown-agents">write failing tests → implement → pass</span>
                 </div>
               </div>
             </div>
@@ -596,6 +604,58 @@
                   <span class="token-breakdown-flag">--auto</span>
                   <span class="token-breakdown-cost">~30–55K</span>
                   <span class="token-breakdown-agents">auto-approves ≥9.5 score, no pauses</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="cmd-card cmd-expandable">
+          <div class="cmd-card-header cmd-toggle" aria-expanded="false">
+            <div class="cmd-card-title">
+              <code class="cmd-name">/brainstorm</code>
+              <div class="mode-badges" style="margin:0">
+                <span class="badge">explore</span>
+              </div>
+            </div>
+            <span class="cmd-chevron" aria-hidden="true">›</span>
+          </div>
+          <p>Explore and debate solutions <em>before</em> writing any code.
+          Scouts the codebase in parallel, asks targeted clarifying questions, optionally
+          researches external options, then produces a structured decision report at
+          <code>plans/reports/YYMMDD-{slug}-brainstorm.md</code>.
+          Ends with a handoff choice: create a plan, archive to journal, or keep exploring.
+          <strong>Hard gate: zero implementation code is written.</strong></p>
+          <div class="token-cost">
+            <span class="token-cost-icon">◎</span>
+            <span class="token-cost-range">~20–60K</span>
+            <span class="token-cost-sep">·</span>
+            <span class="token-cost-note">scout agents + optional research pass</span>
+          </div>
+          <div class="cmd-detail">
+            <div class="cmd-detail-inner">
+              <div class="cmd-agent-flow">
+                <div class="caf-node"><span class="caf-icon">E</span><span class="caf-name">Explore ×2–4</span><span class="caf-desc">parallel scouts — patterns, tech stack, constraints, tests</span></div>
+                <div class="caf-arrow">↓</div>
+                <div class="caf-node"><span class="caf-icon">Q</span><span class="caf-name">Discovery (main)</span><span class="caf-desc">probing questions — constraints, success criteria, assumptions</span></div>
+                <div class="caf-arrow">↓</div>
+                <div class="caf-node"><span class="caf-icon">R</span><span class="caf-name">plan-researcher ×2</span><span class="caf-desc">optional — investigate primary + alternative approach</span></div>
+              </div>
+              <div class="token-breakdown">
+                <div class="token-breakdown-title">Handoff options</div>
+                <div class="token-breakdown-row">
+                  <span class="token-breakdown-flag">→ /plan</span>
+                  <span class="token-breakdown-cost" style="font-size:0.75rem">implement</span>
+                  <span class="token-breakdown-agents">passes chosen direction + open questions to planner</span>
+                </div>
+                <div class="token-breakdown-row">
+                  <span class="token-breakdown-flag">→ /journal</span>
+                  <span class="token-breakdown-cost" style="font-size:0.75rem">archive</span>
+                  <span class="token-breakdown-agents">save findings, no plan created</span>
+                </div>
+                <div class="token-breakdown-row">
+                  <span class="token-breakdown-flag">keep exploring</span>
+                  <span class="token-breakdown-cost" style="font-size:0.75rem">iterate</span>
+                  <span class="token-breakdown-agents">loop back to discovery or research</span>
                 </div>
               </div>
             </div>
@@ -714,14 +774,71 @@
               <span class="badge">config</span>
             </div>
           </div>
-          <p>Sets the session coding level (1–3). Level 1 is beginner-friendly with explanations;
-          Level 3 targets senior engineers — leads with trade-offs, assumes pattern fluency,
-          and skips basics entirely.</p>
+          <p>Sets the session coding level (0–5). Level 0 is ELI5; Level 3 targets senior engineers —
+          leads with trade-offs, assumes pattern fluency, and skips basics; Level 5 (godmode) is
+          raw architecture and system-design signal only. Persists to <code>.ck.json</code>.</p>
           <div class="token-cost">
             <span class="token-cost-icon">◎</span>
             <span class="token-cost-range">&lt;2K</span>
             <span class="token-cost-sep">·</span>
             <span class="token-cost-note">config only — loads a single level file</span>
+          </div>
+        </div>
+        <div class="cmd-card cmd-expandable">
+          <div class="cmd-card-header cmd-toggle" aria-expanded="false">
+            <div class="cmd-card-title">
+              <code class="cmd-name">/init</code>
+              <div class="mode-badges" style="margin:0">
+                <span class="badge">setup</span>
+                <span class="badge accent">--show</span>
+                <span class="badge accent">--reset</span>
+              </div>
+            </div>
+            <span class="cmd-chevron" aria-hidden="true">›</span>
+          </div>
+          <p>Interactive wizard that bootstraps <code>.claude/</code> configuration for any project.
+          Guides through bundle selection (plan/cook/fix, code-review, learn…), skills, optional
+          hooks, CLAUDE.md generation, and <code>.ck.json</code> config — then writes all files in
+          one shot. Merge mode skips existing files; Overwrite mode replaces all.
+          Use <code>--show</code> to print the current project config or
+          <code>--reset</code> to wipe <code>.ck.json</code>.</p>
+          <div class="token-cost">
+            <span class="token-cost-icon">◎</span>
+            <span class="token-cost-range">~5–15K</span>
+            <span class="token-cost-sep">·</span>
+            <span class="token-cost-note">wizard mode — interactive, no sub-agents</span>
+          </div>
+          <div class="cmd-detail">
+            <div class="cmd-detail-inner">
+              <div class="token-breakdown">
+                <div class="token-breakdown-title">Wizard steps</div>
+                <div class="token-breakdown-row">
+                  <span class="token-breakdown-flag">Step 0</span>
+                  <span class="token-breakdown-cost" style="font-size:0.75rem">target + preflight</span>
+                  <span class="token-breakdown-agents">resolve path, check Python, handle .claude/ conflict</span>
+                </div>
+                <div class="token-breakdown-row">
+                  <span class="token-breakdown-flag">Step 1</span>
+                  <span class="token-breakdown-cost" style="font-size:0.75rem">bundles + hooks</span>
+                  <span class="token-breakdown-agents">select dev workflows and optional automation hooks</span>
+                </div>
+                <div class="token-breakdown-row">
+                  <span class="token-breakdown-flag">Step 2</span>
+                  <span class="token-breakdown-cost" style="font-size:0.75rem">skills</span>
+                  <span class="token-breakdown-agents">core, domain, and meta skills</span>
+                </div>
+                <div class="token-breakdown-row">
+                  <span class="token-breakdown-flag">Step 3</span>
+                  <span class="token-breakdown-cost" style="font-size:0.75rem">CLAUDE.md</span>
+                  <span class="token-breakdown-agents">auto-generate, blank template, or skip</span>
+                </div>
+                <div class="token-breakdown-row">
+                  <span class="token-breakdown-flag">Step 4–5</span>
+                  <span class="token-breakdown-cost" style="font-size:0.75rem">preview + write</span>
+                  <span class="token-breakdown-agents">show file tree, confirm, write to target</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -801,9 +918,24 @@ CLAUDE.local.md (gitignored) — personal preferences that shouldn't be committe
 
       <h2>.ck.json</h2>
       <p>Project-level runtime config for the skill system. Stored at the repo root (committed).
-      Controls the coding level and auto-simplify thresholds for the <code>code-simplifier</code> hook.</p>
+      Controls coding level, pipeline behaviour, and all hook thresholds.</p>
       <pre><code>{
-  "codingLevel": 3,
+  "codingLevel": -1,
+  "cavemanMode": {
+    "enabled": true,
+    "threshold": {
+      "orange": 50,
+      "red": 100
+    }
+  },
+  "artifactFolding": {
+    "enabled": true,
+    "threshold": {
+      "maxChars": 4000,
+      "maxLines": 120,
+      "previewLines": 10
+    }
+  },
   "simplify": {
     "threshold": {
       "enabled": true,
@@ -814,9 +946,16 @@ CLAUDE.local.md (gitignored) — personal preferences that shouldn't be committe
   }
 }</code></pre>
       <div class="callout">
-        <p><strong>Simplify thresholds:</strong> When any threshold is breached during a <code>/cook</code>
-        run, Step 3.S automatically invokes the <code>simplify</code> skill on the edited files before
-        proceeding to code review. Set <code>enabled: false</code> to disable.</p>
+        <p><strong>cavemanMode:</strong> <code>caveman_watch.py</code> counts tool calls per session.
+        At <code>orange</code> it warns; at <code>red</code> it emits <code>CAVEMAN_TRIGGERED</code> to
+        activate terse output mode automatically.</p>
+        <p style="margin-top:0.5rem"><strong>artifactFolding:</strong> <code>artifact_fold.py</code>
+        watches Read/Grep/Bash outputs. When output exceeds <code>maxChars</code> or <code>maxLines</code>,
+        it emits <code>ARTIFACT_FOLD_TRIGGERED</code> with a <code>previewLines</code>-line preview and
+        the full path — Claude saves to <code>.claude/artifacts/</code> and references the path instead.</p>
+        <p style="margin-top:0.5rem"><strong>simplify:</strong> When any threshold is breached during a
+        <code>/cook</code> run, Step 3.S automatically invokes the <code>simplify</code> skill before
+        code review. Set <code>enabled: false</code> to disable.</p>
       </div>
 
       <h2>settings.json</h2>
@@ -927,6 +1066,28 @@ CLAUDE.local.md (gitignored) — personal preferences that shouldn't be committe
           surfaces a /compact suggestion before context pressure begins degrading
           response quality.</p>
         </div>
+        <div class="hook-card">
+          <div class="hook-card-header">
+            <code class="hook-name">caveman_watch.py</code>
+            <span class="badge accent">UserPromptSubmit</span>
+          </div>
+          <p>Tracks tool-call count per session against thresholds in <code>.ck.json</code>.
+          At the orange threshold it emits a usage warning. At the red threshold it emits
+          <code>CAVEMAN_TRIGGERED</code> to activate the <code>caveman</code> skill for terse
+          output automatically. Emits <code>CAVEMAN_RELEASED</code> when the user explicitly
+          deactivates. State resets on <code>/compact</code>.</p>
+        </div>
+        <div class="hook-card">
+          <div class="hook-card-header">
+            <code class="hook-name">artifact_fold.py</code>
+            <span class="badge accent">PostToolUse</span>
+          </div>
+          <p>Fires after Read, Grep, and Bash calls. When output exceeds the
+          <code>maxChars</code> or <code>maxLines</code> thresholds defined in <code>.ck.json</code>,
+          emits <code>ARTIFACT_FOLD_TRIGGERED</code> with a short preview and the artifact path.
+          Claude then saves the full output to <code>.claude/artifacts/</code> and references the
+          path — keeping large reads from flooding the context window.</p>
+        </div>
       </div>
 
       <div class="callout">
@@ -998,54 +1159,40 @@ CLAUDE.local.md (gitignored) — personal preferences that shouldn't be committe
         });
       }
 
-      // ── 3D pipeline mouse tracking ───────────────────────────────────
-      var p3dWrap  = document.getElementById('pipeline-3d');
-      var p3dStage = p3dWrap && p3dWrap.querySelector('.p3d-stage');
-
-      if (p3dWrap && p3dStage) {
-        var RAF_ID = null;
-        var targetRX = -5, targetRY = 8;
-        var currentRX = -5, currentRY = 8;
-        var isHovering = false;
-
-        function lerpAngle(a, b, t) { return a + (b - a) * t; }
-
-        function animateStage() {
-          currentRX = lerpAngle(currentRX, targetRX, 0.1);
-          currentRY = lerpAngle(currentRY, targetRY, 0.1);
-          p3dStage.style.transform = 'rotateX(' + currentRX.toFixed(2) + 'deg) rotateY(' + currentRY.toFixed(2) + 'deg)';
-          RAF_ID = requestAnimationFrame(animateStage);
-        }
-
-        p3dWrap.addEventListener('mouseenter', function () {
-          isHovering = true;
-          if (!RAF_ID) RAF_ID = requestAnimationFrame(animateStage);
-        });
-
-        p3dWrap.addEventListener('mousemove', function (e) {
-          var rect = p3dWrap.getBoundingClientRect();
-          var mx = (e.clientX - rect.left) / rect.width;
-          var my = (e.clientY - rect.top) / rect.height;
-          targetRX = (my - 0.5) * -14;
-          targetRY = (mx - 0.5) * 18;
-        });
-
-        p3dWrap.addEventListener('mouseleave', function () {
-          isHovering = false;
-          targetRX = -5;
-          targetRY = 8;
-          setTimeout(function () {
-            if (!isHovering) {
-              cancelAnimationFrame(RAF_ID);
-              RAF_ID = null;
-              p3dStage.style.transform = 'rotateX(-5deg) rotateY(8deg)';
-            }
-          }, 600);
-        });
-      }
-
       // ── Pipeline demo ────────────────────────────────────────────────
       var DEMO_DATA = {
+        brainstorm: {
+          label: '/brainstorm "best auth approach for our SaaS"',
+          steps: [
+            { type: 'user',  ms: 500,
+              text: '/brainstorm "best auth approach for our SaaS"' },
+            { type: 'slash', ms: 600,  icon: '/',  agent: '/brainstorm',
+              running: 'Reading .claude/commands/brainstorm.md · scope check...',
+              done:    'Single concern — proceeding · spawning 3 Explore agents in parallel' },
+            { type: 'agent', ms: 1800, icon: 'E',  agent: 'Explore #1',
+              running: 'Scanning src/ for existing auth patterns...',
+              done:    'No existing auth found · JWT helpers in utils/crypto.ts' },
+            { type: 'agent', ms: 1600, icon: 'E',  agent: 'Explore #2',
+              running: 'Scanning package.json, config/ for tech stack...',
+              done:    'Node.js + Express · no session store · PostgreSQL detected' },
+            { type: 'agent', ms: 1200, icon: 'E',  agent: 'Explore #3',
+              running: 'Scanning CLAUDE.md, README for constraints...',
+              done:    'No compliance constraints · hobby project · small team' },
+            { type: 'main',  ms: 800,  icon: '◈',  agent: 'claude (main)',
+              running: 'Scout findings received — forming clarifying questions...',
+              done:    'Questions ready' },
+            { type: 'main',  ms: 600,  icon: '◈',  agent: 'Discovery',
+              running: 'Asking: latency requirements? third-party IdP allowed? mobile clients?',
+              done:    'User answered: <500ms, no IdP, yes mobile — constraints clear' },
+            { type: 'main',  ms: 1200, icon: '◈',  agent: 'Analyze + Debate',
+              running: 'Evaluating Option A (JWT stateless) vs Option B (session + Redis)...',
+              done:    'Option A chosen — no infra overhead, fits constraints' },
+            { type: 'main',  ms: 700,  icon: '◈',  agent: 'claude (main)',
+              running: 'Writing decision report...',
+              done:    'plans/reports/260419-auth-brainstorm.md written ✓' },
+            { type: 'output', text: 'Brainstorm complete → /plan --hard "add JWT auth" or /journal' }
+          ]
+        },
         plan: {
           label: '/plan --hard "add JWT auth to API"',
           steps: [
@@ -1178,7 +1325,7 @@ CLAUDE.local.md (gitignored) — personal preferences that shouldn't be committe
       function closeDemo() {
         clearTimers();
         demoPanel.classList.remove('open');
-        document.querySelectorAll('.p3d-node').forEach(function (n) { n.classList.remove('p3d-active'); });
+        document.querySelectorAll('.ffs-node').forEach(function (n) { n.classList.remove('ffs-active'); });
         activeCmd = null;
         demoTimers.push(setTimeout(function () { demoSteps.innerHTML = ''; }, 420));
       }
@@ -1216,8 +1363,8 @@ CLAUDE.local.md (gitignored) — personal preferences that shouldn't be committe
         demoSteps.innerHTML = '';
         activeCmd = cmd;
 
-        document.querySelectorAll('.p3d-node').forEach(function (n) {
-          n.classList.toggle('p3d-active', n.dataset.cmd === cmd);
+        document.querySelectorAll('.ffs-node[data-cmd]').forEach(function (n) {
+          n.classList.toggle('ffs-active', n.dataset.cmd === cmd);
         });
 
         demoCmdLbl.textContent = data.label;
@@ -1253,7 +1400,7 @@ CLAUDE.local.md (gitignored) — personal preferences that shouldn't be committe
         runStep(0);
       }
 
-      document.querySelectorAll('.p3d-node[data-cmd]').forEach(function (node) {
+      document.querySelectorAll('.ffs-node[data-cmd]').forEach(function (node) {
         node.style.cursor = 'pointer';
         node.addEventListener('click', function () {
           var cmd = node.dataset.cmd;

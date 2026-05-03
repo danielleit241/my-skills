@@ -23,12 +23,15 @@ Three main pipelines cover the full development loop:
 | Command        | What it does                                                                                  |
 | -------------- | --------------------------------------------------------------------------------------------- |
 | `/plan`        | Research → write plan files → red-team → validate. Auto-detects complexity.                   |
-| `/cook`        | Implement a phase from a plan file. Scout → implement → test → auto-simplify → review → finalize. |
+| `/cook`        | Implement a plan phase by phase. Rigor-scores the change → selects tier (Nano/Fast/Standard/Full) → implement → test → auto-simplify → review → finalize. Flags: `--auto`, `--fast`, `--parallel`, `--full`, `--nano`, `--no-test`, `--tdd`. |
 | `/fix`         | Bug-fix pipeline. Scout → diagnose + fix → review → finalize.                                 |
 | `/show-off`    | Generate a social-ready HTML presentation → review gate → capture as 1:1/16:9/9:16 PNGs.    |
 | `/code-review` | Review local uncommitted changes or a GitHub PR by number/URL.                                |
 | `/docs-fe`     | Generate a FE handoff doc for changed endpoints (contracts, params, errors).                  |
 | `/learn`       | Extract a reusable pattern from the current session and save it as a skill file.              |
+| `/brainstorm`  | Explore and debate solutions before writing code — scout codebase, ask questions, research options, produce a decision report. Ends with → /plan or archive. No code written. |
+| `/init`        | Bootstrap `.claude/` config for another project — interactive wizard: bundles, skills, hooks, CLAUDE.md, .ck.json. Flags: `--show` (print config), `--reset` (wipe config). |
+| `/coding-level`| Set session coding level 0–5 (0=ELI5 → 5=godmode). Persists to `.ck.json`.                 |
 
 ---
 
@@ -74,15 +77,12 @@ Behavioral guidance that loads automatically when relevant.
 | `caveman`                | Terse output mode — user says "be brief" or context is filling up   |
 | `code-review`            | Reviewing code, receiving feedback, verifying completion            |
 | `continuous-learning-v2` | Observing sessions, creating instincts                              |
-| `dotnet`                 | Writing C#, ASP.NET Core, EF Core, MassTransit, xUnit              |
-| `frontend-slides`        | Building HTML presentations or converting PowerPoint files          |
 | `mermaidjs-v11`          | Creating diagrams and visualizations                                |
 | `playwright-skill`       | Browser automation, UI testing, screenshots, responsive validation  |
 | `problem-solving`        | Stuck on a problem, need creative unblocking                        |
 | `sequential-thinking`    | Complex multi-step reasoning                                        |
 | `skill-creator`          | Creating or improving skill files                                   |
 | `strategic-compact`      | Managing context window across long sessions                        |
-| `threejs`                | Building 3D web apps, WebGL/WebGPU scenes, shaders, VR/XR          |
 
 ---
 
@@ -118,6 +118,21 @@ Configured in `.ck.json` under `simplify.threshold`:
 | `enabled` | `true` | Set `false` to disable entirely |
 
 When any threshold is breached, `/cook` Step 3.S automatically invokes the `simplify` skill before code review.
+
+### Cook Pipeline Tiers
+
+`/cook` scores the change before implementation and selects a pipeline tier:
+
+| Score | Tier | Steps |
+|-------|------|-------|
+| 0 | Nano | Implement → git-manager only |
+| 1–2 | Fast | Implement → git-manager only |
+| 3–5 | Standard | Implement → test → review → finalize |
+| 6+ | Full | Standard + plan-reviewer + mandatory code-reviewer |
+
+**Scoring signals:** files touched (0–3 pts), cross-module impact (+2), security-sensitive code (+3), public API change (+2), DB schema change (+2), new external dependency (+1).
+
+Override with `--full` or `--nano` to bypass scoring. Use `--no-test` to skip tester, `--tdd` to write failing tests first.
 
 ### Caveman Mode
 
