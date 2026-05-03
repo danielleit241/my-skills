@@ -1,5 +1,5 @@
 ---
-description: Guided feature development with codebase understanding and architecture focus. Modes: --auto (auto-approve ≥9.5), --fast (skip test/review), --parallel (multi-agent). Flags: --no-test (skip tester), --tdd (tests-first). Accepts an optional plan file path: /ck:cook plans/260418-auth/plan.md
+description: Guided feature development with codebase understanding and architecture focus. Modes: --fast (skip test/review), --hard (mandatory reviewers, no auto-approve). Flags: --no-test (skip tester), --tdd (tests-first). Accepts an optional plan file path: /ck:cook plans/260418-auth/plan.md
 ---
 
 # /ck:cook — Structured Implementation Pipeline
@@ -7,57 +7,27 @@ description: Guided feature development with codebase understanding and architec
 ## Usage
 
 ```
-/ck:cook [--auto | --fast | --parallel] [--full | --nano] [--no-test | --tdd] [plan-file-path | feature-description]
+/ck:cook [--fast | --hard] [--no-test | --tdd] [plan-file-path | feature-description]
 ```
 
-Auto-detect mode if no flag given:
-- **Interactive** (default) — stops at each Review Gate for approval
-- **Auto** (`--auto`) — auto-approve if score ≥ 9.5 with 0 critical
-- **Fast** (`--fast`) — skip tester/reviewer loop, single-pass implement
-- **Parallel** (`--parallel`) — multi-agent execution for 3+ independent phases
+No flag → **Standard** — test + review gate, auto-approve if score ≥ 9.5 with 0 CRITICAL.
 
-Rigor override flags (bypass Step 0.5 scoring):
-- **`--full`** — force Full tier regardless of rigor score
-- **`--nano`** — force Nano tier regardless of rigor score
-
-Test flags (orthogonal to execution mode):
+- **`--fast`** — skip tester and code-reviewer; no inter-phase review pauses (Step 2 continues automatically); git-manager only in Step 5
+- **`--hard`** — mandatory test + mandatory review, no auto-approve (human eyes required)
 - **`--no-test`** — skip the tester sub-agent entirely; proceed directly to Step 3.S → Step 4
 - **`--tdd`** — invert Step 3: write failing tests first, then implement until they pass
 
 ---
 
-### Step 0.5 — Rigor Scoring
+### Step 0 — Plan Check
 
-Before loading the plan, score the change to select the right pipeline tier.
-Skip this step if `--full` or `--nano` was passed — use that tier directly.
+When no plan file path is provided as an argument:
 
-**Scoring signals:**
+1. Search `plans/` for any `plan.md` files
+2. If found → ask: "Found `{path}`. Use this plan? [Y/n]"
+3. If not found → ask: "No plan found. Continue without a plan? [y/N]" — if No, suggest `/ck:plan`
 
-| Signal | Points |
-|--------|--------|
-| Files to touch: 1 = 0 pts, 2–3 = 1 pt, 4+ = 3 pts | 0–3 |
-| Cross-module impact (touches 2+ distinct modules) | +2 |
-| Security-sensitive code (auth, crypto, permissions, secrets) | +3 |
-| Public API / interface change (exported types, CLI flags, HTTP contracts) | +2 |
-| DB schema change (migration, model field add/remove) | +2 |
-| New external dependency | +1 |
-
-**Pipeline tier:**
-
-| Score | Tier | Steps executed |
-|-------|------|----------------|
-| 0 | Nano | Step 1 → Step 2 → git-manager only (skip tester, reviewer, project-manager, docs-manager) |
-| 1–2 | Fast | Steps 1 → 2 → 3.S → 5 (git-manager only) — skip tester and code-reviewer. Same as `--fast` flag. |
-| 3–5 | Standard | Full current pipeline |
-| 6+ | Full | Standard + plan-reviewer (if plan exists) + code-reviewer mandatory |
-
-Infer score from the feature description + codebase context. If score is ambiguous between tiers, round up.
-
-```
-// [Step 0.5 — Rigor Scoring]
-// Signals: files=2 (+1), cross-module (+2) → Score: 3 → Tier: Standard
-// Pipeline: Steps 1 → 2 → 3 → 3.S → 4 → 5
-```
+When a plan file path is provided as an argument, skip this check.
 
 ---
 
@@ -68,7 +38,7 @@ When a plan file path is provided, report what will be cooked:
 ```
 Plan: {Feature Name}
 Status: {status from plan.md}
-Mode: {Interactive | Auto | Fast | Parallel}
+Mode: {Standard | Fast | Hard}
 Test:  {default | --no-test | --tdd}
 Phases remaining:
   [ ] Phase 1: Setup
@@ -122,8 +92,8 @@ The main agent reads each `phase-XX-*.md` file and implements the steps in order
    Overwrite rule: always replace the entire `## Session Notes` section. Never append.
 
 **Review Gate** — after each phase (or group of phases):
-- **Interactive mode**: pause and wait for user approval before continuing
-- **Auto mode**: continue automatically if no CRITICAL issues
+- **Standard / `--hard` mode**: pause and wait for user approval before continuing
+- **`--fast` mode**: continue automatically
 
 ```
 // Reading: phase-01-setup.md
@@ -144,7 +114,7 @@ Stop between phases if:
 
 ### Step 3 — Test (tester sub-agent)
 
-**Nano/Fast tier**: skip this step entirely — proceed directly to Step 3.S.
+**`--fast`**: skip this step entirely — proceed directly to Step 3.S.
 
 **[Build Gate]** — before running tests, verify the implementation compiles / has no syntax errors.
 If the build check hook reported errors → `[GATE FAIL] Build gate: compilation errors detected — fix before proceeding to test.`
@@ -235,17 +205,18 @@ Thresholds are configured in `.ck.json` under `simplify.threshold`:
 
 ### Step 4 — Code Review (code-reviewer sub-agent)
 
-**Nano/Fast tier**: skip this step entirely — proceed directly to Step 5.
+**`--fast`**: skip this step entirely — proceed directly to Step 5.
 
 **[Test Gate]** — before code review, verify all tests pass.
-If tests did not pass (or were skipped without `--no-test`) → `[GATE FAIL] Test gate: tests must pass before review — re-run Step 3 or pass --no-test to skip.`
-Bypass: `--no-test` was passed → gate is satisfied automatically.
+- Gate FAILS if: tests failed, or tests were skipped without `--no-test`
+- Gate PASSES if: all tests passed, or `--no-test` was explicitly set
 
 Spawn the **`code-reviewer`** sub-agent after tests pass (or after Step 3.S if `--no-test`):
 
 - Reviews correctness, security, regressions, code quality
 - Produces a score and verdict: APPROVED / WARNING / BLOCK
-- **Auto mode**: auto-approve if score ≥ 9.5 with 0 critical
+- **Standard mode**: auto-approve if score ≥ 9.5 with 0 CRITICAL
+- **`--hard` mode**: no auto-approve — human must explicitly approve before Step 5
 
 Fix/re-review cycle protocol:
 - **Cycle 1**: Apply fix → re-run code-reviewer
@@ -267,12 +238,11 @@ Fix/re-review cycle protocol:
 ### Step 5 — Finalize (MANDATORY)
 
 **[Approval Gate]** — before finalizing, verify review is approved.
-If code-reviewer returned BLOCK or score < 9.5 without explicit user approval → `[GATE FAIL] Approval gate: review not approved — resolve BLOCK findings or explicitly approve before finalizing.`
-Bypass: `--fast` tier or Nano/Fast score-tier skips code-reviewer → gate is satisfied automatically.
+If code-reviewer returned BLOCK or (`--hard` and no explicit user approval) → `[GATE FAIL] Approval gate: review not approved — resolve BLOCK findings or explicitly approve before finalizing.`
+Bypass: `--fast` skips code-reviewer → gate is satisfied automatically.
 
 Step 5 is **always required** — cook is incomplete without git-manager.
-**Nano tier**: run git-manager only — skip project-manager and docs-manager.
-**Fast tier**: run git-manager only — skip project-manager and docs-manager.
+**`--fast`**: run git-manager only — skip project-manager and docs-manager.
 
 **`project-manager`** — syncs task status and plan progress:
 - Marks completed phases `[x]` in `plan.md`
@@ -287,7 +257,7 @@ Step 5 is **always required** — cook is incomplete without git-manager.
 - Asks user whether to push
 
 ```
-// MANDATORY: all 3 sub-agents required
+// MANDATORY: all 3 sub-agents required (Standard / --hard)
 //
 // project-manager → plan status: Phase 1-3 complete ✓
 // docs-manager    → README updated ✓
@@ -301,13 +271,13 @@ Step 5 is **always required** — cook is incomplete without git-manager.
 
 | Agent / Skill | Step | Modes |
 |---------------|------|-------|
-| `tester` | 3 — write failing tests (--tdd) or verify after impl | All except --fast, --no-test, Nano tier, Fast tier |
+| `tester` | 3 — write failing tests (--tdd) or verify after impl | Standard, `--hard` (skip for `--fast`, `--no-test`) |
 | `debugger` | 3 — root cause analysis | When tests fail |
 | `simplify` skill | 3.S — auto-simplify on threshold breach | All (hook-driven) |
-| `code-reviewer` | 4 — review implementation | All except --fast, Nano tier, Fast tier |
-| `project-manager` | 5 — sync plan + tasks | All except Nano tier, Fast tier |
-| `docs-manager` | 5 — update docs | All except Nano tier, Fast tier |
-| `git-manager` | 5 — commit + push | Always (mandatory, all tiers) |
+| `code-reviewer` | 4 — review implementation | Standard, `--hard` (skip for `--fast`) |
+| `project-manager` | 5 — sync plan + tasks | Standard, `--hard` (skip for `--fast`) |
+| `docs-manager` | 5 — update docs | Standard, `--hard` (skip for `--fast`) |
+| `git-manager` | 5 — commit + push | Always (mandatory, all modes) |
 
 ---
 
@@ -323,10 +293,7 @@ Step 5 is **always required** — cook is incomplete without git-manager.
 
 | Flag | What it does |
 |------|-------------|
-| `--auto` | Auto-approve phases when score ≥ 9.5 with 0 critical issues |
-| `--fast` | Single-pass implement — skip tester and code-reviewer |
-| `--parallel` | Multi-agent execution for 3+ independent phases |
-| `--full` | Force Full tier — plan-reviewer + mandatory code-reviewer |
-| `--nano` | Force Nano tier — git-manager only, skip all other sub-agents |
+| `--fast` | Skip tester and code-reviewer; git-manager only |
+| `--hard` | Mandatory test + mandatory review, no auto-approve |
 | `--no-test` | Skip tester sub-agent entirely |
 | `--tdd` | Write failing tests first, then implement until they pass |
