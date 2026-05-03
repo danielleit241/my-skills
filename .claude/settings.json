@@ -8,6 +8,11 @@
             "type": "command",
             "command": "python .claude/hooks/plan_context.py",
             "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "python .claude/hooks/caveman_watch.py",
+            "timeout": 5
           }
         ]
       }
@@ -79,6 +84,16 @@
           {
             "type": "command",
             "command": "python .claude/hooks/code_simplifier.py",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Read|Grep|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .claude/hooks/artifact_fold.py",
             "timeout": 5
           }
         ]

@@ -71,9 +71,10 @@ Behavioral guidance that loads automatically when relevant.
 | Skill                    | Triggers when                                                       |
 | ------------------------ | ------------------------------------------------------------------- |
 | `backend-mindset`        | Architecture decisions, API design, testing strategy (language-agnostic) |
-| `dotnet`                 | Writing C#, ASP.NET Core, EF Core, MassTransit, xUnit              |
+| `caveman`                | Terse output mode — user says "be brief" or context is filling up   |
 | `code-review`            | Reviewing code, receiving feedback, verifying completion            |
 | `continuous-learning-v2` | Observing sessions, creating instincts                              |
+| `dotnet`                 | Writing C#, ASP.NET Core, EF Core, MassTransit, xUnit              |
 | `frontend-slides`        | Building HTML presentations or converting PowerPoint files          |
 | `mermaidjs-v11`          | Creating diagrams and visualizations                                |
 | `playwright-skill`       | Browser automation, UI testing, screenshots, responsive validation  |
@@ -93,15 +94,17 @@ Lifecycle hooks wired in `.claude/settings.json`.
 | ------------------ | ---------------------- | ----------------------------------------------------- |
 | `SessionStart`     | `session-start.py`     | Load previous session summary + active instincts      |
 | `Stop`             | `session-end.py`       | Extract summary from transcript, persist session file |
-| `PreCompact`       | `pre-compact.py`       | Log compaction event, annotate session file           |
+| `PreCompact`       | `pre-compact.py`       | Log compaction event, reset caveman state, annotate session file |
 | `UserPromptSubmit` | `plan-context.py`      | Inject active plan context into each prompt           |
+| `UserPromptSubmit` | `caveman_watch.py`     | Track tool calls; emit CAVEMAN_TRIGGERED/RELEASED events |
 | `PreToolUse`       | `observe.py pre`       | Record tool start for continuous learning             |
 | `PreToolUse`       | `suggest_compact.py`   | Count tool calls, suggest `/compact` at threshold     |
 | `PostToolUse`      | `observe.py post`      | Record tool completion for continuous learning        |
 | `PostToolUse`      | `build-check.py`       | Run build/type-check after file edits (CS/TS/Py/Go/Rust) |
 | `PostToolUse`      | `code-simplifier.py`   | Track LOC + file-edit metrics; trigger `simplify` skill when thresholds breached |
+| `PostToolUse`      | `artifact_fold.py`     | Fold large Read/Grep/Bash outputs into summary-only view |
 
-Hooks fire on `Write \| Edit \| Bash \| Agent` — read-only lookups (Read, Glob, Grep) are excluded to reduce overhead.
+Hooks fire on `Write \| Edit \| Bash \| Agent` — read-only lookups (Read, Glob, Grep) are excluded to reduce overhead. Exception: `artifact_fold.py` runs on Read|Grep|Bash to manage output size.
 
 ### Simplify thresholds
 
@@ -115,6 +118,31 @@ Configured in `.ck.json` under `simplify.threshold`:
 | `enabled` | `true` | Set `false` to disable entirely |
 
 When any threshold is breached, `/cook` Step 3.S automatically invokes the `simplify` skill before code review.
+
+### Caveman Mode
+
+Configured in `.ck.json` under `cavemanMode`:
+
+| Key | Default | Meaning |
+|-----|---------|---------|
+| `enabled` | `true` | Enable caveman mode globally |
+| `threshold.orange` | 50 | Tool calls before orange warning emitted |
+| `threshold.red` | 100 | Tool calls before red warning + auto-trigger caveman |
+
+When red threshold hit, `caveman_watch.py` emits `CAVEMAN_TRIGGERED` event; when user deactivates, emits `CAVEMAN_RELEASED`.
+
+### Artifact Folding
+
+Configured in `.ck.json` under `artifactFolding`:
+
+| Key | Default | Meaning |
+|-----|---------|---------|
+| `enabled` | `true` | Enable artifact folding globally |
+| `threshold.maxChars` | 4000 | Collapse output larger than N chars |
+| `threshold.maxLines` | 120 | Collapse output larger than N lines |
+| `threshold.previewLines` | 10 | Show first N lines in summary view |
+
+Applied by `artifact_fold.py` hook on Read, Grep, and Bash outputs to keep terminal readable during long sessions.
 
 ---
 

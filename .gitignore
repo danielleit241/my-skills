@@ -37,6 +37,9 @@ CLAUDE.local.md
 projects/
 **/projects/
 
+# Artifact folding — session-local large outputs
+.claude/artifacts/*.md
+
 # Generated plan output
 plans/*
 

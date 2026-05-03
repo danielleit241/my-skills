@@ -19,7 +19,7 @@ def load_ck_json() -> dict:
         return {}
     ck = root / ".ck.json"
     try:
-        return json.loads(ck.read_text(encoding="utf-8")) if ck.exists() else {}
+        return json.loads(ck.read_text(encoding="utf-8-sig")) if ck.exists() else {}
     except Exception:
         return {}
 
@@ -68,6 +68,18 @@ def main() -> None:
         )
 
     log("[PreCompact] State saved before compaction")
+
+    # Reset caveman state so threshold recalculates from 0 after /compact
+    import os, tempfile
+    session_id = os.environ.get("CLAUDE_SESSION_ID")
+    if session_id:
+        caveman_state = sessions_dir / f"caveman-{session_id}.json"
+        if caveman_state.exists():
+            caveman_state.write_text('{"active": false}', encoding="utf-8")
+        tmp_dir = Path(os.environ.get("TEMP", os.environ.get("TMPDIR", tempfile.gettempdir())))
+        counter = tmp_dir / f"claude-tool-count-{session_id}"
+        if counter.exists():
+            counter.write_text("0", encoding="utf-8")
 
 
 if __name__ == "__main__":

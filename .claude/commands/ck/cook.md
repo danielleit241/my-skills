@@ -231,6 +231,10 @@ Thresholds are configured in `.ck.json` under `simplify.threshold`:
 | `singleFileLoc` | 200 | Lines in a single Write/Edit call |
 | `enabled` | true | Set `false` to disable entirely |
 
+Also check for context-related signals in Step 3.S:
+- `CAVEMAN_TRIGGERED` in context → invoke the `caveman` skill and apply its rules for the remainder of the session
+- `ARTIFACT_FOLD_TRIGGERED` in context → save the full output to `.claude/artifacts/artifact-{timestamp}-{tool}.md` and reference the path instead of the full content
+
 ---
 
 ### Step 4 — Code Review (code-reviewer sub-agent)
