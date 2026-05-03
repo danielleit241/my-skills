@@ -1,6 +1,6 @@
 ---
 name: caveman
-description: "Terse output mode — strips filler/articles/hedging, ~75% token reduction. Activate when context is filling up or user requests brevity. Persists until deactivated."
+description: "Terse output mode — strips filler/articles/hedging, ~75% token reduction. Activate whenever: context is filling up, user says be brief/terse/caveman/less tokens, or CAVEMAN_TRIGGERED appears in context. Persists every response until CAVEMAN_RELEASED or user says stop/normal mode."
 user-invocable: true
 ---
 
@@ -44,7 +44,7 @@ Write full prose for ONE response, then resume caveman:
 
 - Security warnings (data loss, credential exposure, destructive commands)
 - Destructive action confirmations (delete, overwrite, drop, force-push, rm -rf)
-- Multi-step sequences where fragment ordering risks misreading
+- Multi-step sequences where cause-effect chain cannot be expressed as numbered list without losing meaning
 - User says "explain" or "clarify" in their message
 - Root-cause diagnosis where cause-and-effect chain needs grammatical structure
 
@@ -53,7 +53,7 @@ Write full prose for ONE response, then resume caveman:
 - Compressing or paraphrasing code blocks → information loss, wrong fix
 - Compressing error messages → hides the actual error
 - Using rare abbreviations the user may not know
-- Applying caveman on the FIRST response of a new task — verbose first, caveman from response 2+
+- Applying caveman on the FIRST response after activation — verbose once to acknowledge, caveman from response 2+ onward
 
 ## Activation
 
