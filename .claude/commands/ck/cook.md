@@ -315,3 +315,17 @@ Step 5 is **always required** — cook is incomplete without all 3 sub-agents.
 - `/ck:plan --hard <description>` — create a plan file first, then pass it to `/ck:cook`
 - `/ck:fix --quick` — fix build errors during implementation
 - `/ck:code-review` — standalone review if you skipped --fast
+
+---
+
+## Quick Reference
+
+| Flag | What it does |
+|------|-------------|
+| `--auto` | Auto-approve phases when score ≥ 9.5 with 0 critical issues |
+| `--fast` | Single-pass implement — skip tester and code-reviewer |
+| `--parallel` | Multi-agent execution for 3+ independent phases |
+| `--full` | Force Full tier — plan-reviewer + mandatory code-reviewer |
+| `--nano` | Force Nano tier — git-manager only, skip all other sub-agents |
+| `--no-test` | Skip tester sub-agent entirely |
+| `--tdd` | Write failing tests first, then implement until they pass |
