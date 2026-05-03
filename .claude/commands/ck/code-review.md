@@ -151,13 +151,6 @@ Tests: PASS / FAIL
 Next steps: <contextual suggestions>
 ```
 
-## Active Signals
-
-These hook signals may appear in context at any point during execution — respond immediately when seen:
-
-- `CAVEMAN_TRIGGERED` → activate the `caveman` skill; apply terse-output rules for the remainder of the session
-- `ARTIFACT_FOLD_TRIGGERED` → write the full tool output to the indicated `.claude/artifacts/` path and reference that path instead of the full content
-
 ## Related Agent
 
 Invokes the `code-reviewer` agent — see `.claude/agents/code-reviewer.md`.
