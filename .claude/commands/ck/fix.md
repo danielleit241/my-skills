@@ -1,5 +1,5 @@
 ---
-description: Structured bug-fix pipeline. Scout → Diagnose+Fix → Review → Finalize. Replaces build-fix. Modes: --auto (auto-approve ≥9.5), --quick (fast cycle, skip review), --review (pause at each step).
+description: Structured bug-fix pipeline. Scout → Diagnose+Fix → Review → Finalize. Modes: --quick (skip review + docs), --hard (mandatory review, no auto-approve).
 ---
 
 # /ck:fix — Structured Bug-Fix Pipeline
@@ -7,28 +7,31 @@ description: Structured bug-fix pipeline. Scout → Diagnose+Fix → Review → 
 ## Usage
 
 ```
-/ck:fix [--auto | --quick | --review] <bug description>
+/ck:fix [--quick | --hard] <bug description or error message>
 ```
 
-Auto-detect mode if no flag given based on description:
+No flag → **Standard** — auto-approve if score ≥ 9.5 with 0 CRITICAL.
 
-- **Review** (default) — pause for approval at each step
-- **Auto** (`--auto`) — auto-approve fixes if confidence ≥ 9.5 with 0 critical
-- **Quick** (`--quick`) — fast cycle for trivial issues (lint, type errors, build errors); skip review + docs
-- **Parallel** (`--parallel`) — spawn multiple scout agents simultaneously for complex multi-file bugs; use when bug spans 3+ unrelated modules
+- **`--quick`** — fast cycle for trivial issues (lint, type errors, build errors); skip scout, review, docs
+- **`--hard`** — mandatory review, no auto-approve (human must explicitly approve before Step 4)
 
 ---
 
-### Step 0 — Scope Detect
+### Step 0 — Prerequisites + Scope
+
+If no error message, stack trace, or concrete bug description is present in `$ARGUMENTS`:
+- Output: "Paste the error message or stack trace." — wait for input before continuing.
+
+Then detect scope:
 
 ```
 # Scope (Step 0):
 #   Description: {what the user said}
 #   Quick? → {yes/no — reason}
-#   Mode: {Review | Auto | Quick | Parallel}
+#   Mode: {Standard | Quick | Hard}
 ```
 
-If `--quick` or description is clearly a build/compiler/lint error: skip scout, go straight to Step 2 with the error message as input.
+If `--quick` or the description is clearly a build/compiler/lint error: skip Step 1, go to Step 2 with the error as input.
 
 ---
 
@@ -75,7 +78,9 @@ Spawn the **`debugger`** agent with the scout evidence report:
 
 ### Step 3 — Review (code-reviewer)
 
-Spawn **`code-reviewer`** (skip in `--quick`):
+**`--quick`**: skip this step entirely — proceed to Step 4.
+
+Spawn **`code-reviewer`**:
 
 - Correctness — does the fix address the root cause?
 - Security — no new vulnerabilities introduced?
@@ -91,9 +96,8 @@ Spawn **`code-reviewer`** (skip in `--quick`):
 // Score: 9.8/10 — APPROVED
 ```
 
-**Auto mode**: auto-approve if score ≥ 9.5, 0 critical. Up to 3 fix/re-review cycles, then escalate.
-**Review mode**: always pause for approval with full findings.
-**Quick mode**: skipped entirely.
+**Standard mode**: auto-approve if score ≥ 9.5 with 0 CRITICAL. Up to 3 fix/re-review cycles, then escalate.  
+**`--hard` mode**: no auto-approve — human must explicitly approve before Step 4.
 
 ---
 
@@ -117,14 +121,14 @@ Always required — fix is incomplete without git-manager:
 
 ## Agents
 
-| Agent             | Step                     | Modes                                 |
-| ----------------- | ------------------------ | ------------------------------------- |
-| `scout`           | 1 — evidence gathering        | All (skip if --quick + obvious error) |
-| `debugger`        | 2 — root cause + apply fix    | All                                   |
-| `code-reviewer`   | 3 — quality check             | Skip in --quick                       |
-| `project-manager` | 4 — sync plan/tasks           | Skip in --quick                       |
-| `docs-manager`    | 4 — update docs               | Skip in --quick                       |
-| `git-manager`     | 4 — commit + push             | Always (mandatory)                    |
+| Agent             | Step                          | Modes                          |
+| ----------------- | ----------------------------- | ------------------------------ |
+| `scout`           | 1 — evidence gathering        | Standard, `--hard` (skip if `--quick` + obvious error) |
+| `debugger`        | 2 — root cause + apply fix    | All                            |
+| `code-reviewer`   | 3 — quality check             | Standard, `--hard` (skip for `--quick`) |
+| `project-manager` | 4 — sync plan/tasks           | Standard, `--hard` (skip for `--quick`) |
+| `docs-manager`    | 4 — update docs               | Standard, `--hard` (skip for `--quick`) |
+| `git-manager`     | 4 — commit + push             | Always (mandatory)             |
 
 ---
 

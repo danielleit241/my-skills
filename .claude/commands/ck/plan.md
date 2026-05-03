@@ -1,5 +1,5 @@
 ---
-description: Plan a feature or system with auto-detected complexity. Modes: --fast (quick plan → cook), --hard (research + red-team + validate), --parallel (hard + file ownership per phase), --two (hard + 2 approaches, user selects). Flags: --no-test (skip testing in cook), --tdd (tests-first per phase). Always starts with Scope Challenge.
+description: Plan a feature or system with auto-detected complexity. Modes: --fast (quick plan → cook), --hard (research + red-team + validate). Flags: --no-test (skip testing in cook), --tdd (tests-first per phase). Always starts with Scope Challenge.
 ---
 
 # /ck:plan — Structured Planning Pipeline
@@ -7,15 +7,13 @@ description: Plan a feature or system with auto-detected complexity. Modes: --fa
 ## Usage
 
 ```
-/ck:plan [--fast | --hard | --parallel | --two] [--no-test | --tdd] <description>
+/ck:plan [--fast | --hard] [--no-test | --tdd] <description>
 ```
 
 Auto-detect mode if no flag given:
 
 - **Fast** — single-file change, familiar pattern, ≤ 2 components
 - **Hard** — multi-file, unfamiliar domain, security-sensitive, or ≥ 3 phases
-- **Parallel** — Hard + per-phase file ownership map
-- **Two** — Hard + 2 approaches for user to select
 
 Test flags (propagate to `/ck:cook`):
 
@@ -34,7 +32,7 @@ Before spawning any agents, challenge scope inline:
 #   Minimum? → [smallest impl that satisfies requirements]
 #   Complexity? → [Fast | Hard] — reasons: multi-file? unfamiliar? security?
 #
-# Mode: [Fast | Hard | Parallel | Two]
+# Mode: [Fast | Hard]
 # Test:  [default | --no-test | --tdd]
 ```
 
@@ -44,7 +42,7 @@ If complexity is **Hard** and the feature is novel/ambiguous: output "No brainst
 
 ---
 
-### Step 1 — Research (Hard / Parallel / Two only)
+### Step 1 — Research (Hard only)
 
 Spawn **2 `researcher` agents in parallel**:
 
@@ -77,8 +75,6 @@ plans/YYMMDD-{slug}/
   ...
 ```
 
-**Two mode**: `planner` produces `plan-a.md` and `plan-b.md` — show a summary of both, then **wait for user to choose** before continuing to Step 3.
-
 ```
 // spawning planner agent
 //
@@ -86,14 +82,11 @@ plans/YYMMDD-{slug}/
 //   plans/{date}-{slug}/plan.md
 //   plans/{date}-{slug}/phase-01-{name}.md
 //   plans/{date}-{slug}/phase-02-{name}.md
-
-// [Two mode only] → show plan-a and plan-b summaries
-// [Review Gate] → "Which approach do you prefer — A or B?" — waiting...
 ```
 
 ---
 
-### Step 3 — Red-Team Review (Hard / Parallel / Two only)
+### Step 3 — Red-Team Review (Hard only)
 
 Spawn the **`plan-reviewer` agent** with paths to all plan files.
 
@@ -141,9 +134,9 @@ Ready to cook:
 
 | Agent             | Step                       | Modes               |
 | ----------------- | -------------------------- | ------------------- |
-| `researcher`      | 1 — research (×2 parallel) | Hard, Parallel, Two |
-| `planner`         | 2 — creates plan files     | All                 |
-| `plan-reviewer`   | 3 — red-team review        | Hard, Parallel, Two |
+| `researcher`      | 1 — research (×2 parallel) | Hard |
+| `planner`         | 2 — creates plan files     | All  |
+| `plan-reviewer`   | 3 — red-team review        | Hard |
 
 ---
 

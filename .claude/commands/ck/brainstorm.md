@@ -18,8 +18,6 @@ Implementation happens later via `/ck:plan → /ck:cook`.
 /ck:brainstorm <challenge description>
 ```
 
-Example: `/ck:brainstorm best auth approach for our SaaS app`
-
 ---
 
 ### Step 0 — Scope Decomposition
@@ -60,6 +58,8 @@ Run directly on the main agent — no sub-agents. Use `AskUserQuestion` with tar
 - What has already been tried or ruled out, and why?
 - What's the riskiest assumption in the current thinking?
 
+If the domain is unfamiliar or specific library/version decisions are needed, search for context directly within this step before asking.
+
 Loop until you fully understand the problem. Challenge the user's initial framing if it contains hidden assumptions.
 
 ```
@@ -69,25 +69,7 @@ Loop until you fully understand the problem. Challenge the user's initial framin
 
 ---
 
-### Step 3 — Research (Optional)
-
-Skip if the decision space is already well-understood.
-
-Use when: unfamiliar domain, rapidly-evolving ecosystem, or specific library/version decisions needed.
-
-Spawn **2 `plan-researcher` agents in parallel** — same pattern as `/ck:plan`:
-
-```
-// plan-researcher A (Primary): investigate recommended approach + best practices
-// plan-researcher B (Alternative): investigate alternative strategy or library
-//
-// Each: ≤5 tool calls, returns structured Research Report
-// If DB schema relevant → main agent queries directly (not a sub-agent)
-```
-
----
-
-### Step 4 — Analyze + Debate
+### Step 3 — Analyze + Debate
 
 Run directly on the main agent. Present **2–3 viable approaches** — no more.
 
@@ -117,7 +99,7 @@ Use `AskUserQuestion` to iterate until consensus is reached on the preferred dir
 
 ---
 
-### Step 5 — Report + Handoff
+### Step 4 — Report + Handoff
 
 Write a structured markdown summary to `plans/reports/YYMMDD-{slug}-brainstorm.md`:
 
@@ -163,7 +145,6 @@ Options:
 
 ## Agents
 
-| Agent | Step | Số lượng | Khi nào |
-|-------|------|----------|---------|
-| `Explore` ×2–4 | 1 — Scout | 2–4, song song | Luôn luôn |
-| `plan-researcher` ×2 | 3 — Research | 2, song song | Tùy chọn |
+| Agent | Step | Count | When |
+|-------|------|-------|------|
+| `Explore` | 1 — Scout | 2–4, parallel | Always |
