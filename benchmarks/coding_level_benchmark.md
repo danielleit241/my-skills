@@ -1,36 +1,37 @@
 # Coding Level Benchmark Report
 
 **Model:** `claude-sonnet-4-6`
-**Prompt:** My query SELECT * FROM orders WHERE user_id = 42 AND status = 'pending' ORDER BY created_at DESC is slow. How do I fix it?
+**Prompt:** My query SELECT \* FROM orders WHERE user_id = 42 AND status = 'pending' ORDER BY created_at DESC is slow. How do I fix it?
 
 ## Token & Cost Summary
 
-| Lvl | Name | Sys words | Input tok | Output tok | Δ vs baseline | Cache↑ | Cost |
-|-----|------|-----------|-----------|------------|---------------|--------|------|
-| BASE | Baseline (no level) | 0 | 3 | 276 |  | 11910 | $0.03006 |
-| L0 | ELI5 | 223 | 3 | 736 | +460 | 11915 | $0.03810 |
-| L1 | Junior | 229 | 3 | 492 | +216 | 11915 | $0.03443 |
-| L2 | Mid-level | 210 | 3 | 382 | +106 | 11915 | $0.03279 |
-| L3 | Senior | 217 | 3 | 509 | +233 | 11915 | $0.03470 |
-| L4 | Tech Lead | 215 | 3 | 500 | +224 | 11915 | $0.03449 |
-| L5 | God Mode | 228 | 3 | 275 | -1 | 11915 | $0.03130 |
+| Lvl  | Name                | Sys words | Input tok | Output tok | Δ vs baseline | Cache↑ | Cost     |
+| ---- | ------------------- | --------- | --------- | ---------- | ------------- | ------ | -------- |
+| BASE | Baseline (no level) | 0         | 3         | 276        |               | 11910  | $0.03006 |
+| L0   | ELI5                | 223       | 3         | 736        | +460          | 11915  | $0.03810 |
+| L1   | Junior              | 229       | 3         | 492        | +216          | 11915  | $0.03443 |
+| L2   | Mid-level           | 210       | 3         | 382        | +106          | 11915  | $0.03279 |
+| L3   | Senior              | 217       | 3         | 509        | +233          | 11915  | $0.03470 |
+| L4   | Tech Lead           | 215       | 3         | 500        | +224          | 11915  | $0.03449 |
+| L5   | God Mode            | 228       | 3         | 275        | -1            | 11915  | $0.03130 |
 
 ## Verbosity Summary
 
-| Lvl | Name | Words | Sentences | Code | Bullets |
-|-----|------|-------|-----------|------|---------|
-| BASE | Baseline (no level) | 133 | 2 | ✓ | ✓ |
-| L0 | ELI5 | 346 | 13 | ✓ | ✓ |
-| L1 | Junior | 275 | 13 | ✓ | ✗ |
-| L2 | Mid-level | 186 | 5 | ✓ | ✓ |
-| L3 | Senior | 254 | 10 | ✓ | ✓ |
-| L4 | Tech Lead | 176 | 15 | ✗ | ✓ |
-| L5 | God Mode | 139 | 5 | ✓ | ✗ |
+| Lvl  | Name                | Words | Sentences | Code | Bullets |
+| ---- | ------------------- | ----- | --------- | ---- | ------- |
+| BASE | Baseline (no level) | 133   | 2         | ✓    | ✓       |
+| L0   | ELI5                | 346   | 13        | ✓    | ✓       |
+| L1   | Junior              | 275   | 13        | ✓    | ✗       |
+| L2   | Mid-level           | 186   | 5         | ✓    | ✓       |
+| L3   | Senior              | 254   | 10        | ✓    | ✓       |
+| L4   | Tech Lead           | 176   | 15        | ✗    | ✓       |
+| L5   | God Mode            | 139   | 5         | ✓    | ✗       |
 
 ## Full Responses
 
 ### Baseline — Baseline (no level)
-> *No coding level — raw Claude Code defaults*
+
+> _No coding level — raw Claude Code defaults_
 > 276 output tokens · 133 words · $0.03006
 
 Add a composite index on `(user_id, status, created_at)`:
@@ -58,7 +59,8 @@ Look for `Using index` or an index scan on `idx_orders_user_status_created` inst
 **If `SELECT *` is still slow** (many columns, wide rows), consider a covering index by adding the columns you actually need, or rewrite the query to select only those columns.
 
 ### Level 0 — ELI5
-> *No assumed knowledge, analogies, step-by-step*
+
+> _No assumed knowledge, analogies, step-by-step_
 > 736 output tokens · 346 words · $0.03810
 
 Think of your database like a giant library with millions of books (rows of data), and your query is a librarian being asked to find all the books by a specific author that are "checked out," sorted by when they were borrowed — without any filing system, they have to check every single book one by one.
@@ -80,6 +82,7 @@ That's it. Your query doesn't change at all — the database will automatically 
 ## Why this index works for your query
 
 Your query filters on three things in this order:
+
 1. `user_id = 42` — narrows to one person's orders
 2. `status = 'pending'` — narrows further to pending only
 3. `ORDER BY created_at DESC` — sorts what's left
@@ -98,7 +101,8 @@ Look for `Using index` or `Index Scan` in the output — that means the index is
 **Practically speaking:** this one index can turn a query that took seconds into one that takes milliseconds, even on a table with millions of rows.
 
 ### Level 1 — Junior
-> *Explains WHY, mentor tone, encourages learning*
+
+> _Explains WHY, mentor tone, encourages learning_
 > 492 output tokens · 275 words · $0.03443
 
 The query is slow because the database is scanning every row in `orders` to find matches — it has no shortcut to jump directly to rows where `user_id = 42` and `status = 'pending'`. The fix is a **composite index** on the columns you filter and sort by.
@@ -115,6 +119,7 @@ CREATE INDEX idx_orders_user_status_date
 ```
 
 This lets the database:
+
 1. Jump directly to rows where `user_id = 42`
 2. Filter within those to `status = 'pending'`
 3. Return them already sorted by `created_at DESC` — no sort step needed
@@ -134,7 +139,8 @@ Look for `Index Scan` or `Index Only Scan` in the output. If you still see `Seq 
 `SELECT *` fetches every column, which forces a **heap lookup** even with an index (the index doesn't store all columns). If you only need a few columns, select them explicitly — this enables an **index-only scan**, which is faster because it never touches the main table at all.
 
 ### Level 2 — Mid-level
-> *Design patterns, brief trade-off notes*
+
+> _Design patterns, brief trade-off notes_
 > 382 output tokens · 186 words · $0.03279
 
 Add a composite index on `(user_id, status, created_at)`:
@@ -147,24 +153,29 @@ CREATE INDEX idx_orders_user_status_date
 **Why this works:** The index satisfies all three clauses in one scan — equality on `user_id` and `status` narrows the rows, then `created_at DESC` delivers them pre-sorted, eliminating a filesort.
 
 **Column order matters:**
+
 - Equality columns first (`user_id`, `status`), range/sort column last (`created_at`)
 - Flipping the order forces the optimizer to sort after filtering
 
 **Verify it's being used:**
+
 ```sql
 EXPLAIN SELECT * FROM orders
 WHERE user_id = 42 AND status = 'pending'
 ORDER BY created_at DESC;
 ```
+
 Look for `Using index` (MySQL) or `Index Scan` (Postgres) — not `filesort` or `Seq Scan`.
 
 **Other things to check:**
+
 - If `SELECT *` pulls wide rows, consider selecting only needed columns — may allow an index-only scan
 - If `status` has very low cardinality (e.g., 2–3 distinct values) and most rows are non-pending, the optimizer may skip the index; a partial index helps: `WHERE status = 'pending'`
 - Make sure the table's `user_id` FK doesn't already have a single-column index that's now superseded — drop it to avoid write overhead
 
 ### Level 3 — Senior
-> *Trade-offs and architecture first, terse*
+
+> _Trade-offs and architecture first, terse_
 > 509 output tokens · 254 words · $0.03470
 
 Composite index column order trades write overhead for read selectivity — the deciding factor is cardinality and filter type.
@@ -177,6 +188,7 @@ CREATE INDEX idx_orders_user_status_date
 ```
 
 **Why this order:**
+
 1. `user_id` — equality filter, highest selectivity, goes first
 2. `status` — equality filter, low cardinality but narrows the range scan
 3. `created_at DESC` — range/sort, must be last or the index can't satisfy `ORDER BY` without a filesort
@@ -201,17 +213,20 @@ ORDER BY created_at DESC;
 ```
 
 Watch for:
+
 - `Index Scan` or `Index Only Scan` — good
 - `Sort` node still present — `created_at` direction mismatch or index not used
 - `Bitmap Heap Scan` — partial index use, check filter vs. index condition
 
 **Common failure modes:**
+
 - `status` has ~3 values → its selectivity is low, but it still helps eliminate rows before the sort; don't skip it
 - `SELECT *` forces heap fetches unless you use `INCLUDE` — on wide tables this dominates
 - If `user_id` is nearly unique (e.g., most users have 1 order), a single-column index on `user_id` may be sufficient and cheaper to maintain
 
 ### Level 4 — Tech Lead
-> *Risk analysis, business impact, ops implications*
+
+> _Risk analysis, business impact, ops implications_
 > 500 output tokens · 176 words · $0.03449
 
 Add a composite index on `(user_id, status, created_at DESC)` — in that column order.
@@ -229,13 +244,14 @@ Add a composite index on `(user_id, status, created_at DESC)` — in that column
 **Recommendation:** Ship it. This is a textbook case — the index pays for itself immediately and carries near-zero risk. Delegate to a DBA or senior engineer for a 30-minute change window.
 
 ### Level 5 — God Mode
-> *Zero hand-holding, code-first, max terse*
+
+> _Zero hand-holding, code-first, max terse_
 > 275 output tokens · 139 words · $0.03130
 
 Add a composite index:
 
 ```sql
-CREATE INDEX idx_orders_user_status_created 
+CREATE INDEX idx_orders_user_status_created
 ON orders (user_id, status, created_at DESC);
 ```
 
