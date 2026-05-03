@@ -7,7 +7,7 @@ description: Guided feature development with codebase understanding and architec
 ## Usage
 
 ```
-/ck:cook [--auto | --fast | --parallel] [--no-test | --tdd] [plan-file-path | feature-description]
+/ck:cook [--auto | --fast | --parallel] [--full | --nano] [--no-test | --tdd] [plan-file-path | feature-description]
 ```
 
 Auto-detect mode if no flag given:
@@ -16,9 +16,48 @@ Auto-detect mode if no flag given:
 - **Fast** (`--fast`) — skip tester/reviewer loop, single-pass implement
 - **Parallel** (`--parallel`) — multi-agent execution for 3+ independent phases
 
+Rigor override flags (bypass Step 0.5 scoring):
+- **`--full`** — force Full tier regardless of rigor score
+- **`--nano`** — force Nano tier regardless of rigor score
+
 Test flags (orthogonal to execution mode):
 - **`--no-test`** — skip the tester sub-agent entirely; proceed directly to Step 3.S → Step 4
 - **`--tdd`** — invert Step 3: write failing tests first, then implement until they pass
+
+---
+
+### Step 0.5 — Rigor Scoring
+
+Before loading the plan, score the change to select the right pipeline tier.
+Skip this step if `--full` or `--nano` was passed — use that tier directly.
+
+**Scoring signals:**
+
+| Signal | Points |
+|--------|--------|
+| Files to touch: 1 = 0 pts, 2–3 = 1 pt, 4+ = 3 pts | 0–3 |
+| Cross-module impact (touches 2+ distinct modules) | +2 |
+| Security-sensitive code (auth, crypto, permissions, secrets) | +3 |
+| Public API / interface change (exported types, CLI flags, HTTP contracts) | +2 |
+| DB schema change (migration, model field add/remove) | +2 |
+| New external dependency | +1 |
+
+**Pipeline tier:**
+
+| Score | Tier | Steps executed |
+|-------|------|----------------|
+| 0 | Nano | Step 1 → Step 2 → git-manager only (skip tester, reviewer, project-manager, docs-manager) |
+| 1–2 | Fast | Steps 1 → 2 → 3.S → 5 (git-manager only) — skip tester and code-reviewer. Same as `--fast` flag. |
+| 3–5 | Standard | Full current pipeline |
+| 6+ | Full | Standard + plan-reviewer (if plan exists) + code-reviewer mandatory |
+
+Infer score from the feature description + codebase context. If score is ambiguous between tiers, round up.
+
+```
+// [Step 0.5 — Rigor Scoring]
+// Signals: files=2 (+1), cross-module (+2) → Score: 3 → Tier: Standard
+// Pipeline: Steps 1 → 2 → 3 → 3.S → 4 → 5
+```
 
 ---
 
@@ -37,6 +76,15 @@ Phases remaining:
   [ ] Phase 3: Testing
 ```
 
+If `## Session Notes` exists in plan.md, output:
+```
+Resuming session:
+  Last active:  {timestamp}
+  Last phase:   {phase name}
+  Last status:  {status line}
+```
+Then continue from where it left off.
+
 When no plan file is provided, run a quick discovery:
 - Read the feature request
 - Ask 2–3 clarifying questions if needed
@@ -51,8 +99,27 @@ The main agent reads each `phase-XX-*.md` file and implements the steps in order
 1. Read `phase-XX-*.md` — understand requirements, architecture, steps, success criteria
 2. Implement following codebase conventions
 3. Verify success criteria for the phase
-4. Mark phase complete in `plan.md`: `- [x] Phase N: {name}`
+4. Write (overwrite) `## Session Notes` in plan.md, then mark phase complete `- [x] Phase N: {name}` (atomic: write notes before marking complete so state is consistent on interruption)
 5. Report what was done
+
+**Session Notes template** (write to plan.md after each phase):
+
+   ```markdown
+   ## Session Notes
+   <!-- Updated by cook automatically — do not edit manually -->
+
+   **Last active:** {YYYY-MM-DD HH:MM}
+   **Phase in progress:** {phase-XX-name}
+   **Status:** {one-line status}
+
+   ### Decisions made this session
+   {bullet list of non-obvious decisions, or "(none)"}
+
+   ### Next immediate action
+   {what cook will do next}
+   ```
+
+   Overwrite rule: always replace the entire `## Session Notes` section. Never append.
 
 **Review Gate** — after each phase (or group of phases):
 - **Interactive mode**: pause and wait for user approval before continuing
@@ -77,6 +144,12 @@ Stop between phases if:
 
 ### Step 3 — Test (tester sub-agent)
 
+**Nano/Fast tier**: skip this step entirely — proceed directly to Step 3.S.
+
+**[Build Gate]** — before running tests, verify the implementation compiles / has no syntax errors.
+If the build check hook reported errors → `[GATE FAIL] Build gate: compilation errors detected — fix before proceeding to test.`
+Bypass: `--no-test` skips this gate (implies build verification is also skipped — use when compilation check is not applicable or desired).
+
 **`--no-test`**: skip this step entirely — proceed directly to Step 3.S.
 
 **Default / `--tdd`**:
@@ -84,8 +157,15 @@ Stop between phases if:
 Default flow — spawn **`tester`** sub-agent after implementation:
 - Writes comprehensive tests for implemented code
 - Runs the full test suite — **100% pass required**
-- If tests fail → spawns **`debugger`** sub-agent to investigate root cause
-- Fix → re-test loop, **max 3 cycles**
+- If tests fail → spawn **`debugger`** sub-agent → apply fix → re-test
+
+**Remediation cycle protocol:**
+- **Cycle 1**: Apply fix from debugger → re-run tests
+- **Cycle 2**: MUST use a different approach than cycle 1 (if cycle 1 edited tests → cycle 2 must fix implementation; if cycle 1 patched implementation → cycle 2 must refactor the logic) → re-run tests
+- **Cycle 3**: MUST use a third distinct approach → re-run tests
+- **Cycle 4**: STOP — do not attempt another fix
+
+**Same-approach rule**: if the proposed fix for cycle N is the same as cycle N-1 (same file, same change type), reject it and force a different strategy before proceeding.
 
 **`--tdd` flow** — invert the order per phase:
 1. Spawn **`tester`** to write failing tests — use the phase's `### Tests to Write First` section if present, otherwise derive test cases from the phase's success criteria
@@ -107,7 +187,16 @@ Default flow — spawn **`tester`** sub-agent after implementation:
 // [Step 3 skipped] → proceed to Step 3.S
 ```
 
-If 3 cycles exhausted without passing: **stop and report to user**.
+**[ESCALATION]** report on cycle 4 failure:
+```
+[ESCALATION] Test remediation exhausted
+File:      {path/to/failing_test}
+Error:     {exact error message}
+Cycle 1:   {approach tried}
+Cycle 2:   {approach tried}
+Cycle 3:   {approach tried}
+Action:    Awaiting user guidance
+```
 
 ---
 
@@ -146,12 +235,23 @@ Thresholds are configured in `.ck.json` under `simplify.threshold`:
 
 ### Step 4 — Code Review (code-reviewer sub-agent)
 
+**Nano/Fast tier**: skip this step entirely — proceed directly to Step 5.
+
+**[Test Gate]** — before code review, verify all tests pass.
+If tests did not pass (or were skipped without `--no-test`) → `[GATE FAIL] Test gate: tests must pass before review — re-run Step 3 or pass --no-test to skip.`
+Bypass: `--no-test` was passed → gate is satisfied automatically.
+
 Spawn the **`code-reviewer`** sub-agent after tests pass (or after Step 3.S if `--no-test`):
 
 - Reviews correctness, security, regressions, code quality
 - Produces a score and verdict: APPROVED / WARNING / BLOCK
 - **Auto mode**: auto-approve if score ≥ 9.5 with 0 critical
-- Fix/re-review cycle up to **3 times**, then escalate to user
+
+Fix/re-review cycle protocol:
+- **Cycle 1**: Apply fix → re-run code-reviewer
+- **Cycle 2**: MUST use different approach than cycle 1 → re-run code-reviewer
+- **Cycle 3**: MUST use third distinct approach → re-run code-reviewer
+- **Cycle 4**: STOP — escalate to user with [ESCALATION] report listing all 3 approaches tried
 
 ```
 // main agent → spawns code-reviewer sub-agent
@@ -166,7 +266,12 @@ Spawn the **`code-reviewer`** sub-agent after tests pass (or after Step 3.S if `
 
 ### Step 5 — Finalize (MANDATORY)
 
-Step 5 is **always required** — cook is incomplete without all 3 sub-agents:
+**[Approval Gate]** — before finalizing, verify review is approved.
+If code-reviewer returned BLOCK or score < 9.5 without explicit user approval → `[GATE FAIL] Approval gate: review not approved — resolve BLOCK findings or explicitly approve before finalizing.`
+Bypass: `--fast` tier or Nano/Fast score-tier skips code-reviewer → gate is satisfied automatically.
+
+Step 5 is **always required** — cook is incomplete without all 3 sub-agents.
+**Nano tier**: run git-manager only — skip project-manager and docs-manager.
 
 **`project-manager`** — syncs task status and plan progress:
 - Marks completed phases `[x]` in `plan.md`
@@ -195,13 +300,13 @@ Step 5 is **always required** — cook is incomplete without all 3 sub-agents:
 
 | Agent / Skill | Step | Modes |
 |---------------|------|-------|
-| `tester` | 3 — write failing tests (--tdd) or verify after impl | All except --fast, --no-test |
+| `tester` | 3 — write failing tests (--tdd) or verify after impl | All except --fast, --no-test, Nano/Fast tier |
 | `debugger` | 3 — root cause analysis | When tests fail |
 | `simplify` skill | 3.S — auto-simplify on threshold breach | All (hook-driven) |
-| `code-reviewer` | 4 — review implementation | All except --fast |
-| `project-manager` | 5 — sync plan + tasks | Always (mandatory) |
-| `docs-manager` | 5 — update docs | Always (mandatory) |
-| `git-manager` | 5 — commit + push | Always (mandatory) |
+| `code-reviewer` | 4 — review implementation | All except --fast, Nano/Fast tier |
+| `project-manager` | 5 — sync plan + tasks | All except Nano tier |
+| `docs-manager` | 5 — update docs | All except Nano tier |
+| `git-manager` | 5 — commit + push | Always (mandatory, all tiers) |
 
 ---
 
