@@ -40,6 +40,8 @@ Before spawning any agents, challenge scope inline:
 
 If scope is too large: suggest splitting and **wait for user confirmation**.
 
+If complexity is **Hard** and the feature is novel/ambiguous: output "No brainstorm found for this feature. Run `/ck:brainstorm` first? [Y/n]" — if Yes, stop; if No, proceed.
+
 ---
 
 ### Step 1 — Research (Hard / Parallel / Two only)
@@ -126,11 +128,11 @@ Then hydrate tasks via TodoWrite:
 // T3: {Phase 3} (blocked by T2)
 ```
 
-Output the exact cook command, including any test flag that was passed to `/ck:plan`:
+Output the exact cook command, carrying through any mode and test flags passed to `/ck:plan`:
 
 ```
 Ready to cook:
-/ck:cook [--no-test | --tdd] /abs/path/plans/{date}-{slug}/plan.md
+/ck:cook [--fast | --hard] [--no-test | --tdd] /abs/path/plans/{date}-{slug}/plan.md
 ```
 
 ---
