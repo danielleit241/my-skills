@@ -270,8 +270,9 @@ Fix/re-review cycle protocol:
 If code-reviewer returned BLOCK or score < 9.5 without explicit user approval → `[GATE FAIL] Approval gate: review not approved — resolve BLOCK findings or explicitly approve before finalizing.`
 Bypass: `--fast` tier or Nano/Fast score-tier skips code-reviewer → gate is satisfied automatically.
 
-Step 5 is **always required** — cook is incomplete without all 3 sub-agents.
+Step 5 is **always required** — cook is incomplete without git-manager.
 **Nano tier**: run git-manager only — skip project-manager and docs-manager.
+**Fast tier**: run git-manager only — skip project-manager and docs-manager.
 
 **`project-manager`** — syncs task status and plan progress:
 - Marks completed phases `[x]` in `plan.md`
@@ -300,12 +301,12 @@ Step 5 is **always required** — cook is incomplete without all 3 sub-agents.
 
 | Agent / Skill | Step | Modes |
 |---------------|------|-------|
-| `tester` | 3 — write failing tests (--tdd) or verify after impl | All except --fast, --no-test, Nano/Fast tier |
+| `tester` | 3 — write failing tests (--tdd) or verify after impl | All except --fast, --no-test, Nano tier, Fast tier |
 | `debugger` | 3 — root cause analysis | When tests fail |
 | `simplify` skill | 3.S — auto-simplify on threshold breach | All (hook-driven) |
-| `code-reviewer` | 4 — review implementation | All except --fast, Nano/Fast tier |
-| `project-manager` | 5 — sync plan + tasks | All except Nano tier |
-| `docs-manager` | 5 — update docs | All except Nano tier |
+| `code-reviewer` | 4 — review implementation | All except --fast, Nano tier, Fast tier |
+| `project-manager` | 5 — sync plan + tasks | All except Nano tier, Fast tier |
+| `docs-manager` | 5 — update docs | All except Nano tier, Fast tier |
 | `git-manager` | 5 — commit + push | Always (mandatory, all tiers) |
 
 ---

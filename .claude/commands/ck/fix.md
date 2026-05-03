@@ -15,7 +15,7 @@ Auto-detect mode if no flag given based on description:
 - **Review** (default) — pause for approval at each step
 - **Auto** (`--auto`) — auto-approve fixes if confidence ≥ 9.5 with 0 critical
 - **Quick** (`--quick`) — fast cycle for trivial issues (lint, type errors, build errors); skip review + docs
-- **Parallel** (`--parallel`) — scout 3 areas simultaneously for complex multi-file bugs
+- **Parallel** (`--parallel`) — spawn multiple scout agents simultaneously for complex multi-file bugs; use when bug spans 3+ unrelated modules
 
 ---
 
