@@ -16,11 +16,12 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent.parent / "lib"))
-from utils import (
-    ensure_dir, get_datetime_string, get_project_name, get_project_root,
-    get_sessions_dir, log, strip_ansi,
-)
+sys.path.insert(0, str(Path(__file__).parent / "lib"))
+from ck_config_utils import find_project_root as get_project_root, get_project_name, get_sessions_dir
+from hook_logger import HookLogger, strip_ansi
+from session_utils import ensure_dir, get_datetime_string
+
+_log = HookLogger("session-state")
 
 STATE_FILENAME = ".last-state.md"
 ARCHIVE_DIR_NAME = "archive"
@@ -184,13 +185,13 @@ def _rotate(state_dir: Path) -> None:
     try:
         current.rename(archive_dir / f"{ts}.md")
     except Exception as e:
-        log(f"[SessionState] Archive failed: {e}")
+        _log.warn(f"Archive failed: {e}")
         return
     try:
         archives = sorted(archive_dir.glob("*.md"), key=lambda p: p.name)
         for old in archives[:max(0, len(archives) - MAX_ARCHIVES)]:
             old.unlink(missing_ok=True)
-            log(f"[SessionState] Pruned archive: {old.name}")
+            _log.info(f"Pruned archive: {old.name}")
     except Exception:
         pass
 
@@ -214,7 +215,7 @@ def save_state(transcript_path: str | None = None) -> None:
     _rotate(state_dir)
     content = _build_state(transcript, git, plan, timestamp, project_name)
     (state_dir / STATE_FILENAME).write_text(content, encoding="utf-8")
-    log(f"[SessionState] Saved → {STATE_FILENAME}")
+    _log.info(f"Saved → {STATE_FILENAME}")
 
 
 def load_state() -> str:
@@ -256,5 +257,5 @@ if __name__ == "__main__":
     try:
         main()
     except Exception as e:
-        log(f"[SessionState] Error: {e}")
+        _log.error(str(e))
         sys.exit(0)

@@ -1,28 +1,29 @@
 #!/usr/bin/env python3
 """
-Hook: PostToolUse Write|Edit
-Tracks cumulative edit metrics per session and emits SIMPLIFY_TRIGGERED when
-any threshold is breached. Thresholds read from .ck.json simplify.threshold.
+PostToolUse Write|Edit hook — auto-trigger simplify when edit thresholds are breached.
+
+Tracks cumulative edit metrics per session. Emits SIMPLIFY_TRIGGERED when any
+threshold is breached. Thresholds read from .ck.json simplify.threshold.
 
 Defaults: totalLoc=400, fileCount=8, singleFileLoc=200
-State stored in .claude/session-data/simplify-tracker-{session_id}.json
-Resets when cook.md Step 3.S invokes simplify and clears the state file.
+State: .claude/session-data/simplify-tracker-{session_id}.json
+Resets when cook Step 3.S invokes simplify and clears the state file.
 """
 
-import sys
 import json
 import os
+import sys
 from pathlib import Path
 
 
-def find_repo_root(cwd: str) -> Path | None:
+def _find_repo_root(cwd: str) -> Path | None:
     for parent in [Path(cwd)] + list(Path(cwd).parents):
         if (parent / ".git").exists():
             return parent
     return None
 
 
-def load_threshold_config(root: Path) -> dict:
+def _load_config(root: Path) -> dict:
     ck = root / ".ck.json"
     if ck.exists():
         try:
@@ -32,13 +33,13 @@ def load_threshold_config(root: Path) -> dict:
     return {}
 
 
-def state_file(root: Path, session_id: str) -> Path:
+def _state_path(root: Path, session_id: str) -> Path:
     d = root / ".claude" / "session-data"
     d.mkdir(parents=True, exist_ok=True)
     return d / f"simplify-tracker-{session_id}.json"
 
 
-def load_state(path: Path) -> dict:
+def _load_state(path: Path) -> dict:
     if path.exists():
         try:
             return json.loads(path.read_text())
@@ -53,17 +54,17 @@ def main() -> None:
     except Exception:
         return
 
-    # Skip sub-agent calls (tester, debugger, code-reviewer, etc.)
+    # Skip sub-agent calls
     if data.get("agent_id"):
         return
 
     session_id = data.get("session_id") or os.environ.get("CLAUDE_SESSION_ID", "default")
     cwd = data.get("cwd", os.getcwd())
-    root = find_repo_root(cwd)
+    root = _find_repo_root(cwd)
     if not root:
         return
 
-    cfg = load_threshold_config(root)
+    cfg = _load_config(root)
     if not cfg.get("enabled", True):
         return
 
@@ -71,8 +72,8 @@ def main() -> None:
     threshold_files  = cfg.get("fileCount",       8)
     threshold_single = cfg.get("singleFileLoc", 200)
 
-    sp = state_file(root, session_id)
-    state = load_state(sp)
+    sp = _state_path(root, session_id)
+    state = _load_state(sp)
 
     if state.get("triggered"):
         return
@@ -116,7 +117,7 @@ def main() -> None:
                 "SIMPLIFY_TRIGGERED: Edit thresholds breached — "
                 + "; ".join(breached)
                 + ". Proceed to Step 3.S in /cook: invoke the `simplify` skill before Step 4."
-            )
+            ),
         }
     }))
 
@@ -125,4 +126,4 @@ if __name__ == "__main__":
     try:
         main()
     except Exception:
-        pass  # Never block Claude on hook errors
+        pass

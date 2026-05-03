@@ -1,0 +1,121 @@
+#!/usr/bin/env python3
+"""
+UserPromptSubmit hook — inject dev rules, session info, and active plan context.
+
+Fires on every prompt. Outputs: project/branch header, core dev rules,
+and active plan next-phase reminder. Reads active plans from plans/ directory.
+"""
+
+import json
+import os
+import re
+import subprocess
+import sys
+from pathlib import Path
+
+PLANS_DIR = "plans"
+STATUS_ACTIVE = "🟡"
+STATUS_COMPLETE = "✅"
+MAX_ACTIVE_PLANS = 3
+DEV_RULES = "YAGNI · KISS · DRY · Brutal honesty · Challenge assumptions"
+
+
+def _git(*args: str) -> str:
+    try:
+        r = subprocess.run(["git"] + list(args), capture_output=True, text=True, timeout=3)
+        return r.stdout.strip() if r.returncode == 0 else ""
+    except Exception:
+        return ""
+
+
+def get_session_header() -> str:
+    project = Path(os.getcwd()).name
+    branch = _git("rev-parse", "--abbrev-ref", "HEAD")
+    parts = [f"Project: {project}"]
+    if branch:
+        parts.append(f"Branch: {branch}")
+    return " | ".join(parts)
+
+
+def find_active_plans(root: Path) -> list[dict]:
+    plans_root = root / PLANS_DIR
+    if not plans_root.exists():
+        return []
+
+    active = []
+    for plan_dir in sorted(plans_root.iterdir()):
+        if not plan_dir.is_dir():
+            continue
+        plan_file = plan_dir / "plan.md"
+        if not plan_file.exists():
+            continue
+
+        content = plan_file.read_text(encoding="utf-8", errors="replace")
+        if STATUS_COMPLETE in content:
+            continue
+        if STATUS_ACTIVE not in content:
+            continue
+
+        info = _parse_plan(plan_file, content)
+        if info:
+            active.append(info)
+
+    active.sort(key=lambda p: p["mtime"], reverse=True)
+    return active[:MAX_ACTIVE_PLANS]
+
+
+def _parse_plan(plan_file: Path, content: str) -> dict | None:
+    name_match = re.search(r"^#\s+Plan:\s+(.+)$", content, re.MULTILINE)
+    mode_match = re.search(r"^Mode:\s+(.+)$", content, re.MULTILINE)
+
+    name = name_match.group(1).strip() if name_match else plan_file.parent.name
+    mode = mode_match.group(1).strip() if mode_match else "Unknown"
+
+    phases = re.findall(r"- \[([ x])\] Phase \d+: (.+)", content)
+    next_phase = None
+    completed = sum(1 for done, _ in phases if done == "x")
+    total = len(phases)
+    for done, phase_name in phases:
+        if done != "x" and next_phase is None:
+            next_phase = phase_name.split("—")[0].strip()
+
+    return {
+        "name": name,
+        "mode": mode,
+        "path": str(plan_file),
+        "next_phase": next_phase,
+        "progress": f"{completed}/{total}",
+        "mtime": plan_file.stat().st_mtime,
+    }
+
+
+def build_context(header: str, active_plans: list[dict]) -> str:
+    lines = [header, f"Rules: {DEV_RULES}"]
+
+    if active_plans:
+        lines.append("")
+        for plan in active_plans:
+            next_info = f"next → {plan['next_phase']}" if plan["next_phase"] else "all phases complete"
+            lines.append(f"Active plan: [{plan['mode']}] {plan['name']} ({plan['progress']} phases) — {next_info}")
+            lines.append(f"  Plan file: {plan['path']}")
+
+    return "\n".join(lines)
+
+
+def main():
+    try:
+        json.loads(sys.stdin.read())
+    except (json.JSONDecodeError, EOFError):
+        pass
+
+    root = Path(os.getcwd())
+    header = get_session_header()
+    active_plans = find_active_plans(root)
+    context = build_context(header, active_plans)
+
+    sys.stdout.write(json.dumps({"hookSpecificOutput": {"additionalContext": context}}))
+    sys.stdout.flush()
+
+
+if __name__ == "__main__":
+    main()

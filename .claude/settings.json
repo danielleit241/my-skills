@@ -1,17 +1,81 @@
-﻿{
+{
   "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .claude/hooks/session_init.py"
+          },
+          {
+            "type": "command",
+            "command": "python .claude/hooks/subagent_init.py"
+          }
+        ]
+      }
+    ],
     "UserPromptSubmit": [
       {
         "matcher": "*",
         "hooks": [
           {
             "type": "command",
-            "command": "python .claude/hooks/plan_context.py",
+            "command": "python .claude/hooks/dev_rules_reminder.py",
             "timeout": 5
           },
           {
             "type": "command",
             "command": "python .claude/hooks/caveman_watch.py",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Read|Write|Edit|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .claude/hooks/privacy_block.py",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit|Bash|Agent",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .claude/hooks/suggest_compact.py",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .claude/hooks/build_check.py",
+            "timeout": 30
+          },
+          {
+            "type": "command",
+            "command": "python .claude/hooks/simplify_gate.py",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Read|Grep|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .claude/hooks/artifact_fold.py",
             "timeout": 5
           }
         ]
@@ -24,76 +88,6 @@
           {
             "type": "command",
             "command": "python .claude/hooks/pre_compact.py",
-            "timeout": 5
-          }
-        ]
-      }
-    ],
-    "SessionStart": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python .claude/hooks/session_start.py"
-          }
-        ]
-      }
-    ],
-    "PreToolUse": [
-      {
-        "matcher": "Write|Edit|Bash|Agent",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python .claude/hooks/observe.py pre",
-            "timeout": 10
-          },
-          {
-            "type": "command",
-            "command": "python .claude/hooks/suggest_compact.py",
-            "timeout": 5
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Write|Edit|Bash|Agent",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python .claude/hooks/observe.py post",
-            "timeout": 10
-          }
-        ]
-      },
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python .claude/hooks/build_check.py",
-            "timeout": 30
-          }
-        ]
-      },
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python .claude/hooks/code_simplifier.py",
-            "timeout": 5
-          }
-        ]
-      },
-      {
-        "matcher": "Read|Grep|Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python .claude/hooks/artifact_fold.py",
             "timeout": 5
           }
         ]

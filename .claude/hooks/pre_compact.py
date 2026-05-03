@@ -6,22 +6,10 @@ import json
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent.parent / "lib"))
-from utils import (
-    append_file, ensure_dir, find_files,
-    get_datetime_string, get_project_root, get_sessions_dir, get_time_string, log,
-)
-
-
-def load_ck_json() -> dict:
-    root = get_project_root()
-    if not root:
-        return {}
-    ck = root / ".ck.json"
-    try:
-        return json.loads(ck.read_text(encoding="utf-8-sig")) if ck.exists() else {}
-    except Exception:
-        return {}
+sys.path.insert(0, str(Path(__file__).parent / "lib"))
+from ck_config_utils import get_sessions_dir, load_ck_config
+from hook_logger import HookLogger
+from session_utils import append_file, ensure_dir, find_files, get_datetime_string, get_time_string
 
 
 
@@ -44,14 +32,15 @@ def purge_outdated(sessions_dir: Path, compact_day: int) -> None:
     except Exception:
         pass
     if removed:
-        log(f"[PreCompact] Purged {removed} session file(s) older than {compact_day}d")
+        log.info(f"Purged {removed} session file(s) older than {compact_day}d")
 
 
 def main() -> None:
+    log = HookLogger("pre-compact")
     sessions_dir = get_sessions_dir()
     ensure_dir(sessions_dir)
 
-    config = load_ck_json()
+    config = load_ck_config()
     compact_day: int = int(config.get("compactDay", 3))
 
     timestamp = get_datetime_string()
@@ -67,7 +56,7 @@ def main() -> None:
             f"\n---\n**[Compaction occurred at {time_str}]** - Context was summarized\n",
         )
 
-    log("[PreCompact] State saved before compaction")
+    log.info("State saved before compaction")
 
     # Reset caveman state so threshold recalculates from 0 after /compact
     import os, tempfile
@@ -86,4 +75,4 @@ if __name__ == "__main__":
     try:
         main()
     except Exception as e:
-        log(f"[PreCompact] Error: {e}")
+        HookLogger("pre-compact").error(str(e))

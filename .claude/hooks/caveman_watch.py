@@ -18,12 +18,8 @@ import os
 import tempfile
 from pathlib import Path
 
-
-def find_repo_root(cwd: str) -> Path | None:
-    for p in [Path(cwd), *Path(cwd).parents]:
-        if (p / ".git").exists():
-            return p
-    return None
+sys.path.insert(0, str(Path(__file__).parent / "lib"))
+from ck_config_utils import find_project_root as find_repo_root
 
 
 def main() -> None:
@@ -46,16 +42,16 @@ def main() -> None:
     if not root:
         return
 
-    # Read .ck.json thresholds
+    # Read .ck.json thresholds via shared lib
+    from ck_config_utils import get_section, is_enabled as _is_enabled
+    cm = get_section("cavemanMode", root=root)
+    enabled = _is_enabled("cavemanMode", root=root)
+    thresh = cm.get("threshold", {})
     try:
-        ck = json.loads((root / ".ck.json").read_text(encoding="utf-8-sig"))
-        cm = ck.get("cavemanMode", {})
-        enabled = cm.get("enabled", True)
-        thresh = cm.get("threshold", {})
         orange = int(thresh.get("orange", 50))
         red = int(thresh.get("red", 100))
     except Exception:
-        enabled, orange, red = True, 50, 100
+        orange, red = 50, 100
 
     if not enabled:
         return

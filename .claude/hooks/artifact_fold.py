@@ -13,16 +13,11 @@ Thresholds from .ck.json artifactFolding.threshold.
 import sys
 import json
 import os
-import tempfile
 from pathlib import Path
 from datetime import datetime, timezone
 
-
-def find_repo_root(cwd: str) -> Path | None:
-    for p in [Path(cwd), *Path(cwd).parents]:
-        if (p / ".git").exists():
-            return p
-    return None
+sys.path.insert(0, str(Path(__file__).parent / "lib"))
+from ck_config_utils import find_project_root as find_repo_root, get_section, is_enabled
 
 
 def extract_response_text(tool_response) -> str:
@@ -55,20 +50,17 @@ def main() -> None:
     if not root:
         return
 
-    # Read .ck.json config (utf-8-sig handles BOM on Windows)
+    if not is_enabled("artifactFolding", root=root):
+        return
+
+    af = get_section("artifactFolding", root=root)
+    thresh = af.get("threshold", {})
     try:
-        ck = json.loads((root / ".ck.json").read_text(encoding="utf-8-sig"))
-        af = ck.get("artifactFolding", {})
-        enabled = af.get("enabled", True)
-        thresh = af.get("threshold", {})
         max_chars = int(thresh.get("maxChars", 4000))
         max_lines = int(thresh.get("maxLines", 120))
         preview_lines = int(thresh.get("previewLines", 10))
     except Exception:
-        enabled, max_chars, max_lines, preview_lines = True, 4000, 120, 10
-
-    if not enabled:
-        return
+        max_chars, max_lines, preview_lines = 4000, 120, 10
 
     chars = len(response_text)
     lines = response_text.count("\n") + 1

@@ -16,6 +16,10 @@
       "previewLines": 10
     }
   },
+  "privacyBlock": {
+    "enabled": true,
+    "allowList": []
+  },
   "simplify": {
     "threshold": {
       "enabled": true,

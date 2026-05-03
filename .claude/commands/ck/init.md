@@ -84,7 +84,6 @@ Options:
 "Any additional tools?"
 Options:
 - `show-off` — HTML presentation generator + Playwright
-- `continuous-learning` — Observe tool calls → instincts (heavy)
 
 **Q3** header: `Auto-hooks` | multiSelect: true
 "Optional automation hooks:"
@@ -101,7 +100,6 @@ Bundle label → files mapping used in Step 5:
 | learn | learn.md | — |
 | show-off | show-off.md | playwright-capture |
 | docs-fe | docs-fe.md | — |
-| continuous-learning | — | — (hooks only) |
 
 ---
 
@@ -131,7 +129,6 @@ Options:
 - `skill-creator` — Create and improve skill files
 - `sequential-thinking` — Systematic step-by-step reasoning
 - `playwright-skill` — Browser automation (auto-included with show-off bundle)
-- `continuous-learning-v2` — Auto-learning instincts (auto-included with continuous-learning bundle)
 
 For each selected skill, copy `skills/<name>/` recursively to `<target>/.claude/skills/<name>/`, excluding any `node_modules/` subdirectory. In Merge mode, skip skills directories that already exist at the destination.
 
@@ -205,9 +202,8 @@ Use the bundle table from Step 1. In Merge mode: skip any destination file that 
 
 **5d. Copy optional hooks**
 
-- `build-check` selected → copy `hooks/build-check.py`
-- `code-simplifier` selected → copy `hooks/code-simplifier.py`
-- `continuous-learning` selected → copy `hooks/observe.py`
+- `build-check` selected → copy `hooks/build_check.py`
+- `simplify-gate` selected → copy `hooks/simplify_gate.py`
 
 **5e. Copy skills**
 
@@ -219,16 +215,18 @@ Build the hooks object using only selected features:
 
 | Hook event | Entry | Include when |
 |------------|-------|--------------|
-| SessionStart | `session-start.py` | always |
-| UserPromptSubmit | `plan-context.py` (timeout 5) | always |
-| PreCompact | `pre-compact.py` (timeout 5) | always |
+| SessionStart | `session_init.py` | always |
+| SessionStart | `subagent_init.py` | always |
+| UserPromptSubmit | `dev_rules_reminder.py` (timeout 5) | always |
+| UserPromptSubmit | `caveman_watch.py` (timeout 5) | always |
+| PreToolUse `Read\|Write\|Edit\|Bash` | `privacy_block.py` (timeout 5) | always |
+| PreCompact | `pre_compact.py` (timeout 5) | always |
 | PreToolUse `Write\|Edit\|Bash\|Agent` | `suggest_compact.py` (timeout 5) | always |
-| PreToolUse `Write\|Edit\|Bash\|Agent` | `observe.py pre` (timeout 10) | continuous-learning |
-| PostToolUse `Write\|Edit\|Bash\|Agent` | `observe.py post` (timeout 10) | continuous-learning |
-| PostToolUse `Write\|Edit` | `build-check.py` (timeout 30) | build-check |
-| PostToolUse `Write\|Edit` | `code-simplifier.py` (timeout 5) | code-simplifier |
-| Stop | `session-end.py` (async, timeout 10) | always |
-| SubagentStop | `session-end.py` (async, timeout 10) | always |
+| PostToolUse `Write\|Edit` | `build_check.py` (timeout 30) | build-check |
+| PostToolUse `Write\|Edit` | `simplify_gate.py` (timeout 5) | simplify-gate |
+| PostToolUse `Read\|Grep\|Bash` | `artifact_fold.py` (timeout 5) | always |
+| Stop | `session_end.py` (async, timeout 10) | always |
+| SubagentStop | `session_end.py` (async, timeout 10) | always |
 
 Also include:
 ```json
