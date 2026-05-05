@@ -1,5 +1,6 @@
 {
   "codingLevel": -1,
+  "context": "dev",
   "compactDay": 3,
   "cavemanMode": {
     "enabled": true,

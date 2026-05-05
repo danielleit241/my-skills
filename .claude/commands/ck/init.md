@@ -89,7 +89,7 @@ Options:
 "Optional automation hooks:"
 Options:
 - `build-check` — Auto type-check after Write/Edit (Recommended)
-- `code-simplifier` — Trigger /simplify when edit volume exceeds threshold (Recommended)
+- `simplify-gate` — Trigger /simplify when edit volume exceeds threshold (Recommended)
 
 Bundle label → files mapping used in Step 5:
 
@@ -157,9 +157,11 @@ Show a file tree of everything that will be written:
     commands/   <selected command files>
     agents/     <selected agent files>
     skills/     <selected skill directories>
-    hooks/      session-start.py  session-end.py  pre-compact.py
-                suggest_compact.py  plan-context.py  <optional hooks>
-    lib/utils.py
+    hooks/      session_init.py  session_end.py  session_state.py  pre_compact.py
+                suggest_compact.py  subagent_init.py  dev_rules_reminder.py
+                caveman_watch.py  privacy_block.py  artifact_fold.py  <optional hooks>
+                lib/  <shared hook utilities>
+    contexts/   dev.md  research.md  review.md
     coding-levels/  <all files from source>
     rules/  agents.md  commands.md  skills.md
     settings.json   (generated)
@@ -181,17 +183,19 @@ mkdir -p <target>/.claude/commands/ck
 mkdir -p <target>/.claude/agents
 mkdir -p <target>/.claude/skills
 mkdir -p <target>/.claude/hooks
-mkdir -p <target>/.claude/lib
 mkdir -p <target>/.claude/coding-levels
 mkdir -p <target>/.claude/rules
+mkdir -p <target>/.claude/contexts
 ```
 
 **5b. Copy core files (always)**
 
 From `$CLAUDE_PROJECT_DIR/.claude/` → `<target>/.claude/`:
 
-- `hooks/session-start.py`, `hooks/session-end.py`, `hooks/pre-compact.py`, `hooks/suggest_compact.py`, `hooks/ck:plan-context.py`
-- `lib/utils.py`
+- `hooks/session_init.py`, `hooks/session_end.py`, `hooks/session_state.py`, `hooks/pre_compact.py`, `hooks/suggest_compact.py`
+- `hooks/subagent_init.py`, `hooks/dev_rules_reminder.py`, `hooks/caveman_watch.py`, `hooks/privacy_block.py`, `hooks/artifact_fold.py`
+- `hooks/lib/` (copy entire directory recursively)
+- `contexts/dev.md`, `contexts/research.md`, `contexts/review.md`
 - All files in `coding-levels/` (enumerate with Glob — do not hardcode names)
 - `rules/agents.md`, `rules/commands.md`, `rules/skills.md`
 - `commands/ck/init.md`, `commands/ck:coding-level.md`
@@ -269,7 +273,7 @@ Path-scoped design rules live in `.claude/rules/`:
 
 **5h. Configure `.ck.json`**
 
-**Single `AskUserQuestion` with 3 questions:**
+**Single `AskUserQuestion` with 4 questions:**
 
 **Q1** header: `Coding level`
 "What coding explanation level for this project?"
@@ -281,7 +285,14 @@ Options:
 
 (User can pick Other for levels 0 or 5.)
 
-**Q2** header: `Compact cadence`
+**Q2** header: `Default context mode`
+"Which behavioral context should be active by default?"
+Options:
+- `dev` — Development mode: code-first, bias toward action (Recommended)
+- `research` — Research mode: breadth and accuracy, read-only exploration
+- `review` — Review mode: thoroughness, severity-based feedback
+
+**Q3** header: `Compact cadence`
 "How often should context compaction be suggested?"
 Options:
 - `1 day` — Aggressive; good for long daily sessions
@@ -289,7 +300,7 @@ Options:
 - `7 days` — Weekly; low-traffic projects
 - `14 days` — Minimal interruption
 
-**Q3** header: `Simplify trigger`
+**Q4** header: `Simplify trigger`
 "Auto-trigger /simplify when edit volume exceeds (per session):"
 Options:
 - `small` — 200 total LOC / 4 files / 80 single-file
@@ -302,13 +313,27 @@ Map answers to numeric values. Write `.ck.json` at `<target>/.ck.json`:
 ```json
 {
   "codingLevel": <N>,
+  "context": "<dev|research|review>",
   "compactDay": <N>,
+  "cavemanMode": {
+    "enabled": true,
+    "threshold": { "orange": 50, "red": 100 }
+  },
+  "artifactFolding": {
+    "enabled": true,
+    "threshold": { "maxChars": 4000, "maxLines": 120, "previewLines": 10 }
+  },
+  "privacyBlock": {
+    "enabled": true,
+    "allowList": []
+  },
   "simplify": {
     "threshold": {
       "enabled": <true|false>,
       "totalLoc": <N>,
       "fileCount": <N>,
-      "singleFileLoc": <N>
+      "singleFileLoc": <N>,
+      "sourceExtensions": [".py",".js",".ts",".tsx",".jsx",".go",".rs",".java",".cs",".cpp",".c",".rb",".php",".swift",".kt",".vue",".svelte"]
     }
   }
 }
@@ -323,7 +348,7 @@ Setup complete ✓
   Target:   <target>
   Files:    <N> copied
   Skills:   <selected skill names>
-  Hooks:    session-start · session-end · plan-context · pre-compact · suggest_compact<optional extras>
+  Hooks:    session_init · subagent_init · session_end · session_state · pre_compact · suggest_compact · dev_rules_reminder · caveman_watch · privacy_block · artifact_fold<optional extras>
   .ck.json: coding level <N>, compact every <N> days, simplify <size|off>
   CLAUDE.md: auto-generated / blank template / skipped
 

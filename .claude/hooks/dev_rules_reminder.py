@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """
-UserPromptSubmit hook — inject dev rules, session info, and active plan context.
+UserPromptSubmit hook — inject session context and active plan info.
 
-Fires on every prompt. Outputs: project/branch header, core dev rules,
-and active plan next-phase reminder. Reads active plans from plans/ directory.
+Reads the active context mode from .ck.json (`context` field, default "dev"),
+loads .claude/contexts/{mode}.md, and injects it alongside project/branch header
+and active plan reminders.
 """
 
 import json
@@ -13,11 +14,15 @@ import subprocess
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).parent / "lib"))
+from ck_config_utils import find_project_root, load_ck_config
+
 PLANS_DIR = "plans"
 STATUS_ACTIVE = "🟡"
 STATUS_COMPLETE = "✅"
 MAX_ACTIVE_PLANS = 3
-DEV_RULES = "YAGNI · KISS · DRY · Brutal honesty · Challenge assumptions"
+DEFAULT_CONTEXT = "dev"
+FALLBACK_RULES = "YAGNI · KISS · DRY · Brutal honesty · Challenge assumptions"
 
 
 def _git(*args: str) -> str:
@@ -35,6 +40,13 @@ def get_session_header() -> str:
     if branch:
         parts.append(f"Branch: {branch}")
     return " | ".join(parts)
+
+
+def load_context_file(root: Path, mode: str) -> str | None:
+    ctx_file = root / ".claude" / "contexts" / f"{mode}.md"
+    if ctx_file.exists():
+        return ctx_file.read_text(encoding="utf-8", errors="replace").strip()
+    return None
 
 
 def find_active_plans(root: Path) -> list[dict]:
@@ -89,8 +101,8 @@ def _parse_plan(plan_file: Path, content: str) -> dict | None:
     }
 
 
-def build_context(header: str, active_plans: list[dict]) -> str:
-    lines = [header, f"Rules: {DEV_RULES}"]
+def build_context(header: str, context_body: str, active_plans: list[dict]) -> str:
+    lines = [header, "", context_body]
 
     if active_plans:
         lines.append("")
@@ -108,12 +120,19 @@ def main():
     except (json.JSONDecodeError, EOFError):
         pass
 
-    root = Path(os.getcwd())
+    root = find_project_root() or Path(os.getcwd())
+    config = load_ck_config(root)
+    context_mode = config.get("context", DEFAULT_CONTEXT)
+
+    context_body = load_context_file(root, context_mode)
+    if context_body is None:
+        context_body = f"Rules: {FALLBACK_RULES}"
+
     header = get_session_header()
     active_plans = find_active_plans(root)
-    context = build_context(header, active_plans)
+    output = build_context(header, context_body, active_plans)
 
-    sys.stdout.write(json.dumps({"hookSpecificOutput": {"additionalContext": context}}))
+    sys.stdout.write(json.dumps({"hookSpecificOutput": {"additionalContext": output}}))
     sys.stdout.flush()
 
 
