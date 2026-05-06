@@ -64,24 +64,25 @@ Mode: {Fast | Hard | Parallel | Two}
 # Phase {N}: {Name}
 
 ## Requirements
-{What this phase delivers — user-visible or observable system outcome}
+{What this phase delivers — user-visible or observable system outcome. 1–2 sentences max.}
 
-## Architecture
-{Layer changes in order: Domain → Application → Infrastructure → Api → Tests}
-{Omit layers that are not touched}
-
-## Implementation Steps
-1. {Specific, actionable step — enough detail that a developer can start without asking}
-2. {Specific, actionable step}
-...
+## Steps
+1. {High-level action — what to do, not how. 1–2 lines max.}
+2. {High-level action}
+... (5–8 steps total. Merge anything smaller. No code, pseudo-code, or API/class/function names.)
 
 ## Success Criteria
 - {Verifiable outcome — can be checked by running a command or reading output}
-- {Each criterion must be independently checkable}
 
 ## Risks
 - {Risk}: {Mitigation}
 ```
+
+Rules for Steps:
+- **What, not how.** Describe the goal of each step, never the implementation.
+- **No code or technical detail.** No function names, class names, SQL, config keys, or pseudo-code.
+- **Merge aggressively.** If two steps touch the same concern, combine them.
+- **5–8 steps per phase.** If you're writing more, you're over-decomposing.
 
 ## Parallel Mode Addition
 
