@@ -23,7 +23,7 @@ Three main pipelines cover the full development loop:
 | Command        | What it does                                                                                  |
 | -------------- | --------------------------------------------------------------------------------------------- |
 | `/plan`        | Research → write plan files → red-team → validate. Auto-detects complexity.                   |
-| `/cook`        | Implement a plan phase by phase. Rigor-scores the change → selects tier (Nano/Fast/Standard/Full) → implement → test → auto-simplify → review → finalize. Flags: `--auto`, `--fast`, `--parallel`, `--full`, `--nano`, `--no-test`, `--tdd`. |
+| `/cook`        | Implement a plan phase by phase. Rigor-scores the change → selects tier (Nano/Fast/Standard/Full) → implement → test → auto-simplify → review → finalize. Modes: `--fast` (skip test/review), `--hard` (mandatory reviewers). Flags: `--no-test`, `--tdd`. |
 | `/fix`         | Bug-fix pipeline. Scout → diagnose + fix → review → finalize.                                 |
 | `/show-off`    | Generate a social-ready HTML presentation → review gate → capture as 1:1/16:9/9:16 PNGs.    |
 | `/code-review` | Review local uncommitted changes or a GitHub PR by number/URL.                                |
@@ -43,7 +43,7 @@ Sub-agents spawned by the pipelines. Never called directly.
 
 | Agent             | Role                                                     | Model  |
 | ----------------- | -------------------------------------------------------- | ------ |
-| `plan-researcher` | Research a feature approach (2 run in parallel)          | sonnet |
+| `researcher`      | Research a feature approach (2 run in parallel)          | sonnet |
 | `planner`         | Write `plan.md` + phase files from research              | sonnet |
 | `plan-reviewer`   | Red-team the plan — security, assumptions, failure modes | sonnet |
 
@@ -76,7 +76,6 @@ Behavioral guidance that loads automatically when relevant.
 | `backend-mindset`        | Architecture decisions, API design, testing strategy (language-agnostic) |
 | `caveman`                | Terse output mode — user says "be brief" or context is filling up   |
 | `code-review`            | Reviewing code, receiving feedback, verifying completion            |
-| `continuous-learning-v2` | Observing sessions, creating instincts                              |
 | `mermaidjs-v11`          | Creating diagrams and visualizations                                |
 | `playwright-skill`       | Browser automation, UI testing, screenshots, responsive validation  |
 | `problem-solving`        | Stuck on a problem, need creative unblocking                        |
@@ -92,19 +91,19 @@ Lifecycle hooks wired in `.claude/settings.json`.
 
 | Event              | Hook                   | Purpose                                               |
 | ------------------ | ---------------------- | ----------------------------------------------------- |
-| `SessionStart`     | `session-start.py`     | Load previous session summary + active instincts      |
-| `Stop`             | `session-end.py`       | Extract summary from transcript, persist session file |
-| `PreCompact`       | `pre-compact.py`       | Log compaction event, reset caveman state, annotate session file |
-| `UserPromptSubmit` | `plan-context.py`      | Inject active plan context into each prompt           |
+| `SessionStart`     | `session_init.py`      | Load previous session summary + active instincts      |
+| `SessionStart`     | `subagent_init.py`     | Initialize sub-agent context                          |
+| `Stop` / `SubagentStop` | `session_end.py`  | Extract summary from transcript, persist session file |
+| `PreCompact`       | `pre_compact.py`       | Log compaction event, reset caveman state, annotate session file |
+| `UserPromptSubmit` | `dev_rules_reminder.py`| Inject dev rules reminder on each prompt              |
 | `UserPromptSubmit` | `caveman_watch.py`     | Track tool calls; emit CAVEMAN_TRIGGERED/RELEASED events |
-| `PreToolUse`       | `observe.py pre`       | Record tool start for continuous learning             |
+| `PreToolUse`       | `privacy_block.py`     | Block reads/writes to sensitive paths                 |
 | `PreToolUse`       | `suggest_compact.py`   | Count tool calls, suggest `/compact` at threshold     |
-| `PostToolUse`      | `observe.py post`      | Record tool completion for continuous learning        |
-| `PostToolUse`      | `build-check.py`       | Run build/type-check after file edits (CS/TS/Py/Go/Rust) |
-| `PostToolUse`      | `code-simplifier.py`   | Track LOC + file-edit metrics; trigger `simplify` skill when thresholds breached |
+| `PostToolUse`      | `build_check.py`       | Run build/type-check after file edits (CS/TS/Py/Go/Rust) |
+| `PostToolUse`      | `simplify_gate.py`     | Track LOC + file-edit metrics; trigger `simplify` skill when thresholds breached |
 | `PostToolUse`      | `artifact_fold.py`     | Fold large Read/Grep/Bash outputs into summary-only view |
 
-Hooks fire on `Write \| Edit \| Bash \| Agent` — read-only lookups (Read, Glob, Grep) are excluded to reduce overhead. Exception: `artifact_fold.py` runs on Read|Grep|Bash to manage output size.
+Matchers vary per hook — `privacy_block.py` covers `Read|Write|Edit|Bash`; `suggest_compact.py` covers `Write|Edit|Bash|Agent`; `build_check.py` and `simplify_gate.py` cover `Write|Edit` only; `artifact_fold.py` covers `Read|Grep|Bash`.
 
 ### Simplify thresholds
 
@@ -132,7 +131,7 @@ When any threshold is breached, `/cook` Step 3.S automatically invokes the `simp
 
 **Scoring signals:** files touched (0–3 pts), cross-module impact (+2), security-sensitive code (+3), public API change (+2), DB schema change (+2), new external dependency (+1).
 
-Override with `--full` or `--nano` to bypass scoring. Use `--no-test` to skip tester, `--tdd` to write failing tests first.
+Use `--fast` to skip test/review, `--hard` for mandatory review. Use `--no-test` to skip tester, `--tdd` to write failing tests first.
 
 ### Caveman Mode
 

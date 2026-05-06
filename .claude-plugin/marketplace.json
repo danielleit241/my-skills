@@ -6,21 +6,9 @@
   },
   "metadata": {
     "description": "A curated collection of Claude Code skills, commands, and agents for senior engineers",
-    "version": "1.0.0"
+    "version": "1.1.0"
   },
   "plugins": [
-    {
-      "name": "frontend-slides",
-      "description": "Create stunning, animation-rich HTML presentations from scratch or by converting PowerPoint files",
-      "source": {
-        "source": "git-subdir",
-        "url": "https://github.com/danielleit241/my-skills",
-        "path": ".claude/skills/frontend-slides"
-      },
-      "skills": ["SKILL.md"],
-      "category": "frontend",
-      "keywords": ["slides", "presentation", "html", "animation", "design"]
-    },
     {
       "name": "skill-creator",
       "description": "Create new skills, modify and improve existing skills, and measure skill performance with evals",
@@ -124,16 +112,52 @@
       "keywords": ["context", "compaction", "memory", "productivity"]
     },
     {
-      "name": "continuous-learning-v2",
-      "description": "Instinct-based learning system — observes sessions, creates atomic instincts, evolves into skills",
+      "name": "ck-brainstorm",
+      "description": "SDD brainstorm skill — explore ideas, clarify requirements, produce spec.md + brainstorm report. Spec-first gate before planning.",
       "source": {
         "source": "git-subdir",
         "url": "https://github.com/danielleit241/my-skills",
-        "path": ".claude/skills/continuous-learning-v2"
+        "path": ".claude/skills/ck-brainstorm"
       },
       "skills": ["SKILL.md"],
-      "category": "meta",
-      "keywords": ["learning", "instincts", "adaptation", "memory"]
+      "category": "productivity",
+      "keywords": ["brainstorm", "spec", "sdd", "requirements", "planning"]
+    },
+    {
+      "name": "ck-plan",
+      "description": "SDD planning skill — spec quality gate, research, red-team, phase plan. Pairs with ck-brainstorm for spec → plan → cook pipeline.",
+      "source": {
+        "source": "git-subdir",
+        "url": "https://github.com/danielleit241/my-skills",
+        "path": ".claude/skills/ck-plan"
+      },
+      "skills": ["SKILL.md"],
+      "category": "productivity",
+      "keywords": ["plan", "spec", "sdd", "tdd", "pipeline"]
+    },
+    {
+      "name": "ck-cook",
+      "description": "Spec-aware implementation pipeline — TDD, phase-by-phase execution, P1 story coverage tracking, auto-simplify, review gates.",
+      "source": {
+        "source": "git-subdir",
+        "url": "https://github.com/danielleit241/my-skills",
+        "path": ".claude/skills/ck-cook"
+      },
+      "skills": ["SKILL.md"],
+      "category": "productivity",
+      "keywords": ["cook", "implement", "tdd", "spec", "pipeline"]
+    },
+    {
+      "name": "ck-fix",
+      "description": "Structured bug-fix pipeline — scout → diagnose → fix → review → finalize with conventional commits.",
+      "source": {
+        "source": "git-subdir",
+        "url": "https://github.com/danielleit241/my-skills",
+        "path": ".claude/skills/ck-fix"
+      },
+      "skills": ["SKILL.md"],
+      "category": "productivity",
+      "keywords": ["fix", "debug", "bug", "scout", "pipeline"]
     },
     {
       "name": "all",
@@ -141,7 +165,10 @@
       "dependencies": [
         "commands-bundle",
         "agents-bundle",
-        "frontend-slides",
+        "ck-brainstorm",
+        "ck-plan",
+        "ck-cook",
+        "ck-fix",
         "backend-mindset",
         "dotnet",
         "mermaidjs-v11",
@@ -149,10 +176,8 @@
         "code-review",
         "problem-solving",
         "sequential-thinking",
-        "continuous-learning-v2",
         "strategic-compact",
-        "playwright-skill",
-        "threejs"
+        "playwright-skill"
       ],
       "category": "meta",
       "keywords": ["all", "complete", "bundle", "full", "everything"]
@@ -191,7 +216,7 @@
         "debugger.md",
         "tester.md",
         "planner.md",
-        "plan-researcher.md",
+        "researcher.md",
         "plan-reviewer.md",
         "code-reviewer.md",
         "project-manager.md",

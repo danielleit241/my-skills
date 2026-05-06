@@ -51,6 +51,7 @@ Target project path (absolute or relative to current dir):
 ```
 
 Resolve to absolute path. Validate:
+
 - Does not exist → `AskUserQuestion`: "Path does not exist. Create it?" / `Create it` / `Abort`
 - Exists but not a directory → abort with error.
 
@@ -75,7 +76,8 @@ Use the conflict answer directly in Step 5 execution — Merge skips existing fi
 **Q1** header: `Dev bundles` | multiSelect: true
 "Which dev workflow bundles do you want?"
 Options:
-- `plan / cook / fix` — Full guided dev workflow
+
+- `brainstorm / plan / cook / fix` — Full guided dev workflow
 - `code-review` — Standalone /ck:code-review command
 - `learn` — Extract session patterns → skill files
 - `docs-fe` — Frontend endpoint handoff doc
@@ -83,23 +85,25 @@ Options:
 **Q2** header: `Extra tools` | multiSelect: true
 "Any additional tools?"
 Options:
+
 - `show-off` — HTML presentation generator + Playwright
 
 **Q3** header: `Auto-hooks` | multiSelect: true
 "Optional automation hooks:"
 Options:
+
 - `build-check` — Auto type-check after Write/Edit (Recommended)
 - `simplify-gate` — Trigger /simplify when edit volume exceeds threshold (Recommended)
 
 Bundle label → files mapping used in Step 5:
 
-| Label | Commands | Agents |
-|-------|----------|--------|
-| plan / cook / fix | plan.md, cook.md, fix.md | scout, debugger, tester, code-reviewer, planner, plan-researcher, plan-reviewer, project-manager, docs-manager, git-manager |
-| code-review | code-review.md | code-reviewer (skip if already copied) |
-| learn | learn.md | — |
-| show-off | show-off.md | playwright-capture |
-| docs-fe | docs-fe.md | — |
+| Label             | Commands                 | Agents                                                                                                                      |
+| ----------------- | ------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
+| plan / cook / fix | plan.md, cook.md, fix.md | scout, debugger, tester, code-reviewer, planner, researcher, plan-reviewer, project-manager, docs-manager, git-manager |
+| code-review       | code-review.md           | code-reviewer (skip if already copied)                                                                                      |
+| learn             | learn.md                 | —                                                                                                                           |
+| show-off          | show-off.md              | playwright-capture                                                                                                          |
+| docs-fe           | docs-fe.md               | —                                                                                                                           |
 
 ---
 
@@ -110,6 +114,7 @@ Bundle label → files mapping used in Step 5:
 **Q1** header: `Core skills` | multiSelect: true
 "Which core dev skills do you want?"
 Options:
+
 - `code-review` — Code review guidance (Recommended; auto-included with code-review bundle)
 - `backend-mindset` — Architecture, API design, security principles (Recommended)
 - `strategic-compact` — Context compaction timing guidance (Recommended)
@@ -118,14 +123,14 @@ Options:
 **Q2** header: `Domain skills` | multiSelect: true
 "Any domain-specific skills?"
 Options:
-- `dotnet` — .NET / C# / ASP.NET Core
-- `frontend-slides` — HTML presentation generator (auto-included with show-off bundle)
+
 - `mermaidjs-v11` — Diagrams (Mermaid.js v11)
-- `threejs` — 3D web graphics (Three.js / WebGPU)
 
 **Q3** header: `Meta skills` | multiSelect: true
 "Meta / automation skills?"
 Options:
+
+- `caveman` — Terse output mode (reduces token use on demand)
 - `skill-creator` — Create and improve skill files
 - `sequential-thinking` — Systematic step-by-step reasoning
 - `playwright-skill` — Browser automation (auto-included with show-off bundle)
@@ -139,6 +144,7 @@ For each selected skill, copy `skills/<name>/` recursively to `<target>/.claude/
 **`AskUserQuestion`:**
 "How should we handle CLAUDE.md for this project?"
 Options:
+
 - `Auto-generate` — Scan target project and write a tailored CLAUDE.md (Recommended)
 - `Blank template` — Minimal template with placeholder sections
 - `Skip` — Don't create CLAUDE.md
@@ -198,7 +204,7 @@ From `$CLAUDE_PROJECT_DIR/.claude/` → `<target>/.claude/`:
 - `contexts/dev.md`, `contexts/research.md`, `contexts/review.md`
 - All files in `coding-levels/` (enumerate with Glob — do not hardcode names)
 - `rules/agents.md`, `rules/commands.md`, `rules/skills.md`
-- `commands/ck/init.md`, `commands/ck:coding-level.md`
+- `commands/ck/init.md`, `commands/ck/coding-level.md`, `commands/ck/brainstorm.md`
 
 **5c. Copy bundle files**
 
@@ -217,22 +223,23 @@ For each skill selected in Step 2, copy `$CLAUDE_PROJECT_DIR/.claude/skills/<nam
 
 Build the hooks object using only selected features:
 
-| Hook event | Entry | Include when |
-|------------|-------|--------------|
-| SessionStart | `session_init.py` | always |
-| SessionStart | `subagent_init.py` | always |
-| UserPromptSubmit | `dev_rules_reminder.py` (timeout 5) | always |
-| UserPromptSubmit | `caveman_watch.py` (timeout 5) | always |
-| PreToolUse `Read\|Write\|Edit\|Bash` | `privacy_block.py` (timeout 5) | always |
-| PreCompact | `pre_compact.py` (timeout 5) | always |
-| PreToolUse `Write\|Edit\|Bash\|Agent` | `suggest_compact.py` (timeout 5) | always |
-| PostToolUse `Write\|Edit` | `build_check.py` (timeout 30) | build-check |
-| PostToolUse `Write\|Edit` | `simplify_gate.py` (timeout 5) | simplify-gate |
-| PostToolUse `Read\|Grep\|Bash` | `artifact_fold.py` (timeout 5) | always |
-| Stop | `session_end.py` (async, timeout 10) | always |
-| SubagentStop | `session_end.py` (async, timeout 10) | always |
+| Hook event                            | Entry                                | Include when  |
+| ------------------------------------- | ------------------------------------ | ------------- |
+| SessionStart                          | `session_init.py`                    | always        |
+| SessionStart                          | `subagent_init.py`                   | always        |
+| UserPromptSubmit                      | `dev_rules_reminder.py` (timeout 5)  | always        |
+| UserPromptSubmit                      | `caveman_watch.py` (timeout 5)       | always        |
+| PreToolUse `Read\|Write\|Edit\|Bash`  | `privacy_block.py` (timeout 5)       | always        |
+| PreCompact                            | `pre_compact.py` (timeout 5)         | always        |
+| PreToolUse `Write\|Edit\|Bash\|Agent` | `suggest_compact.py` (timeout 5)     | always        |
+| PostToolUse `Write\|Edit`             | `build_check.py` (timeout 30)        | build-check   |
+| PostToolUse `Write\|Edit`             | `simplify_gate.py` (timeout 5)       | simplify-gate |
+| PostToolUse `Read\|Grep\|Bash`        | `artifact_fold.py` (timeout 5)       | always        |
+| Stop                                  | `session_end.py` (async, timeout 10) | always        |
+| SubagentStop                          | `session_end.py` (async, timeout 10) | always        |
 
 Also include:
+
 ```json
 "ignorePatterns": ["**/bin/**","**/obj/**","**/.vs/**","**/.git/**","**/Migrations/**","**/TestResults/**","**/coverage/**","**/.claude/session-data/**","**/*.suo","**/*.user","**/*.lock.json","**/node_modules/**"],
 "env": { "CLAUDE_CODE_DISABLE_1M_CONTEXT": "true" }
@@ -249,6 +256,7 @@ Use the target directory base name as `<project-name>`. Branch on Step 3 answer:
 - **Skip**: do nothing.
 
 Blank template:
+
 ```
 # <project-name>
 
@@ -278,6 +286,7 @@ Path-scoped design rules live in `.claude/rules/`:
 **Q1** header: `Coding level`
 "What coding explanation level for this project?"
 Options:
+
 - `1 — Junior` — Explain patterns and why; analogies welcome
 - `2 — Mid-level` — Assume solid fundamentals, focus on trade-offs (Recommended)
 - `3 — Senior` — Architecture and consequences only; skip basics
@@ -288,6 +297,7 @@ Options:
 **Q2** header: `Default context mode`
 "Which behavioral context should be active by default?"
 Options:
+
 - `dev` — Development mode: code-first, bias toward action (Recommended)
 - `research` — Research mode: breadth and accuracy, read-only exploration
 - `review` — Review mode: thoroughness, severity-based feedback
@@ -295,6 +305,7 @@ Options:
 **Q3** header: `Compact cadence`
 "How often should context compaction be suggested?"
 Options:
+
 - `1 day` — Aggressive; good for long daily sessions
 - `3 days` — Balanced (Recommended)
 - `7 days` — Weekly; low-traffic projects
@@ -303,6 +314,7 @@ Options:
 **Q4** header: `Simplify trigger`
 "Auto-trigger /simplify when edit volume exceeds (per session):"
 Options:
+
 - `small` — 200 total LOC / 4 files / 80 single-file
 - `medium` — 400 total LOC / 8 files / 200 single-file (Recommended)
 - `large` — 700 total LOC / 15 files / 350 single-file

@@ -2,9 +2,13 @@
 """
 UserPromptSubmit hook — inject session context and active plan info.
 
-Reads the active context mode from .ck.json (`context` field, default "dev"),
-loads .claude/contexts/{mode}.md, and injects it alongside project/branch header
-and active plan reminders.
+Detects the active /ck: command from the user message and picks the matching
+context file. Falls back to .ck.json `context` field, then "dev".
+
+Command → context mapping:
+  /ck:cook, /ck:fix, /ck:docs-fe          → dev
+  /ck:brainstorm, /ck:plan, /ck:learn     → research
+  /ck:code-review                         → review
 """
 
 import json
@@ -23,6 +27,24 @@ STATUS_COMPLETE = "✅"
 MAX_ACTIVE_PLANS = 3
 DEFAULT_CONTEXT = "dev"
 FALLBACK_RULES = "YAGNI · KISS · DRY · Brutal honesty · Challenge assumptions"
+
+COMMAND_CONTEXT_MAP: dict[str, str] = {
+    "/ck:cook": "dev",
+    "/ck:fix": "dev",
+    "/ck:docs-fe": "dev",
+    "/ck:brainstorm": "research",
+    "/ck:plan": "research",
+    "/ck:learn": "research",
+    "/ck:code-review": "review",
+}
+
+
+def detect_context_from_message(message: str) -> str | None:
+    """Return the context name if the message invokes a known /ck: command."""
+    for command, ctx in COMMAND_CONTEXT_MAP.items():
+        if command in message:
+            return ctx
+    return None
 
 
 def _git(*args: str) -> str:
@@ -115,14 +137,18 @@ def build_context(header: str, context_body: str, active_plans: list[dict]) -> s
 
 
 def main():
+    user_message = ""
     try:
-        json.loads(sys.stdin.read())
-    except (json.JSONDecodeError, EOFError):
+        payload = json.loads(sys.stdin.read())
+        user_message = payload.get("message", "") or ""
+    except (json.JSONDecodeError, EOFError, AttributeError):
         pass
 
     root = find_project_root() or Path(os.getcwd())
     config = load_ck_config(root)
-    context_mode = config.get("context", DEFAULT_CONTEXT)
+
+    detected = detect_context_from_message(user_message)
+    context_mode = detected or config.get("context", DEFAULT_CONTEXT)
 
     context_body = load_context_file(root, context_mode)
     if context_body is None:
