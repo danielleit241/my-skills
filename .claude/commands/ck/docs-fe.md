@@ -1,11 +1,22 @@
 ---
 description: Generate a concise FE handoff doc for changed endpoints — branch, APIs, request/response contracts, search params, error codes
-argument-hint: [blank = git changes | feature/<name> | path/to/file | "keyword"]
+argument-hint: [blank = git changes | feature/<name> | path/to/file | "keyword"] [--html]
 ---
 
 Generate a frontend handoff document.
 
 **Input:** `$ARGUMENTS`
+
+## Format Flag
+
+| Flag | Output |
+|------|--------|
+| _(none)_ | Markdown (default) — save as `{base}.md` |
+| `--html` | HTML only — save as `{base}.html`, no MD created |
+
+Strip the flag before mode detection below.
+
+---
 
 ## Mode Selection
 
@@ -42,7 +53,7 @@ From the resolved scope and (if git mode) recent commits `git log --oneline -5`,
 - **short title in kebab-case**
 - **date**: today's date in `YYYY-MM-DD`
 
-Save as: `docs/fe/{YYYY-MM-DD}-{type}-{short-title}.md`
+Base filename: `docs/fe/{YYYY-MM-DD}-{type}-{short-title}`
 
 ### 3. Identify changed endpoints
 
@@ -71,9 +82,9 @@ Scan changed service/handler files for new or changed error codes/messages used 
 | HTTP | code | message |
 |------|------|---------|
 
-### 6. Write the document
+### 6. Write the output file
 
-Save to `docs/fe/{date}-{type}-{title}.md`:
+#### Default — Markdown, save as `{base}.md`
 
 ```markdown
 # FE Handoff: {Human-readable title}
@@ -118,4 +129,18 @@ Validation rules:
 Short bullet list of gotchas, suggested call order, or UX considerations.
 ```
 
-Keep the document concise — no filler, no repeating information already obvious from the contract.
+#### `--html` — HTML, save as `{base}.html`
+
+Write a clean, self-contained HTML file that expresses the same content as the MD template above. No fixed structure required — choose whatever layout best presents the data. Requirements:
+- `<!DOCTYPE html>`, UTF-8, **no external dependencies**
+- Inline `<style>` only, keep it minimal
+- Same four sections: endpoint map, contracts, error codes, FE notes
+- Body JSON in `<pre>`, params/errors in `<table>`
+
+Do not create a `.md` file when `--html` is used.
+
+---
+
+Keep content concise — no filler, no repeating information already obvious from the contract.
+
+Print the output file path when done.
