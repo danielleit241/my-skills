@@ -32,8 +32,8 @@ def main() -> None:
     if payload.get("agent_id"):
         return
 
-    # Require stable session ID — no getppid() fallback (collides across sessions on Windows)
-    session_id = os.environ.get("CLAUDE_SESSION_ID")
+    # Match suggest_compact.py fallback chain so both hooks target the same counter file
+    session_id = os.environ.get("CLAUDE_SESSION_ID") or os.environ.get("PPID", "default")
     if not session_id:
         return
 

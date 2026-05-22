@@ -1,6 +1,6 @@
 ---
 name: ck:plan
-description: Plan a feature or system before implementation. Use when the user says "plan this", "I want to build X", "how do I implement Y", or when /ck:brainstorm produces a spec.md. Always run before /ck:cook. Auto-detects --fast (simple, single-file) vs --hard (multi-file, novel domain, security-sensitive). Flags --no-test and --tdd propagate into the cook pipeline.
+description: Plan a feature or system before implementation. Use when the user says "plan this", "I want to build X", "how do I implement Y", or when /ck:brainstorm produces a spec.md. Always run before /ck:cook. Modes (pick one): --fast (simple, single-file), --hard (research + red-team + validate). Composable flags (combine with any mode): --no-test, --tdd — propagate into the cook pipeline.
 user-invocable: true
 ---
 
