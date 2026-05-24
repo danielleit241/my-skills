@@ -10,6 +10,7 @@ Modes — mutually exclusive, pick one (default = Standard):
 - **Standard** — test + review, auto-approve if score ≥ 9.5 with 0 CRITICAL
 - **`--fast`** — skip tester and code-reviewer; git-manager only in Step 5
 - **`--hard`** — mandatory test + mandatory review, no auto-approve
+- **`--parallel`** — phases have exclusive File Ownership (from `ck:plan --parallel`); auto-continue between phases (no per-phase review gate), full test + review at end
 
 Composable flags — combine with any mode:
 - **`--no-test`** — skip tester; go directly to Step 3.S → Step 4
@@ -81,7 +82,7 @@ For each `phase-XX-*.md` in order:
 
 **Review Gate** — after each phase:
 - **Standard / `--hard`**: pause and wait for user approval
-- **`--fast`**: continue automatically
+- **`--fast`** / **`--parallel`**: continue automatically
 
 Stop if: success criterion unverifiable, unexpected blocker, or phase needs user decisions not in the plan.
 
@@ -127,6 +128,8 @@ Thresholds (`.ck.json` → `simplify.threshold`): `totalLoc` 400, `fileCount` 8,
 
 **`--fast`**: skip → Step 5.
 
+**`--parallel`**: run code review across all phases at once (not per-phase).
+
 **[Test Gate]**: all tests must pass (or `--no-test` set).
 
 Spawn **`code-reviewer`**: correctness, security, regressions, quality → APPROVED / WARNING / BLOCK.
@@ -160,10 +163,10 @@ Uncovered P1:      {list any, or "none"}
 
 | Agent / Skill     | Step | Modes |
 |-------------------|------|-------|
-| `tester`          | 3    | Standard, `--hard` (skip for `--fast`, `--no-test`) |
+| `tester`          | 3    | Standard, `--hard`, `--parallel` (skip for `--fast`, `--no-test`) |
 | `debugger`        | 3    | When tests fail |
 | `simplify` skill  | 3.S  | All (hook-driven) |
-| `code-reviewer`   | 4    | Standard, `--hard` (skip for `--fast`) |
-| `project-manager` | 5    | Standard, `--hard` (skip for `--fast`) |
-| `docs-manager`    | 5    | Standard, `--hard` (skip for `--fast`) |
+| `code-reviewer`   | 4    | Standard, `--hard`, `--parallel` (skip for `--fast`) |
+| `project-manager` | 5    | Standard, `--hard`, `--parallel` (skip for `--fast`) |
+| `docs-manager`    | 5    | Standard, `--hard`, `--parallel` (skip for `--fast`) |
 | `git-manager`     | 5    | Always (mandatory) |

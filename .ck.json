@@ -1,7 +1,10 @@
 {
   "codingLevel": -1,
-  "context": "dev",
   "compactDay": 3,
+  "language": {
+    "conversation": "vi",
+    "files": "en"
+  },
   "cavemanMode": {
     "enabled": true,
     "threshold": {
