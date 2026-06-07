@@ -1,0 +1,8 @@
+{
+  "task": "",
+  "acceptance_criteria": [],
+  "touchpoints": [],
+  "public_contracts": [],
+  "blast_radius": { "files": [], "callers": [] },
+  "scout_summary": ""
+}

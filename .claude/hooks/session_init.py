@@ -38,19 +38,21 @@ _CODING_LEVEL_RE = re.compile(r"coding.?level|codingLevel", re.IGNORECASE)
 
 
 def read_language_setting(root: Path) -> str | None:
-    """Return a language instruction string from .ck.json language config."""
+    """Return a language instruction string from .ck.json config.
+
+    Reads:
+      - conversation  → top-level "conversation" key
+      - file language → "spec.language" key
+    """
     ck_path = root / ".ck.json"
     if not ck_path.exists():
         return None
     try:
         cfg = json.loads(ck_path.read_text(encoding="utf-8"))
-        lang = cfg.get("language", {})
-        if not lang:
-            return None
         parts = []
-        if conv := lang.get("conversation"):
+        if conv := cfg.get("conversation"):
             parts.append(f"Respond to the user in: {conv}")
-        if files := lang.get("files"):
+        if files := cfg.get("spec", {}).get("language"):
             parts.append(f"Write all file content (code, docs, comments) in: {files}")
         return "\n".join(parts) if parts else None
     except Exception as err:

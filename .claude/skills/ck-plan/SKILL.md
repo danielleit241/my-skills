@@ -1,5 +1,5 @@
 ---
-name: ck:plan
+name: ck-plan
 description: Plan a feature or system before implementation. Use when the user says "plan this", "I want to build X", "how do I implement Y", or when /ck:brainstorm produces a spec.md. Always run before /ck:cook. Modes (pick one): --fast (skip all, instant plan), --hard (2 researchers + red-team + validate), --two (2 approaches → compare → pick → cook), --parallel (parallel-impl plan → ck:cook --parallel), --auto (full pipeline + auto-cook). Composable flags: --tdd, --no-task — propagate into the cook pipeline.
 user-invocable: true
 ---
@@ -45,17 +45,21 @@ If a spec file path is provided or `plans/{slug}/spec.md` exists adjacent to any
 
 ```
 # Spec Quality Check:
-#   [NEEDS CLARIFICATION] remaining? → CRITICAL — resolve before continuing
-#   Success criteria measurable?     → HIGH if vague adjectives (fast, scalable, reliable)
-#   User stories P1/P2/P3?           → HIGH if missing
-#   Acceptance criteria testable?    → MEDIUM if vague ("works correctly")
+#   [NEEDS CLARIFICATION] remaining?     → CRITICAL — resolve before continuing
+#   Spec IDs present (US-xx, FR-xx)?     → CRITICAL — IDs required for traceability
+#   P1 items have acceptance criteria?   → HIGH if missing
+#   Success criteria measurable?         → HIGH if vague adjectives (fast, scalable, reliable)
+#   User stories P1/P2/P3 labeled?       → HIGH if missing
+#   Acceptance criteria testable?        → MEDIUM if vague ("works correctly")
 #
 # Verdict: [PASS | WARN (list) | BLOCK (list)]
 ```
 
-- **BLOCK**: resolve before proceeding
+- **BLOCK**: resolve before proceeding — missing IDs or unresolved NEEDS CLARIFICATION are always BLOCK
 - **WARN**: user acknowledges — proceed
 - **PASS**: continue
+
+After the plan is created, verify **traceability coverage**: every P1 spec ID must appear in at least one phase's `## Covers` section. Any gap = BLOCK.
 
 ---
 

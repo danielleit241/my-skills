@@ -1,9 +1,11 @@
 {
   "codingLevel": -1,
   "compactDay": 3,
-  "language": {
-    "conversation": "vi",
-    "files": "en"
+  "conversation": "vi",
+  "spec": {
+    "language": "vi",
+    "directory": "plans",
+    "dateFormat": "YYMMDD"
   },
   "cavemanMode": {
     "enabled": true,

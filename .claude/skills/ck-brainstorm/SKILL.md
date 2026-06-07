@@ -1,148 +1,101 @@
 ---
-name: ck:brainstorm
-description: Explore and debate solutions before writing code. Use when the user poses a design question, asks "how should I approach X", wants to think through options before committing, or says anything like "let's brainstorm", "what's the best way to...", "I'm not sure how to tackle this", or "should I use X or Y". Always runs before /ck:plan for novel or ambiguous features. No code is written — only: explore → clarify → spec → report.
+name: ck-brainstorm
+description: Clarify a feature idea and produce a spec before planning. Use when the user poses a design question, asks "how should I approach X", is unsure what to build, or says "let's brainstorm", "what's the best way to...", "I'm not sure how to tackle this". Output is a spec.md only — no code, no report. Always run before /ck:plan for novel or ambiguous features.
 user-invocable: true
 ---
 
-# ck:brainstorm — Surface Ideas, Then Decide
+# ck:brainstorm — Clarify to Spec
 
-**Hard gate: zero implementation code.** Only explore → expand → spec → report.
-Implementation happens later via `/ck:plan → /ck:cook`.
+**Philosophy: spec-driven development.** This session exists to produce one artifact: a tight `spec.md` that `/ck:plan` can build from. Idea exploration is the means, not the end.
+
+**Hard gate: zero implementation code. Zero brainstorm reports.** Only clarify → spec → handoff.
 
 ---
 
 ### Step 0 — Listen First
 
-Do NOT scout the codebase yet. Do NOT present options yet.
+Do NOT scout the codebase yet. Do NOT suggest options yet.
 
-Ask one open question to understand the user's existing thinking:
+Ask one open question:
 
-> "What directions are you already leaning toward — even loosely?"
+> "Tell me what you want to build — even roughly. What's the problem it solves?"
 
-Wait for their answer. Understand their mental model before adding yours.
-
-```
-// Listen before scouting.
-// The user's intuition is the starting point, not a blank slate.
-```
+Wait for their answer. The user's framing is the starting point.
 
 ---
 
-### Step 1 — Draw Out Ideas
+### Step 1 — Clarify the Shape
 
-Use `AskUserQuestion` to surface the user's thinking. Ask 1–2 questions per turn — never all at once.
+Use `AskUserQuestion` to close gaps. Ask 1–2 questions per turn, never a list.
 
-Focus on **generative** questions:
+Focus on what the spec needs:
 
-- What approaches have you considered, even ones you've dismissed?
-- What would the ideal outcome look like if there were no constraints?
-- Is there a simpler version that would still solve the core problem?
-- What's the one thing you're most uncertain about?
+- Who uses this, and what's the trigger?
+- What does success look like — concretely?
+- What's P1 (must ship) vs. P2 (nice-to-have)?
+- What's explicitly out of scope?
+- Any non-functional constraints (latency, security, scale)?
 
-Add your own perspective after the user speaks — suggest angles they haven't mentioned, framed as possibilities, not recommendations.
+Add your own interpretation after the user speaks — confirm or correct.
 
-Loop until the idea space feels explored and the user has expressed a preference or direction.
+Loop until you have enough to write a complete spec. Stop when you have: users, P1 stories, measurable success criteria, and known exclusions.
 
 ```
-// User ideas first → Claude expands → iterate
-// Aim for breadth (4–6 directions sketched lightly), not depth on one
+// Aim for 3–5 clarification turns, not open-ended exploration.
+// If the user says "I'm not sure", give them two options to react to.
 ```
 
 ---
 
 ### Step 2 — Scout (Only If Needed)
 
-If a specific question from Step 1 requires codebase context, spawn 1–2 targeted **`Explore` sub-agents** inline.
+If a clarification question requires codebase context, spawn 1–2 targeted **`Explore` sub-agents** inline.
 
 ```
-// Scout is optional and reactive, not automatic.
-// Only spawn if "I need to check X before we can evaluate Y."
-```
-
----
-
-### Step 3 — Narrow Together
-
-Once the user signals interest in 1–2 directions, briefly compare them:
-
-- What each does well for **this** project
-- What it costs or risks
-- Any hard incompatibilities with the existing codebase
-
-Be direct. If one option is over-engineered or a poor fit, say so. The user drives the final call.
-
-```
-// Option A: [name] — [one-liner]
-//   ✓ [specific upside]
-//   ✗ [real cost]
-//
-// Option B: [name] — [one-liner]
-//   ✓ ...
-//   ✗ ...
+// Scout is optional and reactive.
+// Only spawn if "I need to check X before I can write the spec correctly."
 ```
 
 ---
 
-### Step 4 — Clarification Gate
+### Step 3 — Clarification Gate
 
-Before writing artifacts, scan the narrowed direction for ambiguity:
+Before writing the spec, scan for remaining ambiguity:
 
 - Flag at most **3 items** with `[NEEDS CLARIFICATION: <what's missing>]`
-- Ask **1–2 targeted questions per turn** — stop when resolved or user signals "close enough"
-- Red flags: no measurable success criteria, vague scale ("fast", "many users"), missing priority signal (MVP vs. nice-to-have)
+- Ask 1–2 targeted questions — stop when resolved or user signals "close enough"
+- Red flags: no measurable success criteria, vague scale, missing P1/P2 signal
 
-Don't block on minor uncertainty. Mark it and move on.
+Don't block on minor uncertainty. Mark it in the spec and move on.
+
+---
+
+### Step 4 — Write Spec
+
+Write **one file**: `plans/{slug}/spec.md` using `.claude/skills/ck-brainstorm/references/spec-template.md`.
+
+Language: read `.ck.json` → `spec.language`. Write all spec content in that language (if `"vi"`, write in Vietnamese — headings, stories, criteria, everything).
+
+Directory: read `.ck.json` → `spec.directory` (default `"plans"`) — write spec to `{directory}/{slug}/spec.md`.
+
+Fill in the template:
+- User stories with P1/P2/P3 from the clarified direction
+- Measurable success criteria (numbers, not adjectives)
+- `[NEEDS CLARIFICATION]` for any unresolved flags
 
 ```
-// Clarification is cheap here; ambiguity in planning is expensive.
-// Max 3 flags, max 5 questions total across the session.
+// spec.md is the only artifact. It feeds directly into /ck:plan.
 ```
 
 ---
 
-### Step 5 — Write Artifacts
+### Step 5 — Handoff
 
-Write **two files**:
-
-**A. Brainstorm report** → `plans/reports/YYMMDD-{slug}-brainstorm.md`
-
-```markdown
-# Brainstorm: {challenge}
-
-**Date:** YYYY-MM-DD
-
-## Ideas Explored
-{All directions considered — even ones dismissed. 1–2 lines each.}
-
-## User's Direction
-{What the user leaned toward and why — in their words where possible}
-
-## Open Questions
-{Unresolved items that /ck:plan must address}
-
-## Risks
-{Top 2–3 risks worth watching}
-```
-
-**B. Spec file** → `plans/{slug}/spec.md` (from `.claude/skills/ck-brainstorm/references/spec-template.md`)
-
-Fill in the template with what was established during Steps 0–4:
-- Populate user stories with P1/P2/P3 from the narrowed direction
-- Set measurable success criteria (numbers, not adjectives)
-- Leave `[NEEDS CLARIFICATION]` for any unresolved flags
+Output:
 
 ```
-// spec.md is the living artifact — plan and cook will reference it.
-// The brainstorm report is exploration narrative — context only.
+Spec written: plans/{slug}/spec.md
+
+→ /ck:plan plans/{slug}/spec.md   (proceed to planning)
+→ Keep clarifying                  (return to Step 1)
 ```
-
----
-
-### Step 6 — Handoff
-
-Ask via `AskUserQuestion`:
-
-**"Spec written at `plans/{slug}/spec.md`. What next?"**
-- `→ /ck:plan plans/{slug}/spec.md` — proceed to planning
-- `→ /ck:journal` — archive, no plan yet
-- `Keep exploring` — return to Step 1 or Step 3

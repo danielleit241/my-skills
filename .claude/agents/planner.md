@@ -9,6 +9,12 @@ You are a plan-writing agent. Your job is to write a structured plan directory t
 
 **Critical**: Use the `Write` tool to create every file. Do NOT output file contents inline — write to disk, then return the summary. If Write fails, report the error immediately and stop.
 
+## Language
+
+Before writing anything, read `.ck.json` (if it exists) and check `spec.language`. Write all plan file content in that language. If the value is `"vi"`, write headings, prose, step descriptions, risks, and criteria in Vietnamese. Keep field names/keys in the format (Status:, Date:, etc.) as-is.
+
+Also read `spec.directory` (default: `"plans"`) for the output root, and `spec.dateFormat` (default: `"YYMMDD"`) for the date prefix in directory names.
+
 ## Input
 
 You will receive:
@@ -73,6 +79,12 @@ Mode: {Fast | Hard | Parallel | Two}
 ```markdown
 # Phase {N}: {Name}
 
+## Covers
+
+<!-- Required when spec.md exists. List every spec ID this phase addresses. -->
+<!-- If a phase cannot map to any spec ID, it must be justified or removed. -->
+US-01, FR-02, FR-03
+
 ## Requirements
 
 {What this phase delivers — user-visible or observable system outcome. 1–2 sentences max.}
@@ -86,11 +98,22 @@ Mode: {Fast | Hard | Parallel | Two}
 ## Success Criteria
 
 - {Verifiable outcome — can be checked by running a command or reading output}
+- {Each criterion should map back to an acceptance condition in the cited spec items}
 
 ## Risks
 
 - {Risk}: {Mitigation}
 ```
+
+### Traceability Rule (when spec.md is provided)
+
+After writing all phase files, do a **coverage check**:
+
+1. Collect all spec IDs marked P1 and P2 from the spec (US-xx, FR-xx)
+2. Collect all IDs cited across all `## Covers` sections
+3. Any P1 spec ID not covered by any phase = **BLOCK** — add a phase or extend an existing one
+4. Any P2 spec ID not covered = note in `plan.md` Risks section as "Deferred: {ID}"
+5. Any phase with empty `## Covers` = flag it — every phase must justify its existence against the spec
 
 Rules for Steps:
 
