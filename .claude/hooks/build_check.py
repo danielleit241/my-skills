@@ -24,9 +24,6 @@ from hook_logger import HookLogger
 log = HookLogger("build-check")
 
 
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
 
 def walk_up(file_path: Path, filename: str) -> Path | None:
     for parent in file_path.parents:
@@ -49,9 +46,6 @@ def run(cmd: list[str], cwd: str) -> str:
     return result.stdout + result.stderr
 
 
-# ---------------------------------------------------------------------------
-# Language-specific checkers
-# ---------------------------------------------------------------------------
 
 def check_dotnet(file_path: Path) -> str | None:
     csproj = walk_up_glob(file_path, "*.csproj")
@@ -114,9 +108,6 @@ def check_rust(file_path: Path) -> str | None:
     return None
 
 
-# ---------------------------------------------------------------------------
-# Dispatch
-# ---------------------------------------------------------------------------
 
 CHECKERS: dict[str, callable] = {
     ".cs": check_dotnet,

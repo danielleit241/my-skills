@@ -1,6 +1,6 @@
 ---
 name: ck-cook
-description: Implement a planned feature phase by phase. Use when the user says "cook this", "implement it", "let's build", "start coding", or passes a plan.md path. Spec-aware — auto-loads spec.md alongside plan for SDD+TDD. Modes (pick one): --fast (skip test/review), --hard (mandatory human approval). Composable flag: --tdd (write failing tests before implementing).
+description: Implement a planned feature phase by phase. Use when the user says "cook this", "implement it", "let's build", "start coding", or passes a plan.md path. Spec-aware — auto-loads spec.md alongside plan for SDD+TDD. Modes (pick one): --fast (skip test/review), --hard (mandatory human approval), --auto (auto-approve low-risk phases, the handoff target of ck:plan --auto), --parallel (File-Ownership phases, review at end). Composable flag: --tdd (write failing tests before implementing).
 user-invocable: true
 ---
 
@@ -10,6 +10,7 @@ Modes — mutually exclusive, pick one (default = Standard):
 - **Standard** — test + review; verdict derived from evidence checks, auto-advance on APPROVED
 - **`--fast`** — skip tester and code-reviewer; git-manager only in Step 5
 - **`--hard`** — mandatory test + mandatory review, no auto-approve
+- **`--auto`** — full test + review run, but the per-phase Review Gate auto-approves when the derived verdict is APPROVED **and** the phase carries no HIGH-risk touchpoint (from `risk-gate.json`). Any WARNING/BLOCK, or any phase flagged HIGH risk, falls back to waiting for the user. This is the mode `ck:plan --auto` hands off to.
 - **`--parallel`** — phases have exclusive File Ownership (from `ck:plan --parallel`); auto-continue between phases (no per-phase review gate), full test + review at end
 
 Composable flag — combine with any mode:
@@ -86,7 +87,7 @@ Report what will be cooked:
 ```
 Plan: {Feature Name}
 Status: {status from plan.md}
-Mode: {Standard | Fast | Hard}
+Mode: {Standard | Fast | Hard | Auto | Parallel}
 Test:  {default | --no-test | --tdd}
 Spec:  {plans/{slug}/spec.md — N P1 stories, N success criteria | none}
 Phases remaining:
@@ -135,6 +136,7 @@ For each `phase-XX-*.md` in order:
 
 **Review Gate** — after each phase:
 - **Standard / `--hard`**: pause and wait for user approval
+- **`--auto`**: auto-continue only if the phase verdict is APPROVED **and** the phase is not HIGH risk in `risk-gate.json`; otherwise pause and wait (same as Standard)
 - **`--fast`** / **`--parallel`**: continue automatically
 
 Stop if: success criterion unverifiable, unexpected blocker, or phase needs user decisions not in the plan.
@@ -255,10 +257,10 @@ Edit `spec.md` directly with the changes before proceeding to git-manager. The s
 
 | Agent / Skill     | Step | Modes |
 |-------------------|------|-------|
-| `tester`          | 3    | Standard, `--hard`, `--parallel` (skip for `--fast`) |
+| `tester`          | 3    | Standard, `--hard`, `--auto`, `--parallel` (skip for `--fast`) |
 | `debugger`        | 3    | When tests fail |
 | `simplify` skill  | 3.S  | All (hook-driven) |
-| `code-reviewer`   | 4    | Standard, `--hard`, `--parallel` (skip for `--fast`) |
-| `project-manager` | 5    | Standard, `--hard`, `--parallel` (skip for `--fast`) |
-| `docs-manager`    | 5    | Standard, `--hard`, `--parallel` (skip for `--fast`) |
+| `code-reviewer`   | 4    | Standard, `--hard`, `--auto`, `--parallel` (skip for `--fast`) |
+| `project-manager` | 5    | Standard, `--hard`, `--auto`, `--parallel` (skip for `--fast`) |
+| `docs-manager`    | 5    | Standard, `--hard`, `--auto`, `--parallel` (skip for `--fast`) |
 | `git-manager`     | 5    | Always (mandatory) |
