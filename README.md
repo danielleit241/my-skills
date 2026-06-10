@@ -81,8 +81,7 @@ Writes use a filesystem transaction. If a write fails, earlier writes in that op
 The `Publish npm` GitHub Action publishes only from SemVer tags. The tag, `package.json`, and `toolkit.manifest.json` must contain the same version.
 
 1. Add an npm automation token as the repository secret `NPM_TOKEN`.
-2. Create the protected GitHub environment `npm`.
-3. Bump both version files, commit, then create and push the matching tag:
+2. Bump both version files, commit, then create and push the matching tag:
 
 ```bash
 npm version 2.1.0 --no-git-tag-version
