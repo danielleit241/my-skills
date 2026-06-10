@@ -4,27 +4,21 @@ A personal Claude Code configuration — slash commands, sub-agents, skills, and
 
 **Principles:** YAGNI · KISS · DRY · Brutal honesty · Challenge every assumption
 
-## Versioned CLI
+## Install
 
-The repository also ships a project-scoped CLI for installing, updating, migrating, and reverting the toolkit without manually copying files.
-
-```bash
-npm install
-npm run build
-
-node dist/cli.js init ../target-project --agent claude --bundle full
-node dist/cli.js init ../target-project --agent codex --bundle full --dry-run
-node dist/cli.js status ../target-project
-node dist/cli.js validate ../target-project
-```
-
-After publishing the package, the same commands can run through:
+Requires Node.js 20 or newer.
 
 ```bash
-npx @danielleit241/my-skills init ../target-project --agent codex --bundle full
+npx @danielleit241/my-skills init <project-path> --agent claude --bundle full
 ```
 
-### Commands
+For Codex:
+
+```bash
+npx @danielleit241/my-skills init <project-path> --agent codex --bundle full
+```
+
+## CLI Commands
 
 | Command | Purpose |
 | --- | --- |
@@ -37,13 +31,22 @@ npx @danielleit241/my-skills init ../target-project --agent codex --bundle full
 
 All mutating commands support `--dry-run`. Managed files are overwritten or removed only when their current SHA-256 matches the lockfile. A local edit produces a conflict and a text diff; use `--force` only when discarding that edit is intentional.
 
-### Bundles and adapters
+## Bundles
 
 `toolkit.manifest.json` is the source manifest. The built-in bundles are:
 
 - `full`: all configuration, skills, commands, agents, hooks, and rules.
 - `development`: core configuration, skills, commands, and agents.
 - `skills`: skills only.
+
+## Migration
+
+Migrate an existing installation:
+
+```bash
+npx @danielleit241/my-skills migrate <project-path> --from claude --to codex --dry-run
+npx @danielleit241/my-skills migrate <project-path> --from claude --to codex
+```
 
 The Claude adapter preserves the `.claude/` layout. The Codex adapter maps:
 
@@ -55,45 +58,16 @@ The Claude adapter preserves the `.claude/` layout. The Codex adapter maps:
 
 Items without a direct target mapping are reported as `unsupported` rather than silently dropped.
 
-### Releases and recovery
-
-Release tags must use SemVer:
+## Update And Recovery
 
 ```bash
-npm test
-npm run validate:toolkit
-git tag v2.0.0
-git push origin v2.0.0
-```
-
-Update or revert a target project:
-
-```bash
-npx @danielleit241/my-skills update 2.1.0 ../target-project --dry-run
-npx @danielleit241/my-skills update 2.1.0 ../target-project
-npx @danielleit241/my-skills revert 2.0.0 ../target-project
+npx @danielleit241/my-skills status <project-path>
+npx @danielleit241/my-skills update latest <project-path> --dry-run
+npx @danielleit241/my-skills update latest <project-path>
+npx @danielleit241/my-skills revert 2.0.0 <project-path>
 ```
 
 Writes use a filesystem transaction. If a write fails, earlier writes in that operation are restored. The CLI never commits or resets the target repository.
-
-### Automated npm publishing
-
-The `Publish npm` GitHub Action publishes only from SemVer tags. The tag, `package.json`, and `toolkit.manifest.json` must contain the same version.
-
-1. Add an npm automation token as the repository secret `NPM_TOKEN`.
-2. Bump both version files, commit, then create and push the matching tag:
-
-```bash
-npm version 2.1.0 --no-git-tag-version
-# Update toolkit.manifest.json to 2.1.0.
-npm run version:check -- v2.1.0
-git add .
-git commit -m "release: v2.1.0"
-git tag v2.1.0
-git push origin HEAD --follow-tags
-```
-
-The workflow can also be rerun manually by selecting an existing tag. It never publishes arbitrary untagged branch contents.
 
 ---
 
