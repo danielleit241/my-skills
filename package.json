@@ -36,7 +36,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "check": "tsc -p tsconfig.json --noEmit",
-    "test": "npm run build && node --test \"dist/tests/*.test.js\"",
+    "test": "npm run build && node --test dist/tests/engine.test.js dist/tests/transaction.test.js",
     "validate:toolkit": "npm run build && node dist/cli.js validate --source .",
     "version:check": "node scripts/check-release-version.mjs",
     "prepublishOnly": "npm run check && npm test && npm run validate:toolkit"
