@@ -1,6 +1,6 @@
 ---
-description: Generate impressive multi-section HTML presentations with parallax, theme toggle, bilingual VI/EN — then auto-capture as 16:9, 9:16, 1:1 social-ready images
-argument-hint: [--auto|--fast|--clone] <topic>
+description: "Generate impressive multi-section HTML presentations with parallax, theme toggle, bilingual VI/EN — then auto-capture as 16:9, 9:16, 1:1 social-ready images"
+argument-hint: "[--auto|--fast|--clone] <topic>"
 ---
 
 # /ck:show-off — HTML Presentation + Social Capture

@@ -1,6 +1,6 @@
 ---
 name: planner
-description: Plan-creation sub-agent for the /plan pipeline. Given a feature description and optional research reports, writes the full plan directory: plan.md overview + one phase-XX-{name}.md per phase. Used in Fast, Hard, Parallel, and Two modes.
+description: "Plan-creation sub-agent for the /plan pipeline. Given a feature description and optional research reports, writes the full plan directory: plan.md overview + one phase-XX-{name}.md per phase. Used in Fast, Hard, Parallel, and Two modes."
 tools: ["Read", "Grep", "Glob", "Write"]
 model: sonnet
 ---

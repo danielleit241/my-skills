@@ -1,0 +1,59 @@
+{
+  "name": "@danielleit241/my-skills",
+  "version": "2.0.0",
+  "description": "Versioned CLI for installing and migrating AI agent toolkits",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/danielleit241/my-skills.git"
+  },
+  "homepage": "https://github.com/danielleit241/my-skills#readme",
+  "bugs": {
+    "url": "https://github.com/danielleit241/my-skills/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "type": "module",
+  "bin": {
+    "my-skills": "dist/cli.js"
+  },
+  "files": [
+    "dist",
+    ".claude/agents/*.md",
+    ".claude/coding-levels",
+    ".claude/commands",
+    ".claude/contexts",
+    ".claude/hooks/*.py",
+    ".claude/hooks/lib/*.py",
+    ".claude/rules",
+    ".claude/settings.json",
+    ".claude/skills",
+    "toolkit.manifest.json",
+    "CLAUDE.md",
+    ".ck.json"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "check": "tsc -p tsconfig.json --noEmit",
+    "test": "npm run build && node --test \"dist/tests/*.test.js\"",
+    "validate:toolkit": "npm run build && node dist/cli.js validate --source .",
+    "version:check": "node scripts/check-release-version.mjs",
+    "prepublishOnly": "npm run check && npm test && npm run validate:toolkit"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "commander": "^14.0.0",
+    "diff": "^8.0.2",
+    "gray-matter": "^4.0.3",
+    "semver": "^7.7.2"
+  },
+  "devDependencies": {
+    "@types/diff": "^7.0.2",
+    "@types/node": "^22.15.30",
+    "@types/semver": "^7.7.0",
+    "typescript": "^5.8.3"
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "$schemaVersion": 1,
+  "name": "@danielleit241/my-skills",
+  "version": "2.0.0",
+  "sourceAgent": "claude",
+  "supportedAgents": ["claude", "codex"],
+  "components": [
+    {
+      "id": "core",
+      "type": "config",
+      "paths": [".claude/settings.json", ".ck.json", "CLAUDE.md"],
+      "adapters": ["claude", "codex"]
+    },
+    {
+      "id": "skills",
+      "type": "skill",
+      "paths": [".claude/skills"],
+      "adapters": ["claude", "codex"]
+    },
+    {
+      "id": "commands",
+      "type": "command",
+      "paths": [".claude/commands"],
+      "adapters": ["claude", "codex"]
+    },
+    {
+      "id": "agents",
+      "type": "agent",
+      "paths": [".claude/agents"],
+      "adapters": ["claude", "codex"]
+    },
+    {
+      "id": "hooks",
+      "type": "hook",
+      "paths": [".claude/hooks"],
+      "adapters": ["claude", "codex"]
+    },
+    {
+      "id": "rules",
+      "type": "rule",
+      "paths": [".claude/rules", ".claude/contexts", ".claude/coding-levels"],
+      "adapters": ["claude"]
+    }
+  ],
+  "bundles": {
+    "full": {
+      "description": "Complete toolkit",
+      "components": ["core", "skills", "commands", "agents", "hooks", "rules"]
+    },
+    "skills": {
+      "description": "Skills only",
+      "components": ["skills"]
+    },
+    "development": {
+      "description": "Skills, commands, agents, and core configuration",
+      "components": ["core", "skills", "commands", "agents"]
+    }
+  }
+}

@@ -4,6 +4,97 @@ A personal Claude Code configuration — slash commands, sub-agents, skills, and
 
 **Principles:** YAGNI · KISS · DRY · Brutal honesty · Challenge every assumption
 
+## Versioned CLI
+
+The repository also ships a project-scoped CLI for installing, updating, migrating, and reverting the toolkit without manually copying files.
+
+```bash
+npm install
+npm run build
+
+node dist/cli.js init ../target-project --agent claude --bundle full
+node dist/cli.js init ../target-project --agent codex --bundle full --dry-run
+node dist/cli.js status ../target-project
+node dist/cli.js validate ../target-project
+```
+
+After publishing the package, the same commands can run through:
+
+```bash
+npx @danielleit241/my-skills init ../target-project --agent codex --bundle full
+```
+
+### Commands
+
+| Command | Purpose |
+| --- | --- |
+| `init [target]` | Install selected bundles for Claude or Codex and create `.my-skills.lock.json`. |
+| `update [version] [target]` | Update to a SemVer Git tag. The default `latest` selects the highest `v*` tag. |
+| `migrate [target] --from claude --to codex` | Render the installed bundles with another agent adapter. |
+| `revert <version> [target]` | Restore files from a previous SemVer Git tag without resetting the target repository. |
+| `status [target]` | Show the installed release and locally modified or deleted managed files. |
+| `validate [target]` | Validate installed skill and agent structures. |
+
+All mutating commands support `--dry-run`. Managed files are overwritten or removed only when their current SHA-256 matches the lockfile. A local edit produces a conflict and a text diff; use `--force` only when discarding that edit is intentional.
+
+### Bundles and adapters
+
+`toolkit.manifest.json` is the source manifest. The built-in bundles are:
+
+- `full`: all configuration, skills, commands, agents, hooks, and rules.
+- `development`: core configuration, skills, commands, and agents.
+- `skills`: skills only.
+
+The Claude adapter preserves the `.claude/` layout. The Codex adapter maps:
+
+- Skills and slash commands to `.agents/skills/`.
+- Sub-agents to `.codex/agents/*.toml`.
+- Hooks to `.codex/hooks.json` and scripts to `.codex/hooks/`.
+- `CLAUDE.md` to `AGENTS.md`.
+
+Items without a direct target mapping are reported as `unsupported` rather than silently dropped.
+
+### Releases and recovery
+
+Release tags must use SemVer:
+
+```bash
+npm test
+npm run validate:toolkit
+git tag v2.0.0
+git push origin v2.0.0
+```
+
+Update or revert a target project:
+
+```bash
+npx @danielleit241/my-skills update 2.1.0 ../target-project --dry-run
+npx @danielleit241/my-skills update 2.1.0 ../target-project
+npx @danielleit241/my-skills revert 2.0.0 ../target-project
+```
+
+Writes use a filesystem transaction. If a write fails, earlier writes in that operation are restored. The CLI never commits or resets the target repository.
+
+### Automated npm publishing
+
+The `Publish npm` GitHub Action publishes only from SemVer tags. The tag, `package.json`, and `toolkit.manifest.json` must contain the same version.
+
+1. Add an npm automation token as the repository secret `NPM_TOKEN`.
+2. Create the protected GitHub environment `npm`.
+3. Bump both version files, commit, then create and push the matching tag:
+
+```bash
+npm version 2.1.0 --no-git-tag-version
+# Update toolkit.manifest.json to 2.1.0.
+npm run version:check -- v2.1.0
+git add .
+git commit -m "release: v2.1.0"
+git tag v2.1.0
+git push origin HEAD --follow-tags
+```
+
+The workflow can also be rerun manually by selecting an existing tag. It never publishes arbitrary untagged branch contents.
+
 ---
 
 ## Pipelines

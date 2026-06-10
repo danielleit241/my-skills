@@ -1,6 +1,6 @@
 ---
 name: ck-plan
-description: Create a phased implementation plan with pre-check, cross-plan scan, research, red-team review, validation, task hydration, and cook handoff. Modes: --fast, --hard, --deep, --parallel, --two. Flags: --tdd, --no-tasks.
+description: "Create a phased implementation plan with pre-check, cross-plan scan, research, red-team review, validation, task hydration, and cook handoff. Modes: --fast, --hard, --deep, --parallel, --two. Flags: --tdd, --no-tasks."
 user-invocable: true
 ---
 

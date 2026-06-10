@@ -1,6 +1,6 @@
 ---
 name: ck-fix
-description: Fix a bug through mode selection, scout, evidence-based diagnosis, routing, root-cause repair, verification, prevention, review, and final sync. Modes: --auto, --review, --quick, --parallel.
+description: "Fix a bug through mode selection, scout, evidence-based diagnosis, routing, root-cause repair, verification, prevention, review, and final sync. Modes: --auto, --review, --quick, --parallel."
 user-invocable: true
 ---
 

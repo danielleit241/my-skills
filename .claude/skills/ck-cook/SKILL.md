@@ -1,6 +1,6 @@
 ---
 name: ck-cook
-description: Turn a reviewed plan or feature brief into working code through scout, exact requirements, planning, implementation, tests, review, and final sync. Modes: --fast, --auto, --parallel. Flags: --tdd, --no-test.
+description: "Turn a reviewed plan or feature brief into working code through scout, exact requirements, planning, implementation, tests, review, and final sync. Modes: --fast, --auto, --parallel. Flags: --tdd, --no-test."
 user-invocable: true
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: ck-code-review
-description: Review a PR, commit, or pending changes through a 3-stage adversarial gate (Spec Compliance → Code Quality → Adversarial). Use when the user says "review this PR", "review my changes", "code review", pastes a PR number or commit hash, or wants a full codebase audit. Runs standalone — no cook/fix pipeline required. Input modes — pick one: #<PR> (gh diff), <commit-hash> (git show), --pending (working tree), codebase parallel (full audit).
+description: "Review a PR, commit, or pending changes through a 3-stage adversarial gate (Spec Compliance → Code Quality → Adversarial). Use when the user says \"review this PR\", \"review my changes\", \"code review\", pastes a PR number or commit hash, or wants a full codebase audit. Runs standalone — no cook/fix pipeline required. Input modes — pick one: #<PR> (gh diff), <commit-hash> (git show), --pending (working tree), codebase parallel (full audit)."
 user-invocable: true
 ---
 
