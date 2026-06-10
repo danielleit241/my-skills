@@ -1,5 +1,5 @@
 ---
-description: Structured bug-fix pipeline. Scout → Diagnose+Fix → Review → Finalize. Modes (pick one): --fast (trivial errors — skip scout + review), --hard (mandatory review, no auto-approve).
+description: Evidence-based bug repair: mode → scout → diagnose → route → root-cause fix → verify/prevent → review → finalize. Modes: --auto, --review, --quick, --parallel.
 ---
 
 Load the `ck:fix` skill and run it with `$ARGUMENTS`.

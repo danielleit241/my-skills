@@ -40,15 +40,22 @@ Output a violation list with spec-ID citations. **Any Critical spec violation fo
 
 ---
 
-### Step 2 — Code Quality (code-reviewer agent)
+### Step 2 — Edge-Case Scout + Code Quality
 
-Spawn the **`code-reviewer`** agent with minimal context: the diff + Stage 1 violation list. Not the full session. It runs its CRITICAL→LOW checklist (security, correctness, quality) and reports findings >80% confidence.
+First run scout with an edge-case focus. For broad changes, use 2-6 scoped
+parallel scans across data flow, error paths, boundaries, and contracts.
+
+Then spawn the **`code-reviewer`** agent with the diff, Stage 1 violations, and
+scout findings. For 3+ changed files, split review scopes where ownership is
+clear and deduplicate findings afterward.
 
 ---
 
 ### Step 3 — Adversarial (code-reviewer agent, second pass)
 
-**Scope exemption:** if the change is **≤2 files AND ≤30 lines AND touches nothing security-sensitive** (auth, crypto, input validation, secrets, SQL/shell), **skip Stage 3** and record in output: `Stage 3 skipped — scope exemption (N files, M lines, non-security)`.
+Stage 3 runs on every review except when the strict scope gate is met:
+**≤2 files, ≤30 lines, and no security-sensitive code**. Record the exemption
+and its measured file/line counts.
 
 Otherwise, instruct `code-reviewer` to actively **try to break the code**: invalid inputs, boundary conditions, concurrent access, missing auth, injection. Each attempt is reported as `HELD` or `BROKEN` with evidence (the exact input + observed result) — never "looks safe".
 
@@ -66,7 +73,8 @@ The verdict follows mechanically from the three stages:
 
 > **Verdict label mapping:** the `code-reviewer` agent emits `APPROVED / WARNING / BLOCK`. When aggregating, map its `WARNING` → **REQUEST CHANGES** and `APPROVED` → **APPROVE**; `BLOCK` stays `BLOCK`. ck:code-review's public verdict is always one of APPROVE / REQUEST CHANGES / BLOCK.
 
-The main agent (orchestrator) writes **`review-decision.json`** to the plan dir (or CWD if no plan dir), aggregating findings by severity (Critical / Important / Minor) and the derived verdict. The `code-reviewer` agent cannot write — the orchestrator owns this step.
+The main agent writes the final review report, aggregating findings by severity,
+per-finding adjudication, and the derived verdict.
 
 Output the findings grouped by severity, then the verdict line.
 

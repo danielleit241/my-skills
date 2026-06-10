@@ -1,134 +1,111 @@
 #!/usr/bin/env python3
 """
-PostToolUse Write|Edit hook — auto-trigger simplify when edit thresholds are breached.
+UserPromptSubmit hook — block ship intent when the current diff is too large.
 
-Tracks cumulative edit metrics per session. Emits SIMPLIFY_TRIGGERED when any
-threshold is breached. Thresholds read from .ck.json simplify.threshold.
-
-Defaults: totalLoc=400, fileCount=8, singleFileLoc=200
-State: .claude/session-data/simplify-tracker-{session_id}.json
-Resets when cook Step 3.S invokes simplify and clears the state file.
+The hook only enforces thresholds when simplify.gate.enabled=true. It inspects
+git diff HEAD for ship/merge/PR/deploy/publish prompts and exits 2 when total
+changed lines, changed files, or additions in one file reach the configured
+threshold.
 """
 
 import json
 import os
+import re
+import subprocess
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent / "lib"))
+from ck_config_utils import find_project_root, get_section
 from hook_logger import HookLogger
 
 _log = HookLogger("simplify-gate")
+SHIP_INTENT_RE = re.compile(r"\b(ship|merge|pr|deploy|publish)\b", re.IGNORECASE)
+NEGATED_SHIP_RE = re.compile(
+    r"\b(don't|do not|not ready to|avoid|skip)\s+(ship|merge|deploy|publish)\b",
+    re.IGNORECASE,
+)
 
 
-def _find_repo_root(cwd: str) -> Path | None:
-    for parent in [Path(cwd)] + list(Path(cwd).parents):
-        if (parent / ".git").exists():
-            return parent
-    return None
+def _git_numstat(root: Path) -> list[tuple[int, int, str]]:
+    result = subprocess.run(
+        ["git", "-C", str(root), "diff", "HEAD", "--numstat"],
+        capture_output=True,
+        text=True,
+        timeout=10,
+    )
+    if result.returncode != 0:
+        return []
 
-
-def _load_config(root: Path) -> dict:
-    ck = root / ".ck.json"
-    if ck.exists():
-        try:
-            return json.loads(ck.read_text()).get("simplify", {}).get("threshold", {})
-        except Exception:
-            pass
-    return {}
-
-
-def _state_path(root: Path, session_id: str) -> Path:
-    d = root / ".claude" / "session-data"
-    d.mkdir(parents=True, exist_ok=True)
-    return d / f"simplify-tracker-{session_id}.json"
-
-
-def _load_state(path: Path) -> dict:
-    if path.exists():
-        try:
-            return json.loads(path.read_text())
-        except Exception:
-            pass
-    return {"files": {}, "total_loc": 0, "triggered": False}
+    rows = []
+    for line in result.stdout.splitlines():
+        parts = line.split("\t", 2)
+        if len(parts) != 3:
+            continue
+        added, deleted, path = parts
+        if not added.isdigit() or not deleted.isdigit():
+            continue
+        rows.append((int(added), int(deleted), path))
+    return rows
 
 
 def main() -> None:
     try:
-        data = json.load(sys.stdin)
-    except Exception:
+        payload = json.load(sys.stdin)
+    except Exception as exc:
+        _log.error(f"stdin parse failed -> fail-open: {exc}")
         return
 
-    # Skip sub-agent calls
-    if data.get("agent_id"):
+    prompt = payload.get("prompt", "") or payload.get("message", "") or ""
+    if not SHIP_INTENT_RE.search(prompt) or NEGATED_SHIP_RE.search(prompt):
         return
 
-    session_id = data.get("session_id") or os.environ.get("CLAUDE_SESSION_ID", "default")
-    cwd = data.get("cwd", os.getcwd())
-    root = _find_repo_root(cwd)
+    root = find_project_root(payload.get("cwd") or os.getcwd())
     if not root:
         return
 
-    cfg = _load_config(root)
-    if not cfg.get("enabled", True):
+    simplify = get_section("simplify", root=root)
+    gate = simplify.get("gate", {})
+    if not gate.get("enabled", False):
         return
 
-    threshold_total  = cfg.get("totalLoc",     400)
-    threshold_files  = cfg.get("fileCount",       8)
-    threshold_single = cfg.get("singleFileLoc", 200)
+    threshold = simplify.get("threshold", {})
+    total_limit = int(threshold.get("totalLoc", 400))
+    file_limit = int(threshold.get("fileCount", 8))
+    single_limit = int(threshold.get("singleFileLoc", 200))
 
-    sp = _state_path(root, session_id)
-    state = _load_state(sp)
-
-    if state.get("triggered"):
-        return
-
-    tool_input = data.get("tool_input", {})
-    file_path = tool_input.get("file_path", "")
-    if not file_path:
-        return
-
-    source_extensions = set(cfg.get("sourceExtensions", []))
-    if source_extensions and Path(file_path).suffix.lower() not in source_extensions:
-        return
-
-    content = tool_input.get("content") or tool_input.get("new_string") or ""
-    lines = len(content.splitlines()) if content else 0
-
-    state["files"][file_path] = state["files"].get(file_path, 0) + lines
-    state["total_loc"] = sum(state["files"].values())
-    sp.write_text(json.dumps(state))
+    rows = _git_numstat(root)
+    total_loc = sum(added + deleted for added, deleted, _ in rows)
+    file_count = len(rows)
+    max_added, max_path = max(
+        ((added, path) for added, _, path in rows),
+        default=(0, ""),
+    )
 
     breached = []
-    if state["total_loc"] >= threshold_total:
-        breached.append(f"total LOC {state['total_loc']} ≥ {threshold_total}")
-    if len(state["files"]) >= threshold_files:
-        breached.append(f"files edited {len(state['files'])} ≥ {threshold_files}")
-    max_loc = max(state["files"].values(), default=0)
-    if max_loc >= threshold_single:
-        worst = max(state["files"], key=state["files"].get)
-        breached.append(f"single-file {max_loc} ≥ {threshold_single} ({Path(worst).name})")
+    if total_loc >= total_limit:
+        breached.append(f"total diff {total_loc} >= {total_limit} lines")
+    if file_count >= file_limit:
+        breached.append(f"{file_count} files >= {file_limit}")
+    if max_added >= single_limit:
+        breached.append(
+            f"{max_added} additions >= {single_limit} in {max_path}"
+        )
 
     if not breached:
         return
 
-    state["triggered"] = True
-    sp.write_text(json.dumps(state))
-
-    print(json.dumps({
-        "hookSpecificOutput": {
-            "hookEventName": "PostToolUse",
-            "additionalContext": (
-                "SIMPLIFY_TRIGGERED: Edit thresholds breached — "
-                + "; ".join(breached)
-                + ". Proceed to Step 3.S in /cook: invoke the `simplify` skill before Step 4."
-            ),
-        }
-    }))
+    sys.stderr.write(
+        "[simplify-gate] Blocked ship intent: "
+        + "; ".join(breached)
+        + ". Simplify the diff or set simplify.gate.enabled=false in .ck.json.\n"
+    )
+    sys.exit(2)
 
 
 if __name__ == "__main__":
     try:
         main()
-    except Exception as e:
-        _log.error(f"unhandled → fail-open: {e}")
+    except Exception as exc:
+        _log.error(f"unhandled -> fail-open: {exc}")
+        sys.exit(0)

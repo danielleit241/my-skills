@@ -1,21 +1,19 @@
 #!/usr/bin/env python3
 """
-UserPromptSubmit hook — inject session context and active plan info.
+UserPromptSubmit hook — inject project rules, session info, and plan context.
 
-Detects the active /ck: command from the user message and picks the matching
-context file. Falls back to "dev".
-
-Command → context mapping:
-  /ck:cook, /ck:fix, /ck:docs-fe                      → dev
-  /ck:brainstorm, /ck:plan, /ck:learn, /ck:brainstorm → research
-  /ck:code-review                                      → review
+Injection is limited to once every five minutes for each
+(session_id, project root) pair to avoid repeated token cost.
 """
 
+import hashlib
 import json
 import os
 import re
 import subprocess
 import sys
+import tempfile
+import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent / "lib"))
@@ -25,29 +23,8 @@ PLANS_DIR = "plans"
 STATUS_ACTIVE = "🟡"
 STATUS_COMPLETE = "✅"
 MAX_ACTIVE_PLANS = 3
-DEFAULT_CONTEXT = "dev"
 FALLBACK_RULES = "YAGNI · KISS · DRY · Brutal honesty · Challenge assumptions"
-
-COMMAND_CONTEXT_MAP: dict[str, str] = {
-    "/ck:cook": "dev",
-    "/ck:fix": "dev",
-    "/ck:docs-fe": "dev",
-    "/ck:init": "dev",
-    "/ck:brainstorm": "research",
-    "/ck:plan": "research",
-    "/ck:learn": "research",
-    "/ck:show-off": "research",
-    "/ck:code-review": "review",
-    "/ck:coding-level": "review",
-}
-
-
-def detect_context_from_message(message: str) -> str | None:
-    """Return the context name if the message invokes a known /ck: command."""
-    for command, ctx in COMMAND_CONTEXT_MAP.items():
-        if command in message:
-            return ctx
-    return None
+INJECTION_TTL_SECONDS = 5 * 60
 
 
 def _git(*args: str) -> str:
@@ -58,20 +35,60 @@ def _git(*args: str) -> str:
         return ""
 
 
-def get_session_header() -> str:
-    project = Path(os.getcwd()).name
-    branch = _git("rev-parse", "--abbrev-ref", "HEAD")
+def get_session_header(root: Path) -> str:
+    project = root.name
+    branch = _git("-C", str(root), "rev-parse", "--abbrev-ref", "HEAD")
     parts = [f"Project: {project}"]
     if branch:
         parts.append(f"Branch: {branch}")
     return " | ".join(parts)
 
 
-def load_context_file(root: Path, mode: str) -> str | None:
-    ctx_file = root / ".claude" / "contexts" / f"{mode}.md"
-    if ctx_file.exists():
-        return ctx_file.read_text(encoding="utf-8", errors="replace").strip()
-    return None
+def should_inject(
+    session_id: str,
+    root: Path,
+    now: float | None = None,
+) -> bool:
+    """Return true at most once per TTL for a session and project."""
+    timestamp = time.time() if now is None else now
+    key = hashlib.sha256(
+        f"{session_id}\0{root.resolve()}".encode("utf-8", errors="replace")
+    ).hexdigest()[:24]
+    state_dir = Path(tempfile.gettempdir()) / "ck-dev-rules-reminder"
+    state_file = state_dir / f"{key}.json"
+
+    try:
+        if state_file.exists():
+            state = json.loads(state_file.read_text(encoding="utf-8"))
+            last_injected = float(state.get("last_injected", 0))
+            if timestamp - last_injected < INJECTION_TTL_SECONDS:
+                return False
+
+        state_dir.mkdir(parents=True, exist_ok=True)
+        state_file.write_text(
+            json.dumps({"last_injected": timestamp}),
+            encoding="utf-8",
+        )
+    except (OSError, ValueError, TypeError, json.JSONDecodeError):
+        # Fail open: context injection is more important than token deduplication.
+        return True
+
+    return True
+
+
+def load_project_rules(root: Path) -> str:
+    """Load the concise Core Principles section from CLAUDE.md."""
+    claude_md = root / "CLAUDE.md"
+    if claude_md.exists():
+        content = claude_md.read_text(encoding="utf-8", errors="replace")
+        match = re.search(
+            r"^## Core Principles\s*\n+(.*?)(?=^## |\Z)",
+            content,
+            re.MULTILINE | re.DOTALL,
+        )
+        if match and match.group(1).strip():
+            return match.group(1).strip()
+    return FALLBACK_RULES
 
 
 def find_active_plans(root: Path) -> list[dict]:
@@ -126,8 +143,12 @@ def _parse_plan(plan_file: Path, content: str) -> dict | None:
     }
 
 
-def build_context(header: str, context_body: str, active_plans: list[dict]) -> str:
-    lines = [header, "", context_body]
+def build_context(header: str, rules: str, active_plans: list[dict]) -> str:
+    lines = [
+        header,
+        f"Development rules: {rules}",
+        "Modularization: keep source files near 200 lines; split by responsibility when practical.",
+    ]
 
     if active_plans:
         lines.append("")
@@ -140,25 +161,27 @@ def build_context(header: str, context_body: str, active_plans: list[dict]) -> s
 
 
 def main():
-    user_message = ""
+    payload = {}
     try:
         payload = json.loads(sys.stdin.read())
-        user_message = payload.get("message", "") or ""
     except (json.JSONDecodeError, EOFError, AttributeError):
         pass
 
-    root = find_project_root() or Path(os.getcwd())
+    cwd = payload.get("cwd") or os.getcwd()
+    root = find_project_root(cwd) or Path(cwd)
+    session_id = (
+        payload.get("session_id")
+        or os.environ.get("CLAUDE_SESSION_ID")
+        or str(os.getppid())
+    )
 
-    detected = detect_context_from_message(user_message)
-    context_mode = detected or DEFAULT_CONTEXT
+    if not should_inject(str(session_id), root):
+        return
 
-    context_body = load_context_file(root, context_mode)
-    if context_body is None:
-        context_body = f"Rules: {FALLBACK_RULES}"
-
-    header = get_session_header()
+    header = get_session_header(root)
+    rules = load_project_rules(root)
     active_plans = find_active_plans(root)
-    output = build_context(header, context_body, active_plans)
+    output = build_context(header, rules, active_plans)
 
     sys.stdout.write(json.dumps({"hookSpecificOutput": {"additionalContext": output}}))
     sys.stdout.flush()

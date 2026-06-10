@@ -30,7 +30,8 @@ Path-scoped — each file loads only when touching its directory:
 `.ck.json` — project-level config for hooks and pipeline behavior:
 - `cavemanMode` — thresholds for auto-triggering caveman terse mode
 - `artifactFolding` — thresholds for folding large tool outputs
-- `simplify.threshold` — LOC/file-count limits before auto-simplify triggers
+- `simplify.gate` — enable or disable the ship-intent diff-size gate
+- `simplify.threshold` — diff-size limits used by the gate
 - `codingLevel` — response verbosity (-1 = auto)
 
 ## Personal overrides

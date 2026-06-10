@@ -1,101 +1,77 @@
 ---
 name: ck-brainstorm
-description: Clarify a feature idea and produce a spec before planning. Use when the user poses a design question, asks "how should I approach X", is unsure what to build, or says "let's brainstorm", "what's the best way to...", "I'm not sure how to tackle this". Output is a spec.md only — no code, no report. Always run before /ck:plan for novel or ambiguous features.
+description: Scout the repository, clarify exact requirements, debate approaches, and write a brainstorm report before planning. Use when the right design is unclear or the user asks to brainstorm. Produces one report under plans/reports and never writes implementation code.
 user-invocable: true
 ---
 
-# ck:brainstorm — Clarify to Spec
+# ck:brainstorm
 
-**Philosophy: spec-driven development.** This session exists to produce one artifact: a tight `spec.md` that `/ck:plan` can build from. Idea exploration is the means, not the end.
+Hard gate: no implementation code, scaffolding, or implementation skill calls.
+The workflow ends with a design report and an optional `/ck:plan` handoff.
 
-**Hard gate: zero implementation code. Zero brainstorm reports.** Only clarify → spec → handoff.
+## Step 1 - Scout First
 
----
+Before asking questions, inspect the repository directly or use the scout agent.
+Map project type, relevant modules, existing patterns, docs, plans, schemas,
+public APIs, and constraints. Summarize 3-6 concrete findings to the user.
 
-### Step 0 — Listen First
+Do not spawn planner or docs-manager through Task in this workflow. Their
+concerns may be consulted inline.
 
-Do NOT scout the codebase yet. Do NOT suggest options yet.
+## Step 2 - Exact Requirements
 
-Ask one open question:
+Use AskUserQuestion in short rounds until these five fields are concrete:
 
-> "Tell me what you want to build — even roughly. What's the problem it solves?"
+1. Expected output
+2. Acceptance criteria
+3. Scope boundary
+4. Non-negotiable constraints
+5. Existing file/module touchpoints
 
-Wait for their answer. The user's framing is the starting point.
+If the request spans three or more independent subsystems, decompose it into
+separate brainstorm cycles before continuing.
 
----
+## Step 3 - Research
 
-### Step 1 — Clarify the Shape
+Gather only evidence needed to compare the viable approaches. Use repository
+docs first, then official external documentation when current facts matter.
 
-Use `AskUserQuestion` to close gaps. Ask 1–2 questions per turn, never a list.
+## Step 4 - Analyze
 
-Focus on what the spec needs:
+Present 2-3 viable approaches with explicit pros, cons, risks, and maintenance
+cost. Apply YAGNI, KISS, and DRY. Challenge shortcuts and unsupported
+assumptions directly.
 
-- Who uses this, and what's the trigger?
-- What does success look like — concretely?
-- What's P1 (must ship) vs. P2 (nice-to-have)?
-- What's explicitly out of scope?
-- Any non-functional constraints (latency, security, scale)?
+## Step 5 - Consensus
 
-Add your own interpretation after the user speaks — confirm or correct.
+Use AskUserQuestion to select or refine the approach. Do not finalize while any
+of the five requirement fields remain unresolved. Obtain explicit approval for
+the selected design.
 
-Loop until you have enough to write a complete spec. Stop when you have: users, P1 stories, measurable success criteria, and known exclusions.
+## Step 6 - Report
 
-```
-// Aim for 3–5 clarification turns, not open-ended exploration.
-// If the user says "I'm not sure", give them two options to react to.
-```
+Write exactly one report:
 
----
+`plans/reports/brainstorm-YYMMDD-HHMM-{slug}.md`
 
-### Step 2 — Scout (Only If Needed)
+The report contains:
 
-If a clarification question requires codebase context, spawn 1–2 targeted **`Explore` sub-agents** inline.
+1. Problem statement and scouted repository context
+2. Exact requirements
+3. Evaluated approaches and trade-offs
+4. Final recommendation
+5. Implementation risks and assumptions
+6. Success metrics
+7. Next steps
 
-```
-// Scout is optional and reactive.
-// Only spawn if "I need to check X before I can write the spec correctly."
-```
+Use `.ck.json` `spec.language` for report content.
 
----
+## Step 7 - Handoff
 
-### Step 3 — Clarification Gate
+Only after approval, no open questions, and a written report, offer:
 
-Before writing the spec, scan for remaining ambiguity:
+1. `/ck:plan --tdd {report-path}` for refactors or critical logic
+2. `/ck:plan {report-path}` for standard work
+3. End session
 
-- Flag at most **3 items** with `[NEEDS CLARIFICATION: <what's missing>]`
-- Ask 1–2 targeted questions — stop when resolved or user signals "close enough"
-- Red flags: no measurable success criteria, vague scale, missing P1/P2 signal
-
-Don't block on minor uncertainty. Mark it in the spec and move on.
-
----
-
-### Step 4 — Write Spec
-
-Write **one file**: `plans/{slug}/spec.md` using `.claude/skills/ck-brainstorm/references/spec-template.md`.
-
-Language: read `.ck.json` → `spec.language`. Write all spec content in that language (if `"vi"`, write in Vietnamese — headings, stories, criteria, everything).
-
-Directory: read `.ck.json` → `spec.directory` (default `"plans"`) — write spec to `{directory}/{slug}/spec.md`.
-
-Fill in the template:
-- User stories with P1/P2/P3 from the clarified direction
-- Measurable success criteria (numbers, not adjectives)
-- `[NEEDS CLARIFICATION]` for any unresolved flags
-
-```
-// spec.md is the only artifact. It feeds directly into /ck:plan.
-```
-
----
-
-### Step 5 — Handoff
-
-Output:
-
-```
-Spec written: plans/{slug}/spec.md
-
-→ /ck:plan plans/{slug}/spec.md   (proceed to planning)
-→ Keep clarifying                  (return to Step 1)
-```
+Record a concise journal entry when the journal skill is available.

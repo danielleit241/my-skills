@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
 """
-PreToolUse Read|Write|Edit|Bash hook — block access to sensitive files.
+PreToolUse Read|Write|Edit|Glob|Grep|Bash hook — block sensitive paths.
 
 Detection logic lives in hooks/lib/privacy_checker.py.
 Allow-list: add filenames/paths to privacyBlock.allowList in .ck.json to bypass.
 """
 
 import json
+import os
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent / "lib"))
-from ck_config_utils import is_enabled
+from ck_config_utils import find_project_root, is_enabled
 from hook_logger import HookLogger
 from privacy_checker import check_bash, check_file, load_allow_list
 
@@ -22,16 +23,31 @@ def main() -> None:
     except Exception:
         sys.exit(0)
 
-    if not is_enabled("privacyBlock"):
+    cwd = data.get("cwd") or os.getcwd()
+    root = find_project_root(cwd)
+    if not is_enabled("privacyBlock", root=root):
         sys.exit(0)
 
     log = HookLogger("privacy-block")
-    allow_list = load_allow_list()
+    allow_list = load_allow_list(cwd)
     tool_name = data.get("tool_name", "")
     tool_input = data.get("tool_input", {})
 
     if tool_name in ("Read", "Write", "Edit"):
         file_path = tool_input.get("file_path", "")
+        match = check_file(file_path, allow_list)
+        if match:
+            sys.stderr.write(
+                f"[privacy-block] Blocked: {Path(file_path).name!r} matches pattern '{match}'.\n"
+                f"To allow, add the filename to privacyBlock.allowList in .ck.json "
+                f"or ask the user for explicit permission."
+            )
+            sys.exit(2)
+
+    elif tool_name in ("Glob", "Grep"):
+        file_path = tool_input.get("path", "")
+        if tool_name == "Glob" and not file_path:
+            file_path = tool_input.get("pattern", "")
         match = check_file(file_path, allow_list)
         if match:
             sys.stderr.write(

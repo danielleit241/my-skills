@@ -26,12 +26,11 @@
     "enabled": true,
     "allowList": []
   },
-  "artifactGate": {
-    "enabled": false
-  },
   "simplify": {
+    "gate": {
+      "enabled": false
+    },
     "threshold": {
-      "enabled": true,
       "totalLoc": 400,
       "fileCount": 8,
       "singleFileLoc": 200,

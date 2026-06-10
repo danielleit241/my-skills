@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
-Hook audit — chạy thủ công, KHÔNG wire vào settings.json.
+Hook audit - run manually, DO NOT wire to settings.json.
 
-Liệt kê: hook nào đã wire (settings.json) ở event nào, trạng thái enabled
-(.ck.json), và hook nào tồn tại trong hooks/ nhưng chưa wire.
+List: which hooks have been wired (settings.json) at which event, the enabled status
+(.ck.json), and which hooks exist in hooks/ but have not been wired.
 
-Health check ĐỘNG (không chỉ kiểm file tồn tại): với mỗi blocking hook, chạy
-thử input giả và verify exit code THỰC — phát hiện "hook bypass im lặng"
-(exit 0 do bug thay vì exit 2 khi đáng lẽ phải chặn).
+Perform a DYNAMIC health check (not just checking for file existence): for each blocking hook, run
+a dummy input test and verify the REAL exit code - detect a "silent bypass hook"
+(exit 0 due to a bug instead of exit 2 when it should have been blocked).
 
     python .claude/hooks/audit_hooks.py
 """
@@ -29,7 +29,7 @@ def _load_json(p: Path) -> dict:
 
 
 def _wired_hooks(settings: dict) -> dict[str, list[str]]:
-    """map: tên file hook → danh sách event đã wire."""
+    """Map each hook name to the events it is wired to."""
     out: dict[str, list[str]] = {}
     for event, groups in settings.get("hooks", {}).items():
         for g in groups:
@@ -42,7 +42,7 @@ def _wired_hooks(settings: dict) -> dict[str, list[str]]:
 
 
 def _run_hook(name: str, stdin: str) -> int:
-    """Chạy hook với stdin giả, trả exit code thực."""
+    """Run hook with dummy stdin, return real exit code."""
     try:
         r = subprocess.run(
             [sys.executable, str(HOOKS_DIR / name)],
@@ -51,7 +51,7 @@ def _run_hook(name: str, stdin: str) -> int:
         )
         return r.returncode
     except Exception as e:
-        print(f"    health check lỗi: {e}")
+        print(f"    health check failed: {e}")
         return -1
 
 
@@ -62,53 +62,34 @@ def main() -> None:
 
     print("=== Hook Audit ===\n")
 
-    print("-- Đã wire trong settings.json --")
+    print("-- Already wired in settings.json --")
     for name, events in sorted(wired.items()):
-        print(f"  {name:32s} → {', '.join(events)}")
+        print(f"  {name:32s} -> {', '.join(events)}")
 
-    print("\n-- Tồn tại trong hooks/ nhưng CHƯA wire --")
+    print("\n-- Exist in hooks/ but NOT wired --")
     on_disk = {p.name for p in HOOKS_DIR.glob("*.py") if p.name != Path(__file__).name}
     unwired = sorted(on_disk - set(wired))
     for name in unwired:
         print(f"  {name}")
     if not unwired:
-        print("  (không có)")
+        print("  (none)")
 
-    print("\n-- Trạng thái enabled (.ck.json) --")
-    for key in ("privacyBlock", "artifactGate", "simplify"):
+    print("\n-- Enabled status (.ck.json) --")
+    for key in ("privacyBlock", "simplify"):
         section = ck.get(key, {})
         if key == "simplify":
-            enabled = section.get("threshold", {}).get("enabled", "(mặc định true)")
+            enabled = section.get("gate", {}).get("enabled", "(default false)")
         else:
-            enabled = section.get("enabled", "(mặc định true)")
+            enabled = section.get("enabled", "(default true)")
         print(f"  {key:16s} enabled = {enabled}")
 
-    print("\n-- Health check ĐỘNG (exit code thực) --")
-    # artifact-gate: enabled=false → phải exit 0 (kill switch)
-    if (HOOKS_DIR / "workflow_artifact_gate.py").exists():
-        rc = _run_hook(
-            "workflow_artifact_gate.py",
-            '{"tool_name":"Write","tool_input":{"file_path":"src/x.ts"}}',
-        )
-        expect = 0 if not ck.get("artifactGate", {}).get("enabled", False) else "0|2"
-        status = "OK" if rc in (0, 2) else "BẤT THƯỜNG"
-        print(f"  workflow_artifact_gate.py: exit={rc} (kỳ vọng {expect}) [{status}]")
-        # skip session-data → luôn phải exit 0
-        rc2 = _run_hook(
-            "workflow_artifact_gate.py",
-            '{"tool_name":"Write","tool_input":{"file_path":".claude/session-data/cook-active.json"}}',
-        )
-        print(f"  workflow_artifact_gate.py (session-data skip): exit={rc2} (kỳ vọng 0) "
-              f"[{'OK' if rc2 == 0 else 'LỖI: bootstrap loop risk'}]")
-    else:
-        print("  workflow_artifact_gate.py: chưa tồn tại")
-
-    # fail-open: JSON rác → mọi hook phải exit 0
-    for name in ("workflow_artifact_gate.py", "simplify_gate_pre.py", "build_check.py"):
+    print("\n-- Health check DYNAMIC (exit code real) --")
+    # fail-open: malformed JSON must make every hook exit 0
+    for name in ("simplify_gate.py", "build_check.py"):
         if (HOOKS_DIR / name).exists():
             rc = _run_hook(name, "BAD JSON NOT PARSEABLE")
-            print(f"  {name} (JSON rác → fail-open): exit={rc} "
-                  f"[{'OK' if rc == 0 else 'LỖI: không fail-open'}]")
+            print(f"  {name} (malformed JSON -> fail-open): exit={rc} "
+                  f"[{'OK' if rc == 0 else 'ERROR: did not fail open'}]")
 
 
 if __name__ == "__main__":
