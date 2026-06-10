@@ -18,10 +18,12 @@ import re
 import subprocess
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).parent / "lib"))
+from hook_logger import HookLogger
 
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
+log = HookLogger("build-check")
+
+
 
 def walk_up(file_path: Path, filename: str) -> Path | None:
     for parent in file_path.parents:
@@ -44,9 +46,6 @@ def run(cmd: list[str], cwd: str) -> str:
     return result.stdout + result.stderr
 
 
-# ---------------------------------------------------------------------------
-# Language-specific checkers
-# ---------------------------------------------------------------------------
 
 def check_dotnet(file_path: Path) -> str | None:
     csproj = walk_up_glob(file_path, "*.csproj")
@@ -109,9 +108,6 @@ def check_rust(file_path: Path) -> str | None:
     return None
 
 
-# ---------------------------------------------------------------------------
-# Dispatch
-# ---------------------------------------------------------------------------
 
 CHECKERS: dict[str, callable] = {
     ".cs": check_dotnet,
@@ -126,7 +122,8 @@ CHECKERS: dict[str, callable] = {
 def main() -> None:
     try:
         data = json.load(sys.stdin)
-    except Exception:
+    except Exception as e:
+        log.error(f"stdin parse failed → fail-open: {e}")
         return
 
     raw_path = data.get("tool_input", {}).get("file_path", "")
@@ -141,7 +138,11 @@ def main() -> None:
 
     try:
         error_msg = checker(file_path)
-    except (FileNotFoundError, subprocess.TimeoutExpired):
+    except (FileNotFoundError, subprocess.TimeoutExpired) as e:
+        log.error(f"{suffix} checker skipped ({type(e).__name__}) → fail-open: {e}")
+        return
+    except Exception as e:
+        log.error(f"{suffix} checker crashed → fail-open: {e}")
         return
 
     if error_msg:
@@ -154,4 +155,8 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        log.error(f"unhandled → fail-open: {e}")
+        sys.exit(0)

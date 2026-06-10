@@ -1,6 +1,6 @@
 ---
-description: Generate a concise FE handoff doc for changed endpoints — branch, APIs, request/response contracts, search params, error codes
-argument-hint: [blank = git changes | feature/<name> | path/to/file | "keyword"] [--html]
+description: "Generate a concise FE handoff doc for changed endpoints — branch, APIs, request/response contracts, search params, error codes"
+argument-hint: "[blank = git changes | feature/<name> | path/to/file | \"keyword\"] [--html]"
 ---
 
 Generate a frontend handoff document.

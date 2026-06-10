@@ -58,6 +58,10 @@ If the error is in a caller, not the implementation, search for what calls the a
 grep -r "functionName" src/ --include="*.ts" -l
 ```
 
+### 5. Validate the hit before handoff (0 extra calls — judgment)
+
+A grep hit is not automatically the root-cause area. Before listing a file:line as the likely area, confirm the hit is **live code on the failing path** — not a comment, a string literal, a test fixture, a disabled branch, or a same-named symbol in an unrelated module. If the only hits are non-live, say so explicitly rather than handing the debugger a false lead.
+
 ## Output Format
 
 ```

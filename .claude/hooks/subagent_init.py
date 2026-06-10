@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-SessionStart hook — inject minimal context into subagents (~200 tokens).
+SubagentStart hook — inject minimal context into subagents (~200 tokens).
 
 Only fires for subagent sessions (detected via CLAUDE_PARENT_SESSION_ID).
 Reads session-context.json written by session_init.py to get project, branch,
@@ -92,7 +92,7 @@ def main() -> None:
 
     sys.stdout.write(json.dumps({
         "hookSpecificOutput": {
-            "hookEventName": "SessionStart",
+            "hookEventName": "SubagentStart",
             "additionalContext": "\n".join(parts),
         }
     }))

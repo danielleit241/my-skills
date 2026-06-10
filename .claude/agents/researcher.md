@@ -51,5 +51,6 @@ You will receive:
 
 - Report only what you found — not assumptions
 - If no prior art found in codebase within budget, say so explicitly
+- **Cross-validate when run as a pair:** if you are the `Primary` or `Alternative` of a parallel pair, your Verdict must note where your conclusion would *conflict* with the counterpart angle (e.g. "Primary recommends X, but if the Alternative finds Y is already in the codebase, prefer Y"). Surface the conflict for the orchestrator to adjudicate — do not write as if your angle is the only one.
 - Do not implement anything — research only
 - Do not ask clarifying questions — make reasonable assumptions, note them in Verdict

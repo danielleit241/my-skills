@@ -58,6 +58,8 @@ pytest
 
 Report the full output — pass count, fail count, and any error messages.
 
+**Flaky check before reporting FAIL:** if a test's result looks non-deterministic (timing-dependent, order-dependent, passed once and failed once), **re-run it** before reporting FAIL. A test that passes on re-run is flaky, not a real failure — report it as `FLAKY` with both results, don't hand the debugger a phantom bug. Only report FAIL for failures that reproduce consistently.
+
 ### 4. Report results
 
 ```

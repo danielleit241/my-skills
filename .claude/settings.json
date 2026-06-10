@@ -7,10 +7,18 @@
           {
             "type": "command",
             "command": "python .claude/hooks/session_init.py"
-          },
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "matcher": "*",
+        "hooks": [
           {
             "type": "command",
-            "command": "python .claude/hooks/subagent_init.py"
+            "command": "python .claude/hooks/subagent_init.py",
+            "timeout": 5
           }
         ]
       }
@@ -26,6 +34,11 @@
           },
           {
             "type": "command",
+            "command": "python .claude/hooks/simplify_gate.py",
+            "timeout": 15
+          },
+          {
+            "type": "command",
             "command": "python .claude/hooks/caveman_watch.py",
             "timeout": 5
           }
@@ -34,7 +47,7 @@
     ],
     "PreToolUse": [
       {
-        "matcher": "Read|Write|Edit|Bash",
+        "matcher": "Read|Write|Edit|Glob|Grep|Bash",
         "hooks": [
           {
             "type": "command",
@@ -62,11 +75,6 @@
             "type": "command",
             "command": "python .claude/hooks/build_check.py",
             "timeout": 30
-          },
-          {
-            "type": "command",
-            "command": "python .claude/hooks/simplify_gate.py",
-            "timeout": 5
           }
         ]
       },

@@ -1,6 +1,6 @@
 ---
 name: ck-plan
-description: Plan a feature or system before implementation. Use when the user says "plan this", "I want to build X", "how do I implement Y", or when /ck:brainstorm produces a spec.md. Always run before /ck:cook. Modes (pick one): --fast (skip all, instant plan), --hard (2 researchers + red-team + validate), --two (2 approaches → compare → pick → cook), --parallel (parallel-impl plan → ck:cook --parallel), --auto (full pipeline + auto-cook). Composable flags: --tdd, --no-task — propagate into the cook pipeline.
+description: "Create a phased implementation plan with pre-check, cross-plan scan, research, red-team review, validation, task hydration, and cook handoff. Modes: --fast, --hard, --deep, --parallel, --two. Flags: --tdd, --no-tasks."
 user-invocable: true
 ---
 
@@ -11,14 +11,31 @@ user-invocable: true
 | Mode         | Research                         | Red-Team     | Validate    | Cook handoff                     |
 | ------------ | -------------------------------- | ------------ | ----------- | -------------------------------- |
 | `--fast`     | —                                | —            | —           | `/ck:cook --fast`                |
-| `--hard`     | 2 researchers                    | ✓            | ✓ (wait)    | `/ck:cook --hard`                |
+| `--hard`     | 2 researchers                    | ✓            | optional    | `/ck:cook`                       |
+| `--deep`     | 2-3 + per-phase scout            | ✓            | required    | `/ck:cook [--tdd]`               |
 | `--two`      | 2 researchers (one per approach) | ✓ both plans | pick A or B | `/ck:cook [user-chosen mode]`    |
 | `--parallel` | 2 researchers                    | ✓            | optional    | `/ck:cook --parallel`            |
-| `--auto`     | 1 researcher                     | ✓            | ✓ (wait)    | auto-invoke cook (detected mode) |
+| no mode      | Auto-detect from scope and risk  | Follows mode | Follows mode | Ask before cook                  |
 
-**Auto-detect** (no mode given): Fast if single-file / familiar / ≤ 2 components; Hard otherwise.
+**`--deep`** uses 2-3 researchers, per-phase scout context, forced validation,
+and evidence-backed phase justification. Recommended with `--tdd`.
 
-**Flag defaults** (no composable flags given): `--tdd` and `--no-task` are both off — no special behavior applied.
+**Auto-detect** (no mode given): Fast if single-file, familiar, and low risk;
+Hard for meaningful constraints; Deep for major refactors, 5+ areas, or
+dependency-heavy architecture.
+
+**Flag defaults**: `--tdd` and `--no-tasks` are both off.
+
+### Step 0A - Plan Context and Cross-Plan Scan
+
+Before scope challenge:
+
+1. Detect active, suggested, or absent plan context. Ask whether to continue an
+   active plan.
+2. Read frontmatter from every unfinished `plans/*/plan.md`.
+3. Detect overlapping files and shared dependencies.
+4. Record `blockedBy` and `blocks` relationships bidirectionally when a real
+   dependency exists.
 
 ---
 
@@ -34,40 +51,18 @@ Before spawning any agents, detect mode and challenge scope:
 #
 # Mode: [detected or explicit]
 # Test:  [default | --tdd]
-# Tasks: [default | --no-task]
+# Tasks: [default | --no-tasks]
 ```
 
 If scope is too large: suggest splitting and **wait for user confirmation**.
 
 If `--hard` / `--two` / `--parallel` and novel/ambiguous with no brainstorm report: "No brainstorm found. Run `/ck:brainstorm` first? [Y/n]" — if Yes, stop; if No, proceed.
 
-If a spec file path is provided or `plans/{slug}/spec.md` exists adjacent to any plan: run a **Spec Quality Check** inline:
-
-```
-# Spec Quality Check:
-#   [NEEDS CLARIFICATION] remaining?     → CRITICAL — resolve before continuing
-#   Spec IDs present (US-xx, FR-xx)?     → CRITICAL — IDs required for traceability
-#   P1 items have acceptance criteria?   → HIGH if missing
-#   Success criteria measurable?         → HIGH if vague adjectives (fast, scalable, reliable)
-#   User stories P1/P2/P3 labeled?       → HIGH if missing
-#   Acceptance criteria testable?        → MEDIUM if vague ("works correctly")
-#
-# Verdict: [PASS | WARN (list) | BLOCK (list)]
-```
-
-- **BLOCK**: resolve before proceeding — missing IDs or unresolved NEEDS CLARIFICATION are always BLOCK
-- **WARN**: user acknowledges — proceed
-- **PASS**: continue
-
-After the plan is created, verify **traceability coverage**: every P1 spec ID must appear in at least one phase's `## Covers` section. Any gap = BLOCK.
-
 ---
 
 ### Step 1 — Research
 
 **`--fast`**: skip entirely.
-
-**`--auto`**: spawn **1 `researcher` agent** — primary approach and best practices.
 
 **`--hard` / `--parallel`**: spawn **2 `researcher` agents in parallel**:
 
@@ -88,12 +83,12 @@ After the plan is created, verify **traceability coverage**: every P1 spec ID mu
 
 ### Step 2 — Plan Creation
 
-Spawn the **`planner` agent** with: feature description + mode + research reports + test flag + spec file path (if any).
+Spawn the **`planner` agent** with the feature description or brainstorm report,
+mode, research reports, and test flag.
 
 **After planner returns**: capture the plan directory path from its "Directory: plans/{date}-{slug}/" line — you'll need it in Step 3.
 
-- **`--tdd`**: planner adds `### Tests to Write First` to each phase, derived from spec acceptance criteria
-- **Spec provided**: planner maps each phase to the P1/P2/P3 stories it covers
+- **`--tdd`**: planner adds `### Tests to Write First` to each phase
 - **`--two`**: planner writes `plan-a.md` + `plan-b.md` (one per approach) — no `plan.md` yet
 - **`--parallel`**: planner adds `## File Ownership` section to each phase file
 
@@ -121,7 +116,8 @@ plans/{slug}/
 
 If files are missing: **stop** — output `"Planner failed to write files. Do not proceed."` Do not fall back to writing the plan inline.
 
-Spawn **`plan-reviewer`** with all plan files (+ spec.md if present).
+Spawn **`plan-reviewer`** with all plan files and the brainstorm report when one
+was provided.
 
 **`--two`**: reviewer evaluates both plan-a and plan-b — flag risks in each separately.
 
@@ -154,19 +150,23 @@ Which approach? [A/B]
 
 After selection: ask 2–3 targeted questions about the chosen plan. Merge chosen plan into `plan.md`, delete the rejected file.
 
-**`--hard` / `--parallel` / `--auto`**: ask 3–5 targeted questions about the plan's riskiest points. **Wait for user answers.**
+**`--hard` / `--parallel`**: validation is optional; ask when material
+uncertainty remains. **`--deep`** always validates.
 
-After validation: hydrate tasks via TodoWrite (skip if `--no-task`). Recommend `--tdd` if spec.md exists and it's not already set.
+After validation: hydrate Claude tasks per phase and critical step unless
+`--no-tasks` is set.
 
 Output the exact cook command:
 
 | Mode         | Cook command                                                                                 |
 | ------------ | -------------------------------------------------------------------------------------------- |
 | `--fast`     | `/ck:cook --fast [--tdd] plans/{slug}/plan.md`                                               |
-| `--hard`     | `/ck:cook --hard [--tdd] plans/{slug}/plan.md`                                               |
-| `--two`      | `/ck:cook [--fast\|--hard] [--tdd] plans/{slug}/plan.md`                                     |
+| `--hard`     | `/ck:cook [--tdd] plans/{slug}/plan.md`                                                      |
+| `--deep`     | `/ck:cook [--tdd] plans/{slug}/plan.md`                                                      |
+| `--two`      | `/ck:cook [--fast] [--tdd] plans/{slug}/plan.md`                                             |
 | `--parallel` | `/ck:cook --parallel [--tdd] plans/{slug}/plan.md`                                           |
-| `--auto`     | Automatically invoke `/ck:cook --{detected-mode} plans/{slug}/plan.md` — no separate command |
+With no explicit mode, ask the user to validate, red-team again, run
+`/ck:cook {absolute-plan-path}`, or end. Never auto-start cook.
 
 ---
 
@@ -174,6 +174,6 @@ Output the exact cook command:
 
 | Agent           | Step | Modes                                                      |
 | --------------- | ---- | ---------------------------------------------------------- |
-| `researcher`    | 1    | `--auto` (×1), `--hard`/`--parallel`/`--two` (×2 parallel) |
+| `researcher`    | 1    | `--hard`/`--parallel`/`--two` (×2), `--deep` (×2-3)        |
 | `planner`       | 2    | All                                                        |
 | `plan-reviewer` | 3    | All except `--fast`                                        |

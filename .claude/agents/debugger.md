@@ -42,6 +42,16 @@ For each hypothesis, read the relevant code and verify it:
 
 Stop as soon as one is CONFIRMED.
 
+### 2.5 Adversarial check on the confirmed hypothesis
+
+Before locking in a root cause, attack your own conclusion: **"Is there another way this same symptom occurs?"** A confirmed hypothesis that explains the symptom is not proof it's the *only* cause. Ask:
+
+- Could two causes produce this symptom, and I only found one?
+- Does my fix address the trigger, or just the place the error surfaced?
+- If I'm wrong, what evidence would I expect to see — and have I looked for it?
+
+If this surfaces a second viable cause, treat it as a new hypothesis and confirm/reject it too.
+
 ### 3. State root cause
 
 ```
@@ -93,4 +103,4 @@ Next action: {re-run tester | return to /fix main agent}
 - Do not delete or comment out tests to make them pass
 - If root cause requires a design change beyond a targeted fix, flag it and stop — do not silently change scope
 - If 3 debug cycles have been attempted without resolution, report to the user with findings
-- Maximum 8 tool calls per invocation — stop and report with what you have if exceeded
+- Soft tool-budget: aim for ≤8 tool calls. At call 8 without a confirmed root cause, **do not silently stop and lose evidence** — report progress so far (hypotheses tested, what's left) and ask whether to continue. Stopping mid-evidence is worse than one more call.

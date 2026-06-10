@@ -1,6 +1,6 @@
 ---
 name: planner
-description: Plan-creation sub-agent for the /plan pipeline. Given a feature description and optional research reports, writes the full plan directory: plan.md overview + one phase-XX-{name}.md per phase. Used in Fast, Hard, Parallel, and Two modes.
+description: "Plan-creation sub-agent for the /plan pipeline. Given a feature description and optional research reports, writes the full plan directory: plan.md overview + one phase-XX-{name}.md per phase. Used in Fast, Hard, Parallel, and Two modes."
 tools: ["Read", "Grep", "Glob", "Write"]
 model: sonnet
 ---
@@ -79,12 +79,6 @@ Mode: {Fast | Hard | Parallel | Two}
 ```markdown
 # Phase {N}: {Name}
 
-## Covers
-
-<!-- Required when spec.md exists. List every spec ID this phase addresses. -->
-<!-- If a phase cannot map to any spec ID, it must be justified or removed. -->
-US-01, FR-02, FR-03
-
 ## Requirements
 
 {What this phase delivers — user-visible or observable system outcome. 1–2 sentences max.}
@@ -98,22 +92,12 @@ US-01, FR-02, FR-03
 ## Success Criteria
 
 - {Verifiable outcome — can be checked by running a command or reading output}
-- {Each criterion should map back to an acceptance condition in the cited spec items}
+- {Each criterion should map back to an approved requirement or report outcome}
 
 ## Risks
 
 - {Risk}: {Mitigation}
 ```
-
-### Traceability Rule (when spec.md is provided)
-
-After writing all phase files, do a **coverage check**:
-
-1. Collect all spec IDs marked P1 and P2 from the spec (US-xx, FR-xx)
-2. Collect all IDs cited across all `## Covers` sections
-3. Any P1 spec ID not covered by any phase = **BLOCK** — add a phase or extend an existing one
-4. Any P2 spec ID not covered = note in `plan.md` Risks section as "Deferred: {ID}"
-5. Any phase with empty `## Covers` = flag it — every phase must justify its existence against the spec
 
 Rules for Steps:
 

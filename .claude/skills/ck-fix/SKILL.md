@@ -1,14 +1,19 @@
 ---
-name: ck:fix
-description: Fix a bug using Scout → Diagnose → Fix → Review → Finalize. Use when the user pastes an error message, stack trace, or test failure, or says "fix this bug", "something's broken", "tests are failing", "I'm getting an error". Modes (pick one): --fast (trivial errors — lint, type, build — skip scout and review), --hard (mandatory review, no auto-approve).
+name: ck-fix
+description: "Fix a bug through mode selection, scout, evidence-based diagnosis, routing, root-cause repair, verification, prevention, review, and final sync. Modes: --auto, --review, --quick, --parallel."
 user-invocable: true
 ---
 
 # ck:fix — Structured Bug-Fix Pipeline
 
-Modes — mutually exclusive, pick one (default = Standard: auto-advance on APPROVED verdict with no critical findings):
-- **`--fast`** — trivial issues (lint, type errors, build errors); skip scout, review, docs
-- **`--hard`** — mandatory review, no auto-advance
+Modes — mutually exclusive, pick one (default = `--auto`: auto-advance on APPROVED verdict with no critical findings):
+- **`--auto`** (default) — auto-advance on APPROVED with no critical finding; otherwise pause for the user
+- **`--quick`** (alias: `--fast`) — lighter scout and review for trivial lint,
+  type, build, or single-file issues; never skips root-cause checks
+- **`--review`** (alias: `--hard`) — mandatory review, no auto-advance; human approves each gate
+- **`--parallel`** — multiple *independent* failures with disjoint touchpoints (no shared file/module): spawn one fix lane per failure (each runs Scout→Diagnose→Fix on its own touchpoints), then a single combined review at the end. Only use when failures provably don't share state — overlapping touchpoints must stay sequential.
+
+> **Mode names** follow ck gốc (`--quick` / `--review` / `--auto` / `--parallel`). `--fast`/`--hard` are kept as aliases for backward compatibility — treat them identically to `--quick`/`--review` everywhere below.
 
 **Activation baseline** — active throughout the entire pipeline regardless of mode:
 - `sequential-thinking` — frames every reasoning step; prevents attention drift and premature conclusion
@@ -28,10 +33,10 @@ If no error message, stack trace, or concrete description provided:
 # Scope:
 #   Description: {what the user said}
 #   Quick?      → {yes/no — reason}
-#   Mode:       {Standard | Quick | Hard}
+#   Mode:       {Auto | Quick | Review | Parallel}
 ```
 
-If `--fast` or clearly a build/compiler/lint error: skip Step 1 → go directly to Step 2.
+`--quick` uses a lighter scout but never skips Scout or Diagnose.
 
 ---
 
@@ -62,30 +67,11 @@ Without a confirmed Delta, any fix is symptom-addressing, not root-cause-address
 
 ---
 
-### Step 1.5 — Spec Anchor (skip `--fast`, skip if no spec.md)
+### Step 1.5 — Route
 
-After scout completes, check if a `spec.md` exists in the same plan directory (or `plans/*/spec.md` adjacent to any active plan).
-
-If spec found, answer two questions:
-
-**Q1 — Is this bug a spec gap?**
-- Scan spec items (US-xx, FR-xx) — does any acceptance criterion cover the broken behavior?
-- If yes: the bug is a regression — the fix must restore spec compliance, not negotiate a new behavior
-- If no: the behavior was never specified — **this is a spec gap**, not just a bug
-
-**Q2 — Spec-first decision:**
-- **Regression** → proceed to Step 2; fix must satisfy the spec item's acceptance condition
-- **Spec gap** → before writing any code, add a new acceptance criterion to the relevant spec item (or new item if entirely missing); this becomes the acceptance condition the fix must satisfy
-
-```
-# Spec Anchor
-Bug type:     Regression | Spec gap
-Spec item:    US-02 (regression) | none found (gap)
-Action:       Fix must satisfy US-02 acceptance condition
-              OR: spec.md updated — added US-05 · P1 covering {edge case}
-```
-
-Do not write any fix code until the spec anchor is established.
+Classify the issue as Simple, Moderate, Complex, or Parallel. For Moderate and
+Complex work, create a task dependency chain before editing. Parallel mode is
+valid only when failures have disjoint touchpoints.
 
 ### Step 2 — Diagnose
 
@@ -109,7 +95,7 @@ The debugger, guided by `sequential-thinking` to structure hypothesis formation:
 
 ---
 
-### Step 2.5 — Verification Gate (skip `--fast`)
+### Step 2.5 — Verification and Prevention Gate
 
 Before review: confirm the fix addresses root cause, not just symptoms. A symptom-masked fix will re-emerge under different conditions.
 
@@ -128,7 +114,8 @@ Use Bash and `code-reviewer` to verify each point with evidence, not reasoning. 
 
 ### Step 3 — Review
 
-**`--fast`**: skip → Step 4.
+**`--quick`** uses a lighter review but still checks the root-cause diff and
+fresh reproduction evidence.
 
 Spawn **`code-reviewer`** with minimal context: the diff + blast radius map from Step 1. Not the full session — the reviewer's job is adversarial: find what's wrong, not validate what's right.
 
@@ -141,11 +128,11 @@ Approval is evidence-gated, not score-based. The reviewer must produce findings 
 - **Adversarial** — what the reviewer specifically tried to break, and why it held (or didn't)
 
 Verdict:
-- **APPROVED** (all 5 areas addressed, no critical) → auto-advance (Standard) or wait (--hard)
-- **WARNING** → auto-advance with notice (Standard) or wait (--hard)
+- **APPROVED** (all 5 areas addressed, no critical) → auto-advance (`--auto`) or wait (`--review`/`--hard`)
+- **WARNING** → auto-advance with notice (`--auto`) or wait (`--review`/`--hard`)
 - **BLOCK** → enter fix cycle
 
-**Fix cycle** (Standard): up to 3 cycles, each must use a different approach than previous. After cycle 3 with no APPROVED: hard-stop. Do not loop further. Surface the blocker to the user explicitly:
+**Fix cycle** (`--auto`): up to 3 cycles, each must use a different approach than previous. After cycle 3 with no APPROVED: hard-stop. Do not loop further. Surface the blocker to the user explicitly:
 
 ```
 [HARD BLOCK] Review gate: 3 cycles exhausted without APPROVED verdict
@@ -154,23 +141,32 @@ Critical finding: {exact issue}
 Action required: human decision needed before proceeding
 ```
 
-**`--hard`**: no auto-advance — human must explicitly approve before Step 4.
+**`--review`** (`--hard`): no auto-advance — human must explicitly approve before Step 4.
 
 ---
 
 ### Step 4 — Finalize (MANDATORY)
 
-**`project-manager`** (skip `--fast`): sync plan progress if bug was tracked.
-**`docs-manager`** (skip `--fast`): update docs if fix changes a public contract.
+**Prevention Guard**: before finalizing, install one guard that makes this exact
+bug fail loudly if it returns:
+- **Regression test** (preferred) — a test that fails on the pre-fix code and passes now. This is the durable guard; write it unless a test is genuinely impossible here.
+- **Assertion / invariant** — if the root cause was a violated contract (null where non-null expected, out-of-range value), add an explicit guard at the boundary so the next violation throws at the source, not three calls downstream.
+- **Type / lint constraint** — if the class of bug is structural (missing await, untyped field), tighten the type or add a lint rule so the whole class can't recur.
 
-**Spec Sync** (skip `--fast`, skip if no spec.md): finalize spec changes from Step 1.5:
-- If spec gap was added → confirm the new spec item's acceptance condition is now satisfied by the fix
-- If regression fix → confirm the spec item's acceptance condition is met and mark it verified
-- If fix revealed additional edge cases not in spec → add them as acceptance conditions now
+Record which guard was installed and the evidence it works (test name + red-before/green-after, or the assertion line). If no guard is feasible, say so explicitly and why — do not silently skip.
 
-Edit `spec.md` directly. The spec update commits alongside the fix.
+```
+# Prevention Guard
+Guard:    regression test — auth.test.ts::rejects_null_user
+Evidence: fails on HEAD~1 (NullReference), passes on fix
+```
+
+**`project-manager`** (skip `--quick`/`--fast`): sync plan progress if bug was tracked.
+**`docs-manager`** (skip `--quick`/`--fast`): update docs if fix changes a public contract.
 
 **`git-manager`** (always): conventional commit + ask to push.
+
+Record a concise journal entry after plan/tasks, docs, and git state are synced.
 
 ```
 // git-manager → fix(auth): add null guard on req.user before validate
@@ -189,7 +185,8 @@ Edit `spec.md` directly. The spec update commits alongside the fix.
 | `problem-solving`   | Conditional | ≥ 2 hypotheses rejected with no confirmed root cause |
 | `code-reviewer`     | Step 2.5 + 3 | Structural diff analysis in verify; full review in Step 3 |
 | Bash                | Step 2.5   | Runtime confirmation: repro, positive path, blast radius tests |
-| `project-manager`   | Step 4     | Standard, `--hard` (skip `--fast`) |
-| `docs-manager`      | Step 4     | Standard, `--hard` (skip `--fast`) |
-| Spec Sync           | Step 1.5 + 4 | When spec.md present; skip `--fast` |
+| Prevention Guard    | Step 4     | `--auto`, `--review` (skip `--quick`/`--fast`) — install regression test / assertion / lint guard |
+| `project-manager`   | Step 4     | `--auto`, `--review` (skip `--quick`/`--fast`) |
+| `docs-manager`      | Step 4     | `--auto`, `--review` (skip `--quick`/`--fast`) |
 | `git-manager`       | Step 4     | Always (mandatory) |
+| parallel lanes      | All steps  | `--parallel` only — one lane per independent failure (disjoint touchpoints) |

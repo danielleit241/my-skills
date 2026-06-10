@@ -40,7 +40,14 @@ Identify 3–5 concrete failure scenarios — what breaks, under which condition
 - Infrastructure failures (DB down, queue full, external API 500)
 - Partial failure (phase N succeeds, phase N+1 fails — system in half-applied state)
 - Migration safety (deploy order: app before migration, or migration before app?)
-- Rollback path — is there one? What breaks on rollback?
+
+### HIGH — Adversarial + Rollback (mandatory)
+
+Do not just list failures — interrogate the plan:
+
+- **"Who benefits if this plan fails silently?"** — what failure mode produces a green pipeline but a broken outcome? (e.g. a guard that fails-open, a test that always passes.) Name it.
+- **"What is the weakest assumption here?"** — the one that, if wrong, collapses the most phases.
+- **Rollback gate (per phase):** can this phase be rolled back? If phase N ships and is wrong, what's the recovery? A phase with no rollback path is a CRITICAL finding, not a HIGH.
 
 ### MEDIUM — Scope
 
@@ -49,7 +56,7 @@ Flag complexity that exceeds what's actually required:
 - Speculative abstractions for a single case (factory/strategy/registry patterns)
 - Infra added before load is measured (Redis, queues, cache)
 - Phases that can be deferred to v2 without blocking the core feature
-- *(Only activate scope review for plans with 6+ phases)*
+- *(Scope review depth is adaptive to risk, not phase count: a 2-phase plan touching auth/payments/migrations gets full scope review; a low-risk 8-phase docs plan gets a light pass. Calibrate to blast radius, not length.)*
 
 ---
 
