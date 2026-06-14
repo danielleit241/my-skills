@@ -1,5 +1,5 @@
 ---
-description: Scout first, lock five exact requirements, debate 2-3 approaches, and write a brainstorm report for /ck:plan. No implementation code.
+description: Extract user intent (non-technical questions only), scout repo for technical context, debate approaches, write a brainstorm report. No implementation code.
 ---
 
 Load the `ck:brainstorm` skill and run it with `$ARGUMENTS`.

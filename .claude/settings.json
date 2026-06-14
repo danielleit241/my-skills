@@ -41,6 +41,11 @@
             "type": "command",
             "command": "python .claude/hooks/caveman_watch.py",
             "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "python .claude/hooks/suggest_compact.py",
+            "timeout": 5
           }
         ]
       }
@@ -61,8 +66,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python .claude/hooks/suggest_compact.py",
-            "timeout": 5
+            "command": "python .claude/hooks/tool_counter.py",
+            "timeout": 3
           }
         ]
       }

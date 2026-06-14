@@ -1,6 +1,7 @@
 {
   "codingLevel": -1,
   "compactDay": 3,
+  "memoryDay": 30,
   "conversation": "vi",
   "spec": {
     "language": "vi",

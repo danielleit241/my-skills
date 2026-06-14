@@ -87,6 +87,24 @@ def main() -> None:
         next_info = f"next → {plan['next_phase']}" if plan["next_phase"] else "all phases done"
         parts.append(f"Active: {plan['name']} — {next_info}")
 
+    # Propagate caveman mode from parent session: if parent is in caveman,
+    # inject a terse instruction so subagent output is also compact.
+    parent_session_id = os.environ.get("CLAUDE_PARENT_SESSION_ID")
+    if parent_session_id:
+        sessions_dir = root / ".claude" / "session-data"
+        caveman_file = sessions_dir / f"caveman-{parent_session_id}.json"
+        try:
+            if caveman_file.exists():
+                state = json.loads(caveman_file.read_text(encoding="utf-8"))
+                if state.get("active"):
+                    parts.append(
+                        "Mode: TERSE — parent session in caveman mode. "
+                        "Minimize response tokens: drop filler, hedging, and explanatory prose. "
+                        "Return only the essential result."
+                    )
+        except Exception:
+            pass
+
     if not parts:
         sys.exit(0)
 
