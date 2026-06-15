@@ -1,10 +1,11 @@
 # Changelog
 
-## Unreleased
+## 2.1.2
 
 - Add a colored, keyboard-driven onboarding wizard with selectable actions, agents, and bundles.
 - Add `--project-root` for the current working directory and `--project-path` for automatic root discovery.
 - Remove the nonexistent `.claude/contexts` package path that caused `ENOENT` during Claude installation.
+- Make the test command portable across Windows and Linux CI runners.
 
 ## 2.1.1
 

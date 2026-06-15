@@ -101,8 +101,8 @@ version. Tags matching `v*.*.*` trigger `.github/workflows/release.yml`.
 
 ```bash
 npm run release:check
-git tag v2.1.1
-git push origin v2.1.1
+git tag v2.1.2
+git push origin v2.1.2
 ```
 
 The GitHub repository must provide npm trusted publishing or an `NPM_TOKEN`
