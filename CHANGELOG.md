@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 2.1.3
 
 - Infer migration source from the lockfile so onboarding cannot select an agent that contradicts the installed toolkit.
 
