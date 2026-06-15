@@ -45,6 +45,35 @@ export async function resolveSource(
   };
 }
 
+export async function resolvePackageSource(
+  packageName: string,
+  requested: string,
+): Promise<ResolvedSource> {
+  const version = requested === "latest" ? await latestPackageVersion(packageName) : normalizeVersion(requested);
+  const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "my-skills-package-"));
+  const { stdout } = await execFileAsync(
+    npmCommand(),
+    ["pack", `${packageName}@${version}`, "--silent", "--pack-destination", tempRoot],
+    { cwd: tempRoot },
+  );
+  const archive = path.join(tempRoot, stdout.trim().split(/\r?\n/).at(-1)!);
+  await execFileAsync("tar", ["-xzf", archive, "-C", tempRoot]);
+  await fs.rm(archive, { force: true });
+  return {
+    root: path.join(tempRoot, "package"),
+    release: `v${version}`,
+    commit: null,
+    cleanup: () => fs.rm(tempRoot, { recursive: true, force: true }),
+  };
+}
+
+export async function latestPackageVersion(packageName: string): Promise<string> {
+  const { stdout } = await execFileAsync(npmCommand(), ["view", packageName, "version", "--json"]);
+  const version = JSON.parse(stdout) as string;
+  if (!semver.valid(version)) throw new Error(`Registry returned an invalid version: ${version}`);
+  return version;
+}
+
 export async function latestTag(repositoryRoot: string): Promise<string | null> {
   if (!(await exists(path.join(repositoryRoot, ".git")))) return null;
   const { stdout } = await execFileAsync(
@@ -62,4 +91,14 @@ async function currentCommit(repositoryRoot: string): Promise<string | null> {
   } catch {
     return null;
   }
+}
+
+function normalizeVersion(value: string): string {
+  const version = value.replace(/^v/, "");
+  if (!semver.valid(version)) throw new Error(`Invalid release version: ${value}`);
+  return version;
+}
+
+function npmCommand(): string {
+  return process.platform === "win32" ? "npm.cmd" : "npm";
 }

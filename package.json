@@ -1,6 +1,6 @@
 {
   "name": "@danielleit241/my-skills",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "description": "Versioned CLI for installing and migrating AI agent toolkits",
   "repository": {
     "type": "git",
@@ -30,6 +30,7 @@
     ".claude/settings.json",
     ".claude/skills",
     "toolkit.manifest.json",
+    "CHANGELOG.md",
     "CLAUDE.md",
     ".ck.json"
   ],
@@ -39,6 +40,7 @@
     "test": "npm run build && node --test dist/tests/engine.test.js dist/tests/transaction.test.js",
     "validate:toolkit": "npm run build && node dist/cli.js validate --source .",
     "version:check": "node scripts/check-release-version.mjs",
+    "release:check": "npm run check && npm test && npm run validate:toolkit && npm pack --dry-run",
     "prepublishOnly": "npm run check && npm test && npm run validate:toolkit"
   },
   "engines": {

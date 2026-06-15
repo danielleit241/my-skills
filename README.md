@@ -9,12 +9,23 @@ A personal Claude Code configuration — slash commands, sub-agents, skills, and
 Requires Node.js 20 or newer.
 
 ```bash
-npx @danielleit241/my-skills init <project-path> --agent claude --bundle full
+npx @danielleit241/my-skills
 ```
 
-For Codex:
+This starts the onboarding wizard. It detects existing `.claude` and `.codex`
+folders and offers `init`, `update`, `migrate`, `status`, and `validate`.
+
+Install the CLI globally when preferred:
 
 ```bash
+npm install --global @danielleit241/my-skills
+my-skills setup
+```
+
+Non-interactive installation remains available:
+
+```bash
+npx @danielleit241/my-skills init <project-path> --agent claude --bundle full
 npx @danielleit241/my-skills init <project-path> --agent codex --bundle full
 ```
 
@@ -22,14 +33,18 @@ npx @danielleit241/my-skills init <project-path> --agent codex --bundle full
 
 | Command | Purpose |
 | --- | --- |
+| `setup [target]` | Start onboarding and choose an operation interactively. |
 | `init [target]` | Install selected bundles for Claude or Codex and create `.my-skills.lock.json`. |
-| `update [version] [target]` | Update to a SemVer Git tag. The default `latest` selects the highest `v*` tag. |
+| `update [version] [target]` | Update from the npm registry. The default is `latest`; `--source` uses local Git tags. |
 | `migrate [target] --from claude --to codex` | Render the installed bundles with another agent adapter. |
 | `revert <version> [target]` | Restore files from a previous SemVer Git tag without resetting the target repository. |
 | `status [target]` | Show the installed release and locally modified or deleted managed files. |
 | `validate [target]` | Validate installed skill and agent structures. |
 
-All mutating commands support `--dry-run`. Managed files are overwritten or removed only when their current SHA-256 matches the lockfile. A local edit produces a conflict and a text diff; use `--force` only when discarding that edit is intentional.
+All mutating commands support `--dry-run`. Existing agent folders are extended,
+not replaced. Shared JSON configuration is deep-merged, arrays are deduplicated,
+and unrelated files remain untouched. Other managed-file edits still produce a
+conflict and text diff; use `--force` only when discarding that edit is intentional.
 
 ## Bundles
 
@@ -68,6 +83,24 @@ npx @danielleit241/my-skills revert 2.0.0 <project-path>
 ```
 
 Writes use a filesystem transaction. If a write fails, earlier writes in that operation are restored. The CLI never commits or resets the target repository.
+
+By default, `update` and `revert` download the requested package version from
+npm, so they work when the CLI was installed globally or invoked through `npx`.
+Repository maintainers can pass `--source <repository>` to test local SemVer tags.
+
+## Releases
+
+Every release keeps `package.json` and `toolkit.manifest.json` on the same SemVer
+version. Tags matching `v*.*.*` trigger `.github/workflows/release.yml`.
+
+```bash
+npm run release:check
+git tag v2.1.0
+git push origin v2.1.0
+```
+
+The GitHub repository must provide npm trusted publishing or an `NPM_TOKEN`
+secret with publish access to `@danielleit241/my-skills`.
 
 ---
 

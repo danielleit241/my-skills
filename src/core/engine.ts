@@ -11,6 +11,7 @@ import type {
 import { sha256 } from "./hash.js";
 import { readLock, serializeLock } from "./lock.js";
 import { loadManifest, selectComponents } from "./manifest.js";
+import { mergeExistingConfig } from "./merge.js";
 import { LOCK_FILE } from "./paths.js";
 import { buildChangePlan } from "./planner.js";
 import { applyTransaction } from "./transaction.js";
@@ -37,6 +38,7 @@ export async function installToolkit(options: InstallOptions): Promise<InstallRe
   const components = selectComponents(manifest, options.bundles);
   const adapter = getAdapter(options.targetAgent);
   const render = await adapter.render({ sourceRoot: options.sourceRoot, manifest, components });
+  render.files = await mergeExistingConfig(options.targetRoot, render.files);
   assertUniquePaths(render.files);
   const previous = await readLock(options.targetRoot);
   const lock = makeLock(

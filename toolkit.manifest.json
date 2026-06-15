@@ -1,7 +1,7 @@
 {
   "$schemaVersion": 1,
   "name": "@danielleit241/my-skills",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "sourceAgent": "claude",
   "supportedAgents": ["claude", "codex"],
   "components": [

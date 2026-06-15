@@ -3,6 +3,7 @@ import { createTwoFilesPatch } from "diff";
 import type { ChangePlan, Conflict, RenderedFile, ToolkitLock } from "../types.js";
 import { exists } from "./files.js";
 import { sha256 } from "./hash.js";
+import { isMergeableConfig } from "./merge.js";
 import { resolveInside } from "./paths.js";
 
 export async function buildChangePlan(
@@ -35,7 +36,7 @@ export async function buildChangePlan(
 
     const old = previousByPath.get(file.path);
     const locallyModified = !old || sha256(current) !== old.sha256;
-    if (locallyModified && !force) {
+    if (locallyModified && !force && !isMergeableConfig(file.path)) {
       conflicts.push({
         path: file.path,
         reason: old ? "modified" : "unmanaged",

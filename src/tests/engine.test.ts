@@ -73,6 +73,49 @@ test("Codex adapter converts skills, commands, agents, hooks, and instructions",
   assert.match(config, /\[agents\]\nmax_threads = 6\nmax_depth = 1/);
 });
 
+test("init merges existing agent folders and structured configuration", async () => {
+  const source = await tempDir("my-skills-source-");
+  const target = await tempDir("my-skills-target-");
+  await writeFixture(source, fixtureManifest);
+  await fs.mkdir(path.join(target, ".claude", "skills", "local"), { recursive: true });
+  await fs.writeFile(path.join(target, ".claude", "skills", "local", "SKILL.md"), "local skill\n");
+  await fs.mkdir(path.join(target, ".claude"), { recursive: true });
+  await fs.writeFile(
+    path.join(target, ".claude", "settings.json"),
+    JSON.stringify({ permissions: { allow: ["Read"] }, hooks: { Stop: [{ hooks: [{ type: "command", command: "local" }] }] } }),
+  );
+
+  const result = await install(source, target, "claude");
+
+  assert.equal(result.plan.conflicts.length, 0);
+  assert.equal(
+    await fs.readFile(path.join(target, ".claude", "skills", "local", "SKILL.md"), "utf8"),
+    "local skill\n",
+  );
+  const settings = JSON.parse(
+    await fs.readFile(path.join(target, ".claude", "settings.json"), "utf8"),
+  ) as { permissions: { allow: string[] }; hooks: { Stop: unknown[] } };
+  assert.deepEqual(settings.permissions.allow, ["Read"]);
+  assert.equal(settings.hooks.Stop.length, 2);
+});
+
+test("update preserves local keys in mergeable configuration", async () => {
+  const source = await tempDir("my-skills-source-");
+  const target = await tempDir("my-skills-target-");
+  await writeFixture(source, fixtureManifest);
+  await install(source, target, "claude");
+  const settingsPath = path.join(target, ".claude", "settings.json");
+  const settings = JSON.parse(await fs.readFile(settingsPath, "utf8")) as Record<string, unknown>;
+  settings.localOnly = true;
+  await fs.writeFile(settingsPath, JSON.stringify(settings));
+
+  const result = await install(source, target, "claude");
+
+  assert.equal(result.plan.conflicts.length, 0);
+  const updated = JSON.parse(await fs.readFile(settingsPath, "utf8")) as Record<string, unknown>;
+  assert.equal(updated.localOnly, true);
+});
+
 function install(sourceRoot: string, targetRoot: string, targetAgent: "claude" | "codex") {
   return installToolkit({
     sourceRoot,

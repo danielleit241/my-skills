@@ -1,21 +1,59 @@
 #!/usr/bin/env node
 import path from "node:path";
+import fs from "node:fs/promises";
 import { Command, Option } from "commander";
 import semver from "semver";
 import { getAdapter } from "./adapters/index.js";
 import { installToolkit, inspectStatus } from "./core/engine.js";
 import { loadManifest } from "./core/manifest.js";
-import { latestTag, resolveSource } from "./core/release.js";
+import { runOnboarding } from "./core/onboarding.js";
+import {
+  latestPackageVersion,
+  latestTag,
+  resolvePackageSource,
+  resolveSource,
+  type ResolvedSource,
+} from "./core/release.js";
 import { printMigration, printPlan } from "./core/report.js";
 import type { AgentName } from "./types.js";
 
 const program = new Command();
 const repositoryRoot = path.resolve(import.meta.dirname, "..");
+const packageJson = JSON.parse(await fs.readFile(path.join(repositoryRoot, "package.json"), "utf8")) as {
+  name: string;
+  version: string;
+};
 
 program
   .name("my-skills")
   .description("Install, update, migrate, and revert versioned AI agent toolkits")
-  .version("2.0.0");
+  .version(packageJson.version);
+
+program
+  .command("setup")
+  .description("Start the interactive onboarding wizard")
+  .argument("[target]", "Target project", ".")
+  .action(async (target) => {
+    const selection = await runOnboarding(target);
+    if (!selection) throw new Error("Interactive setup requires a TTY");
+    switch (selection.action) {
+      case "init":
+        await runInstall(selection.targetRoot, selection.agent!, selection.bundles, repositoryRoot);
+        break;
+      case "update":
+        await runUpdate("latest", selection.targetRoot);
+        break;
+      case "migrate":
+        await runMigrate(selection.targetRoot, selection.from!, selection.to!, selection.bundles, repositoryRoot);
+        break;
+      case "status":
+        await printStatus(selection.targetRoot);
+        break;
+      case "validate":
+        await validateTarget(selection.targetRoot);
+        break;
+    }
+  });
 
 program
   .command("init")
@@ -23,28 +61,18 @@ program
   .argument("[target]", "Target project", ".")
   .addOption(agentOption())
   .option("-b, --bundle <name...>", "Bundles to install", ["full"])
-  .option("--source <path>", "Toolkit source", repositoryRoot)
+  .option("--source <path>", "Toolkit source")
   .option("--dry-run", "Preview without writing")
   .option("--force", "Overwrite local conflicts")
   .action(async (target, options) => {
-    const source = await resolveSource(path.resolve(options.source), "current");
-    try {
-      const result = await installToolkit({
-        sourceRoot: source.root,
-        targetRoot: path.resolve(target),
-        targetAgent: options.agent,
-        bundles: options.bundle,
-        release: source.release,
-        sourceCommit: source.commit,
-        dryRun: Boolean(options.dryRun),
-        force: Boolean(options.force),
-      });
-      printPlan(result.plan, Boolean(options.dryRun));
-      printMigration(result.render);
-      failOnConflicts(result.plan.conflicts.length);
-    } finally {
-      await source.cleanup();
-    }
+    await runInstall(
+      path.resolve(target),
+      options.agent,
+      options.bundle,
+      options.source ? path.resolve(options.source) : repositoryRoot,
+      Boolean(options.dryRun),
+      Boolean(options.force),
+    );
   });
 
 program
@@ -52,32 +80,17 @@ program
   .description("Update an installed toolkit")
   .argument("[version]", "SemVer release, or latest", "latest")
   .argument("[target]", "Target project", ".")
-  .option("--source <path>", "Toolkit Git repository", repositoryRoot)
+  .option("--source <path>", "Local toolkit Git repository instead of npm")
   .option("--dry-run", "Preview without writing")
   .option("--force", "Overwrite local conflicts")
   .action(async (version, target, options) => {
-    const targetRoot = path.resolve(target);
-    const status = await inspectStatus(targetRoot);
-    if (!status.lock) throw new Error("Toolkit is not initialized");
-    const resolvedVersion = version === "latest" ? await latestTag(path.resolve(options.source)) : version;
-    if (!resolvedVersion) throw new Error("No SemVer release tags found");
-    const source = await resolveSource(path.resolve(options.source), resolvedVersion);
-    try {
-      const result = await installToolkit({
-        sourceRoot: source.root,
-        targetRoot,
-        targetAgent: status.lock.targetAgent,
-        bundles: status.lock.bundles,
-        release: source.release,
-        sourceCommit: source.commit,
-        dryRun: Boolean(options.dryRun),
-        force: Boolean(options.force),
-      });
-      printPlan(result.plan, Boolean(options.dryRun));
-      failOnConflicts(result.plan.conflicts.length);
-    } finally {
-      await source.cleanup();
-    }
+    await runUpdate(
+      version,
+      path.resolve(target),
+      options.source ? path.resolve(options.source) : undefined,
+      Boolean(options.dryRun),
+      Boolean(options.force),
+    );
   });
 
 program
@@ -85,7 +98,7 @@ program
   .description("Restore an installed toolkit to a SemVer release")
   .argument("<version>", "SemVer release")
   .argument("[target]", "Target project", ".")
-  .option("--source <path>", "Toolkit Git repository", repositoryRoot)
+  .option("--source <path>", "Local toolkit Git repository instead of npm")
   .option("--dry-run", "Preview without writing")
   .option("--force", "Overwrite local conflicts")
   .action(async (version, target, options) => {
@@ -93,7 +106,9 @@ program
     const targetRoot = path.resolve(target);
     const status = await inspectStatus(targetRoot);
     if (!status.lock) throw new Error("Toolkit is not initialized");
-    const source = await resolveSource(path.resolve(options.source), version);
+    const source = options.source
+      ? await resolveSource(path.resolve(options.source), version)
+      : await resolvePackageSource(packageJson.name, version);
     try {
       const result = await installToolkit({
         sourceRoot: source.root,
@@ -118,57 +133,29 @@ program
   .argument("[target]", "Target project", ".")
   .requiredOption("--from <agent>", "Source agent", parseAgent)
   .requiredOption("--to <agent>", "Target agent", parseAgent)
-  .option("--source <path>", "Toolkit source", repositoryRoot)
+  .option("--source <path>", "Toolkit source")
   .option("-b, --bundle <name...>", "Bundles when no lockfile exists", ["full"])
   .option("--dry-run", "Preview without writing")
   .option("--force", "Overwrite local conflicts")
   .action(async (target, options) => {
-    const targetRoot = path.resolve(target);
-    const status = await inspectStatus(targetRoot);
-    if (status.lock && status.lock.targetAgent !== options.from) {
-      throw new Error(`Lockfile target is ${status.lock.targetAgent}, not ${options.from}`);
-    }
-    const source = await resolveSource(path.resolve(options.source), "current");
-    try {
-      const result = await installToolkit({
-        sourceRoot: source.root,
-        targetRoot,
-        targetAgent: options.to,
-        bundles: status.lock?.bundles ?? options.bundle,
-        release: source.release,
-        sourceCommit: source.commit,
-        dryRun: Boolean(options.dryRun),
-        force: Boolean(options.force),
-      });
-      printPlan(result.plan, Boolean(options.dryRun));
-      printMigration(result.render);
-      failOnConflicts(result.plan.conflicts.length);
-    } finally {
-      await source.cleanup();
-    }
+    await runMigrate(
+      path.resolve(target),
+      options.from,
+      options.to,
+      options.bundle,
+      options.source ? path.resolve(options.source) : repositoryRoot,
+      Boolean(options.dryRun),
+      Boolean(options.force),
+    );
   });
 
 program
   .command("status")
   .description("Show installed version and local drift")
   .argument("[target]", "Target project", ".")
-  .option("--source <path>", "Toolkit Git repository", repositoryRoot)
+  .option("--source <path>", "Local toolkit Git repository")
   .action(async (target, options) => {
-    const status = await inspectStatus(path.resolve(target));
-    if (!status.lock) {
-      console.log("Toolkit is not initialized.");
-      return;
-    }
-    const latest = await latestTag(path.resolve(options.source));
-    console.log(`Toolkit: ${status.lock.toolkit}`);
-    console.log(`Version: ${status.lock.version} (${status.lock.release})`);
-    console.log(`Agent: ${status.lock.targetAgent}`);
-    console.log(`Bundles: ${status.lock.bundles.join(", ")}`);
-    console.log(`Modified: ${status.modified.length}`);
-    console.log(`Deleted: ${status.deleted.length}`);
-    console.log(`Latest release: ${latest ?? "none"}`);
-    for (const file of status.modified) console.log(`  modified ${file}`);
-    for (const file of status.deleted) console.log(`  deleted ${file}`);
+    await printStatus(path.resolve(target), options.source ? path.resolve(options.source) : undefined);
   });
 
 program
@@ -183,18 +170,12 @@ program
       console.log(`Valid manifest: ${manifest.name}@${manifest.version}`);
       return;
     }
-    const targetRoot = path.resolve(target);
-    const status = await inspectStatus(targetRoot);
-    const agent = options.agent ?? status.lock?.targetAgent;
-    if (!agent) throw new Error("Specify --agent or initialize the toolkit first");
-    const errors = await getAdapter(agent).validate(targetRoot);
-    if (errors.length) {
-      for (const error of errors) console.error(error);
-      process.exitCode = 1;
-      return;
-    }
-    console.log(`Valid ${agent} toolkit`);
+    await validateTarget(path.resolve(target), options.agent);
   });
+
+if (process.argv.length === 2) {
+  process.argv.push("setup");
+}
 
 program.parseAsync().catch((error: unknown) => {
   console.error(error instanceof Error ? error.message : String(error));
@@ -213,4 +194,114 @@ function parseAgent(value: string): AgentName {
 
 function failOnConflicts(count: number): void {
   if (count > 0) process.exitCode = 2;
+}
+
+async function runInstall(
+  targetRoot: string,
+  agent: AgentName,
+  bundles: string[],
+  sourceRoot: string,
+  dryRun = false,
+  force = false,
+): Promise<void> {
+  const source = await resolveSource(sourceRoot, "current");
+  await applyInstall(source, targetRoot, agent, bundles, dryRun, force, true);
+}
+
+async function runUpdate(
+  version: string,
+  targetRoot: string,
+  localSource?: string,
+  dryRun = false,
+  force = false,
+): Promise<void> {
+  const status = await inspectStatus(targetRoot);
+  if (!status.lock) throw new Error("Toolkit is not initialized");
+  let source: ResolvedSource;
+  if (localSource) {
+    const resolvedVersion = version === "latest" ? await latestTag(localSource) : version;
+    if (!resolvedVersion) throw new Error("No SemVer release tags found");
+    source = await resolveSource(localSource, resolvedVersion);
+  } else {
+    source = await resolvePackageSource(packageJson.name, version);
+  }
+  await applyInstall(source, targetRoot, status.lock.targetAgent, status.lock.bundles, dryRun, force);
+}
+
+async function runMigrate(
+  targetRoot: string,
+  from: AgentName,
+  to: AgentName,
+  bundles: string[],
+  sourceRoot: string,
+  dryRun = false,
+  force = false,
+): Promise<void> {
+  const status = await inspectStatus(targetRoot);
+  if (status.lock && status.lock.targetAgent !== from) {
+    throw new Error(`Lockfile target is ${status.lock.targetAgent}, not ${from}`);
+  }
+  const source = await resolveSource(sourceRoot, "current");
+  await applyInstall(source, targetRoot, to, status.lock?.bundles ?? bundles, dryRun, force, true);
+}
+
+async function applyInstall(
+  source: ResolvedSource,
+  targetRoot: string,
+  agent: AgentName,
+  bundles: string[],
+  dryRun: boolean,
+  force: boolean,
+  migrationReport = false,
+): Promise<void> {
+  try {
+    const result = await installToolkit({
+      sourceRoot: source.root,
+      targetRoot,
+      targetAgent: agent,
+      bundles,
+      release: source.release,
+      sourceCommit: source.commit,
+      dryRun,
+      force,
+    });
+    printPlan(result.plan, dryRun);
+    if (migrationReport) printMigration(result.render);
+    failOnConflicts(result.plan.conflicts.length);
+  } finally {
+    await source.cleanup();
+  }
+}
+
+async function printStatus(targetRoot: string, localSource?: string): Promise<void> {
+  const status = await inspectStatus(targetRoot);
+  if (!status.lock) {
+    console.log("Toolkit is not initialized.");
+    return;
+  }
+  const latest = localSource
+    ? await latestTag(localSource)
+    : `v${await latestPackageVersion(packageJson.name)}`;
+  console.log(`Toolkit: ${status.lock.toolkit}`);
+  console.log(`Version: ${status.lock.version} (${status.lock.release})`);
+  console.log(`Agent: ${status.lock.targetAgent}`);
+  console.log(`Bundles: ${status.lock.bundles.join(", ")}`);
+  console.log(`Modified: ${status.modified.length}`);
+  console.log(`Deleted: ${status.deleted.length}`);
+  console.log(`Latest release: ${latest ?? "none"}`);
+  for (const file of status.modified) console.log(`  modified ${file}`);
+  for (const file of status.deleted) console.log(`  deleted ${file}`);
+}
+
+async function validateTarget(targetRoot: string, requestedAgent?: AgentName): Promise<void> {
+  const status = await inspectStatus(targetRoot);
+  const agent = requestedAgent ?? status.lock?.targetAgent;
+  if (!agent) throw new Error("Specify --agent or initialize the toolkit first");
+  const errors = await getAdapter(agent).validate(targetRoot);
+  if (errors.length) {
+    for (const error of errors) console.error(error);
+    process.exitCode = 1;
+    return;
+  }
+  console.log(`Valid ${agent} toolkit`);
 }
