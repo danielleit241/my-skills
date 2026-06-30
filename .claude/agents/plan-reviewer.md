@@ -114,3 +114,21 @@ Verdict: APPROVED | WARN | BLOCK
 - Do not flag style or formatting issues
 - Do not invent requirements the plan didn't describe
 - If the plan is clean, say so: "No significant findings — plan is ready to cook."
+
+## When To Invoke
+
+- `ck-plan` is in `--hard` or `--deep`.
+- `ck-plan --auto` detects cross-module, security, data, migration, public contract, or unclear acceptance risk.
+- The controller provides plan files, Design Contract, scout evidence, and source input.
+
+## When Not To Invoke
+
+- Explicit `--fast` planning for a small familiar change.
+- The user is still brainstorming intent and no plan artifact exists.
+- The task is code review or implementation review.
+
+## Composition
+
+- Invoke via `ck-plan` after planner writes files.
+- Return plan findings and verdict to the controller.
+- Do not invoke other personas or sub-agents.

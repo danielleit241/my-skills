@@ -6,8 +6,8 @@ import { installToolkit, inspectStatus } from "../core/engine.js";
 import { tempDir, fixtureManifest, writeFixture } from "./helpers.js";
 
 test("init is idempotent and records checksums", async () => {
-  const source = await tempDir("my-skills-source-");
-  const target = await tempDir("my-skills-target-");
+  const source = await tempDir("forge-source-");
+  const target = await tempDir("forge-target-");
   await writeFixture(source, fixtureManifest);
 
   const first = await install(source, target, "claude");
@@ -22,9 +22,26 @@ test("init is idempotent and records checksums", async () => {
   assert.equal(status.deleted.length, 0);
 });
 
+test("update migrates legacy my-skills lockfile to forge lockfile", async () => {
+  const source = await tempDir("forge-source-");
+  const target = await tempDir("forge-target-");
+  await writeFixture(source, fixtureManifest);
+  await install(source, target, "claude");
+  await fs.rename(
+    path.join(target, ".forge.lock.json"),
+    path.join(target, ".my-skills.lock.json"),
+  );
+
+  const result = await install(source, target, "claude");
+
+  assert.equal(result.plan.conflicts.length, 0);
+  await fs.access(path.join(target, ".forge.lock.json"));
+  await assert.rejects(fs.access(path.join(target, ".my-skills.lock.json")));
+});
+
 test("update stops when a managed file was edited", async () => {
-  const source = await tempDir("my-skills-source-");
-  const target = await tempDir("my-skills-target-");
+  const source = await tempDir("forge-source-");
+  const target = await tempDir("forge-target-");
   await writeFixture(source, fixtureManifest);
   await install(source, target, "claude");
   await fs.appendFile(path.join(target, ".claude", "skills", "hello", "SKILL.md"), "\nlocal edit\n");
@@ -35,8 +52,8 @@ test("update stops when a managed file was edited", async () => {
 });
 
 test("removal preserves a locally modified managed file", async () => {
-  const source = await tempDir("my-skills-source-");
-  const target = await tempDir("my-skills-target-");
+  const source = await tempDir("forge-source-");
+  const target = await tempDir("forge-target-");
   await writeFixture(source, fixtureManifest);
   await install(source, target, "claude");
   const installed = path.join(target, ".claude", "hooks", "stop.py");
@@ -49,8 +66,8 @@ test("removal preserves a locally modified managed file", async () => {
 });
 
 test("Codex adapter converts skills, commands, agents, hooks, and instructions", async () => {
-  const source = await tempDir("my-skills-source-");
-  const target = await tempDir("my-skills-target-");
+  const source = await tempDir("forge-source-");
+  const target = await tempDir("forge-target-");
   await writeFixture(source, fixtureManifest);
   const result = await install(source, target, "codex");
 
@@ -71,16 +88,21 @@ test("Codex adapter converts skills, commands, agents, hooks, and instructions",
   assert.doesNotMatch(hooks, /"matcher": "\*"/);
   const agent = await fs.readFile(path.join(target, ".codex", "agents", "reviewer.toml"), "utf8");
   assert.match(agent, /model = "gpt-5\.5"/);
+  assert.match(agent, /model_reasoning_effort = "medium"/);
   assert.match(agent, /sandbox_mode = "read-only"/);
   assert.match(agent, /nickname_candidates = \["Reviewer Alpha", "Reviewer Delta", "Reviewer Echo"\]/);
   assert.match(agent, /Do not spawn child agents unless the parent explicitly asks/);
   const config = await fs.readFile(path.join(target, ".codex", "config.toml"), "utf8");
   assert.match(config, /\[agents\]\nmax_threads = 6\nmax_depth = 1/);
+  assert.match(config, /\[mcp_servers\.sequential-thinking\]/);
+  assert.match(config, /command = "npx"/);
+  assert.match(config, /args = \["-y", "@modelcontextprotocol\/server-sequential-thinking"\]/);
+  assert.doesNotMatch(config, /description =/);
 });
 
 test("install creates session-data gitignore and merges project gitignore", async () => {
-  const source = await tempDir("my-skills-source-");
-  const target = await tempDir("my-skills-target-");
+  const source = await tempDir("forge-source-");
+  const target = await tempDir("forge-target-");
   await writeFixture(source, fixtureManifest);
   await fs.writeFile(path.join(target, ".gitignore"), "dist/\n");
 
@@ -91,14 +113,14 @@ test("install creates session-data gitignore and merges project gitignore", asyn
   const gitignore = await fs.readFile(path.join(target, ".gitignore"), "utf8");
   assert.match(gitignore, /^dist\/$/m);
   assert.match(gitignore, /^\.claude\/$/m);
-  assert.match(gitignore, /^\.my-skills\.lock\.json$/m);
+  assert.match(gitignore, /^\.forge\.lock\.json$/m);
   assert.match(gitignore, /^session-data\/$/m);
 });
 
 test("migration bridges existing project instruction files", async () => {
-  const source = await tempDir("my-skills-source-");
-  const codexTarget = await tempDir("my-skills-target-");
-  const claudeTarget = await tempDir("my-skills-target-");
+  const source = await tempDir("forge-source-");
+  const codexTarget = await tempDir("forge-target-");
+  const claudeTarget = await tempDir("forge-target-");
   await writeFixture(source, fixtureManifest);
   await fs.writeFile(path.join(codexTarget, "CLAUDE.md"), "# Existing Claude rules\n");
   await fs.writeFile(path.join(claudeTarget, "AGENTS.md"), "# Existing Codex rules\n");
@@ -112,9 +134,26 @@ test("migration bridges existing project instruction files", async () => {
   assert.match(await fs.readFile(path.join(claudeTarget, "CLAUDE.md"), "utf8"), /@AGENTS\.md/);
 });
 
-test("Codex adapter maps scout to the cheap mini model", async () => {
-  const source = await tempDir("my-skills-source-");
-  const target = await tempDir("my-skills-target-");
+test("Codex adapter maps haiku agents to the cheap mini model", async () => {
+  const source = await tempDir("forge-source-");
+  const target = await tempDir("forge-target-");
+  await writeFixture(source, fixtureManifest);
+  await fs.writeFile(
+    path.join(source, ".claude", "agents", "bookkeeper.md"),
+    "---\nname: bookkeeper\ndescription: Track state.\nmodel: haiku\n---\n\nTrack state quickly.\n",
+  );
+
+  const result = await install(source, target, "codex");
+
+  assert.equal(result.plan.conflicts.length, 0);
+  const bookkeeper = await fs.readFile(path.join(target, ".codex", "agents", "bookkeeper.toml"), "utf8");
+  assert.match(bookkeeper, /model = "gpt-5\.4-mini"/);
+  assert.match(bookkeeper, /sandbox_mode = "read-only"/);
+});
+
+test("Codex adapter keeps legacy scout agents on the mini model", async () => {
+  const source = await tempDir("forge-source-");
+  const target = await tempDir("forge-target-");
   await writeFixture(source, fixtureManifest);
   await fs.writeFile(
     path.join(source, ".claude", "agents", "scout.md"),
@@ -126,12 +165,29 @@ test("Codex adapter maps scout to the cheap mini model", async () => {
   assert.equal(result.plan.conflicts.length, 0);
   const scout = await fs.readFile(path.join(target, ".codex", "agents", "scout.toml"), "utf8");
   assert.match(scout, /model = "gpt-5\.4-mini"/);
-  assert.match(scout, /sandbox_mode = "read-only"/);
+  assert.match(scout, /model_reasoning_effort = "medium"/);
+});
+
+test("Codex adapter maps opus agents to extra-high reasoning", async () => {
+  const source = await tempDir("forge-source-");
+  const target = await tempDir("forge-target-");
+  await writeFixture(source, fixtureManifest);
+  await fs.writeFile(
+    path.join(source, ".claude", "agents", "architect.md"),
+    "---\nname: architect\ndescription: Review architecture.\nmodel: opus\n---\n\nThink deeply.\n",
+  );
+
+  const result = await install(source, target, "codex");
+
+  assert.equal(result.plan.conflicts.length, 0);
+  const architect = await fs.readFile(path.join(target, ".codex", "agents", "architect.toml"), "utf8");
+  assert.match(architect, /model = "gpt-5\.5"/);
+  assert.match(architect, /model_reasoning_effort = "xhigh"/);
 });
 
 test("migration changes an installed Claude toolkit to Codex", async () => {
-  const source = await tempDir("my-skills-source-");
-  const target = await tempDir("my-skills-target-");
+  const source = await tempDir("forge-source-");
+  const target = await tempDir("forge-target-");
   await writeFixture(source, fixtureManifest);
   await install(source, target, "claude");
 
@@ -153,8 +209,8 @@ test("migration changes an installed Claude toolkit to Codex", async () => {
 });
 
 test("init merges existing agent folders and structured configuration", async () => {
-  const source = await tempDir("my-skills-source-");
-  const target = await tempDir("my-skills-target-");
+  const source = await tempDir("forge-source-");
+  const target = await tempDir("forge-target-");
   await writeFixture(source, fixtureManifest);
   await fs.mkdir(path.join(target, ".claude", "skills", "local"), { recursive: true });
   await fs.writeFile(path.join(target, ".claude", "skills", "local", "SKILL.md"), "local skill\n");
@@ -179,8 +235,8 @@ test("init merges existing agent folders and structured configuration", async ()
 });
 
 test("update preserves local keys in mergeable configuration", async () => {
-  const source = await tempDir("my-skills-source-");
-  const target = await tempDir("my-skills-target-");
+  const source = await tempDir("forge-source-");
+  const target = await tempDir("forge-target-");
   await writeFixture(source, fixtureManifest);
   await install(source, target, "claude");
   const settingsPath = path.join(target, ".claude", "settings.json");

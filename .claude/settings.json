@@ -29,22 +29,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python .claude/hooks/dev_rules_reminder.py",
-            "timeout": 5
-          },
-          {
-            "type": "command",
-            "command": "python .claude/hooks/simplify_gate.py",
-            "timeout": 15
-          },
-          {
-            "type": "command",
-            "command": "python .claude/hooks/caveman_watch.py",
-            "timeout": 5
-          },
-          {
-            "type": "command",
-            "command": "python .claude/hooks/suggest_compact.py",
+            "command": "python .claude/hooks/prompt_context.py",
             "timeout": 5
           }
         ]
@@ -52,43 +37,11 @@
     ],
     "PreToolUse": [
       {
-        "matcher": "Read|Write|Edit|Glob|Grep|Bash",
+        "matcher": "Read|Write|Edit|Glob|Grep|Bash|Agent",
         "hooks": [
           {
             "type": "command",
-            "command": "python .claude/hooks/privacy_block.py",
-            "timeout": 5
-          }
-        ]
-      },
-      {
-        "matcher": "Write|Edit|Bash|Agent",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python .claude/hooks/tool_counter.py",
-            "timeout": 3
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python .claude/hooks/build_check.py",
-            "timeout": 30
-          }
-        ]
-      },
-      {
-        "matcher": "Read|Grep|Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python .claude/hooks/artifact_fold.py",
+            "command": "python .claude/hooks/tool_guard.py",
             "timeout": 5
           }
         ]

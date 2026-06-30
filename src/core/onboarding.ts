@@ -21,7 +21,7 @@ export interface OnboardingSelection {
 
 export async function runOnboarding(defaultTarget = "."): Promise<OnboardingSelection | null> {
   if (!stdin.isTTY || !stdout.isTTY) return null;
-  p.intro(pc.bgCyan(pc.black(" my-skills setup ")));
+  p.intro(pc.bgCyan(pc.black(" forge setup ")));
   const targetMode = unwrap(await p.select({
     message: "How should the project target be resolved?",
     options: [

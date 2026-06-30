@@ -7,7 +7,7 @@ import { findProjectRoot, resolveProjectTarget } from "../core/project.js";
 import { tempDir } from "./helpers.js";
 
 test("project path discovers the nearest project root", async () => {
-  const root = await tempDir("my-skills-project-");
+  const root = await tempDir("forge-project-");
   const nested = path.join(root, "src", "features");
   await fs.mkdir(nested, { recursive: true });
   await fs.writeFile(path.join(root, "package.json"), "{}");
@@ -17,7 +17,7 @@ test("project path discovers the nearest project root", async () => {
 });
 
 test("project path accepts a file inside the project", async () => {
-  const root = await tempDir("my-skills-project-");
+  const root = await tempDir("forge-project-");
   const file = path.join(root, "src", "index.ts");
   await fs.mkdir(path.dirname(file), { recursive: true });
   await fs.writeFile(path.join(root, ".git"), "gitdir: elsewhere\n");
@@ -38,7 +38,7 @@ test("target selectors are mutually exclusive", async () => {
 });
 
 test("manifest loading rejects source paths missing from the package", async () => {
-  const root = await tempDir("my-skills-manifest-");
+  const root = await tempDir("forge-manifest-");
   await fs.writeFile(path.join(root, "toolkit.manifest.json"), JSON.stringify({
     $schemaVersion: 1,
     name: "fixture",

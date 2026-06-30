@@ -1,25 +1,33 @@
 ---
 name: ck-brainstorm
-description: Extract user intent, explore solution space, and write a design report. Use when the right design is unclear, requirements are vague, or the user asks to brainstorm. Produces one report under plans/reports — never writes implementation code. Always use before ck-plan for novel or ambiguous work. Handoff options after report: /ck:spec (recommended for novel work), /ck:plan --tdd, or /ck:plan.
+description: >
+  Extract user intent, explore solution space, and write a design report. Use
+  when the right design is unclear, requirements are vague, or the user asks to
+  brainstorm. Can produce `brainstorm.md` inside a shared work-item folder and
+  hand off to ck-plan when the user wants implementation planning.
 user-invocable: true
 ---
 
 # ck:brainstorm
 
-Hard gate: no implementation code, scaffolding, or implementation skill calls.
-Ends with a design report and optional `/ck:spec` or `/ck:plan` handoff.
+Use this as an idea-refinement guide, not a rigid command script. Slash
+commands may run the full workflow; the skill itself should scale to the user's
+request. For early ideas, prefer a durable report. For a small clarification,
+answer in chat and offer a plan handoff.
 
 ## Principle
 
 Users who brainstorm don't know the technical landscape — that's why they're here.
-Never ask technical questions. Scout owns technical discovery. Questions go to intent only.
+Avoid asking the user for repo/module details that tools can discover. Keep
+questions focused on intent, audience, success, and scope.
 
 ---
 
-## Step 0 — Scout (silent)
+## Step 0 — Optional Scout
 
-Before saying anything: inspect repo. Map project type, modules, patterns, docs, plans, schemas,
-constraints. Do not spawn planner or docs-manager. Do not surface raw findings yet.
+Use `ck-scout --repo` when repo context would change the design options, when
+the user references existing code, or when a later plan is likely. Skip scout
+for pure product ideation, copy exploration, or a small conceptual question.
 
 ---
 
@@ -47,7 +55,7 @@ After 5+ rounds with no convergence: "Something foundational is missing — want
 
 Never ask:
 - "What are the acceptance criteria?" → too technical
-- "Which modules are involved?" → scout already knows
+- "Which modules are involved?" → `ck-scout --repo` already knows
 - "What are the non-negotiable constraints?" → jargon
 
 If the request spans 3+ independent problems, surface it and ask which to tackle first.
@@ -65,8 +73,8 @@ Here's what I understand:
 Yes / no / refine?
 ```
 
-Wait for explicit yes. "Sounds good" and "whatever you think" are not yes — re-ask with two
-concrete options if the user deflects.
+For consequential scope choices, get an explicit confirmation. For lightweight
+brainstorming, summarize the assumption and continue.
 
 ---
 
@@ -111,15 +119,29 @@ Be honest, not supportive. If a direction is weak, say so with a specific reason
 
 ## Step 4 — Consensus
 
-Use AskUserQuestion to select or refine. Frame options as outcomes, not technical mechanisms.
-Do not finalize while the Step 1 restate has unresolved items.
-Obtain explicit approval for the chosen direction.
+Ask the user to select or refine when multiple viable directions remain. Frame
+options as outcomes, not technical mechanisms. If the user has already chosen a
+direction, proceed with that and mark remaining assumptions.
 
 ---
 
 ## Step 5 — Report
 
-Write exactly one report: `plans/reports/brainstorm-YYMMDD-HHMM-{slug}.md`
+When a durable handoff is useful, create or reuse one work-item folder and write
+one report:
+
+```text
+plans/YYMMDD-{slug}/
+  brainstorm.md
+  evidence/
+  reviews/
+  fixes/
+  ship/
+```
+
+The artifact path is `plans/YYMMDD-{slug}/brainstorm.md`.
+Prefer colocating brainstorm output with the future plan, cook evidence, fixes,
+and ship readiness artifacts.
 
 Sections:
 1. Problem statement + scouted repo context
@@ -137,7 +159,6 @@ Sections:
 
 After approval and written report, offer:
 
-1. `/ck:spec {report-path}` — write a formal spec before planning (recommended for novel work)
-2. `/ck:plan --tdd {report-path}` — skip spec, plan with TDD
-3. `/ck:plan {report-path}` — skip spec, standard plan
-4. End session
+1. `/ck:plan --tdd plans/YYMMDD-{slug}/brainstorm.md` — plan with tests-first phases
+2. `/ck:plan plans/YYMMDD-{slug}/brainstorm.md` — standard plan with Design Contract
+3. End session

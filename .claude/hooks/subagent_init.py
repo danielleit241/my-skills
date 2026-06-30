@@ -4,7 +4,7 @@ SubagentStart hook — inject minimal context into subagents (~200 tokens).
 
 Only fires for subagent sessions (detected via CLAUDE_PARENT_SESSION_ID).
 Reads session-context.json written by session_init.py to get project, branch,
-and rules without repeating the heavy init logic.
+and active workflow context without repeating the heavy init logic.
 """
 
 import json
@@ -13,10 +13,14 @@ import re
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).parent / "lib"))
+from utf8_stdio import configure_utf8_stdio, write_json
+
 SESSION_CONTEXT_FILE = "session-data/session-context.json"
 PLANS_DIR = "plans"
 STATUS_ACTIVE = "🟡"
 STATUS_COMPLETE = "✅"
+configure_utf8_stdio()
 
 
 def _find_active_plan(root: Path) -> dict | None:
@@ -39,7 +43,14 @@ def _find_active_plan(root: Path) -> dict | None:
         if best is None or mtime > best["mtime"]:
             name_m = re.search(r"^#\s+Plan:\s+(.+)$", content, re.MULTILINE)
             phases = re.findall(r"- \[([ x])\] Phase \d+: (.+)", content)
-            next_phase = next((p.split("—")[0].strip() for done, p in phases if done != "x"), None)
+            next_phase = next(
+                (
+                    re.split(r"\s[-\u2013\u2014]\s", p, maxsplit=1)[0].strip()
+                    for done, p in phases
+                    if done != "x"
+                ),
+                None,
+            )
             best = {
                 "name": name_m.group(1).strip() if name_m else plan_dir.name,
                 "next_phase": next_phase,
@@ -58,14 +69,12 @@ def main() -> None:
 
     project = ""
     branch = ""
-    rules = ""
 
     if context_file.exists():
         try:
             ctx = json.loads(context_file.read_text(encoding="utf-8"))
             project = ctx.get("project", "")
             branch = ctx.get("branch", "")
-            rules = ctx.get("rules", "")
         except Exception:
             pass
 
@@ -78,9 +87,6 @@ def main() -> None:
         header_parts.append(f"Branch: {branch}")
     if header_parts:
         parts.append(" | ".join(header_parts))
-
-    if rules:
-        parts.append(f"Rules: {rules}")
 
     plan = _find_active_plan(root)
     if plan:
@@ -108,13 +114,12 @@ def main() -> None:
     if not parts:
         sys.exit(0)
 
-    sys.stdout.write(json.dumps({
+    write_json({
         "hookSpecificOutput": {
             "hookEventName": "SubagentStart",
             "additionalContext": "\n".join(parts),
         }
-    }))
-    sys.stdout.flush()
+    })
 
 
 if __name__ == "__main__":

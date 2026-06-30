@@ -31,7 +31,7 @@ export async function resolveSource(
   const tag = requested.startsWith("v") ? requested : `v${requested}`;
   if (!semver.valid(tag.slice(1))) throw new Error(`Invalid release version: ${requested}`);
   await execFileAsync("git", ["rev-parse", "--verify", `refs/tags/${tag}`], { cwd: repositoryRoot });
-  const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "my-skills-release-"));
+  const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "forge-release-"));
   const archive = path.join(tempRoot, "release.tar");
   await execFileAsync("git", ["archive", "--format=tar", "-o", archive, tag], { cwd: repositoryRoot });
   await execFileAsync("tar", ["-xf", archive, "-C", tempRoot]);
@@ -50,7 +50,7 @@ export async function resolvePackageSource(
   requested: string,
 ): Promise<ResolvedSource> {
   const version = requested === "latest" ? await latestPackageVersion(packageName) : normalizeVersion(requested);
-  const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "my-skills-package-"));
+  const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "forge-package-"));
   const { stdout } = await execNpm(
     ["pack", `${packageName}@${version}`, "--silent", "--pack-destination", tempRoot],
     { cwd: tempRoot },

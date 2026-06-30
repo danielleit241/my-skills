@@ -1,5 +1,19 @@
 # Changelog
 
+## 2.1.7
+
+- Rename the package, CLI, toolkit manifest, generated lockfile, and docs from `my-skills` to Forge (`@danielle241/forge`, `forge`, `.forge.lock.json`), with legacy `.my-skills.lock.json` migration support.
+- Redesign the CK skill set around the main workflow `brainstorm -> plan -> cook -> ship / fix`, with softer skill guidance instead of hard workflow gates.
+- Remove `ck-spec` and `ck-code-review`; keep Design Contract inside `ck-plan` and use the single `code-review` skill.
+- Add `ck-scout` as the skill-level scouting controller, add `ck-ship`, and add supporting skills for source grounding, migration safety, observability, security hardening, documentation/ADRs, and testing strategy.
+- Simplify CK workflow modes to `plan: fast/auto/hard/deep`, `cook: fast/auto/hard`, `fix: fast/auto/hard`, with `--tdd` kept for plan/cook.
+- Add basic skill eval coverage for the redesigned skills and update validation to catch retired legacy surfaces.
+- Simplify CLI command wiring and apply `--project-path` / `--project-root` target resolution consistently across update, revert, migrate, status, and validate.
+- Map Claude Sonnet agents to `gpt-5.5` with medium reasoning, and Opus agents to `gpt-5.5` with Codex `xhigh` reasoning; legacy `scout` agents remain on the mini model.
+- Render packaged `.mcp.json` servers into Codex `.codex/config.toml` `[mcp_servers.*]` tables during migration or Codex install.
+- Force UTF-8 stdin/stdout handling in hook entrypoints so Codex session-data preserves raw Unicode prompts on Windows.
+- Include `.mcp.json` in packaged toolkit metadata and generated ignore entries.
+
 ## 2.1.5
 
 - Render Codex custom agents according to the current subagents guidance: read-only sandboxing for exploration/review agents, display nicknames for spawned agent threads, and a Codex subagent contract that keeps delegated work scoped and summary-oriented.
@@ -30,11 +44,11 @@
 
 ## 2.1.1
 
-- Correct the npm package scope to `@danielle241/my-skills`.
+- Correct the npm package scope to `@danielle241/forge`.
 
 ## 2.1.0
 
-- Add interactive onboarding through `my-skills setup` and the default no-command flow.
+- Add interactive onboarding through `forge setup` and the default no-command flow.
 - Add npm-registry based `update` and `revert` support for globally installed or `npx` usage.
 - Merge existing `.claude` and `.codex` directory contents without deleting unrelated files.
 - Deep-merge `.claude/settings.json`, `.codex/hooks.json`, and `.ck.json`.

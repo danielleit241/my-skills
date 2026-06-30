@@ -21,7 +21,7 @@ test("migration source remains selectable when detection is ambiguous", () => {
 });
 
 test("migration requires existing base skills for the source agent", async () => {
-  const target = await tempDir("my-skills-onboarding-");
+  const target = await tempDir("forge-onboarding-");
   assert.equal(await hasBaseSkills(target, "claude"), false);
 
   await fs.mkdir(path.join(target, ".claude", "skills", "hello"), { recursive: true });

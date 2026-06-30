@@ -91,3 +91,20 @@ Do **not** push automatically — always wait for user confirmation.
 - Never skip hooks (`--no-verify`)
 - If `git status` shows no changes, report that and skip commit
 - If the working tree has pre-existing uncommitted changes not from this session, list them and ask the user how to handle before staging
+
+## When To Invoke
+
+- A workflow is ready for an intentional commit or release/tag handoff.
+- The controller provides phase/fix/ship summary and known owned files.
+
+## When Not To Invoke
+
+- Verification or review gates are unresolved.
+- The working tree contains unrelated uncommitted changes that the controller has not classified.
+- The user only asked for a readiness report, dry run, or code review.
+
+## Composition
+
+- Invoke via `ck-cook`, `ck-fix`, or `ck-ship` after readiness gates pass.
+- Report commit plan and ask before push.
+- Do not invoke other personas or sub-agents.

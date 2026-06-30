@@ -19,6 +19,8 @@ from pathlib import Path
 
 HOOKS_DIR = Path(__file__).parent
 ROOT = HOOKS_DIR.parent.parent
+sys.path.insert(0, str(HOOKS_DIR / "lib"))
+from ck_config_utils import get_hook_section, get_safety_section
 
 
 def _load_json(p: Path) -> dict:
@@ -57,7 +59,6 @@ def _run_hook(name: str, stdin: str) -> int:
 
 def main() -> None:
     settings = _load_json(ROOT / ".claude" / "settings.json")
-    ck = _load_json(ROOT / ".ck.json")
     wired = _wired_hooks(settings)
 
     print("=== Hook Audit ===\n")
@@ -75,21 +76,31 @@ def main() -> None:
         print("  (none)")
 
     print("\n-- Enabled status (.ck.json) --")
-    for key in ("privacyBlock", "simplify"):
-        section = ck.get(key, {})
-        if key == "simplify":
-            enabled = section.get("gate", {}).get("enabled", "(default false)")
-        else:
-            enabled = section.get("enabled", "(default true)")
+    statuses = {
+        "safety.privacyBlock": get_safety_section("privacyBlock", root=ROOT).get("enabled", "(default true)"),
+        "hooks.simplifyGate": get_hook_section("simplifyGate", root=ROOT).get("enabled", "(default false)"),
+        "hooks.caveman": get_hook_section("caveman", root=ROOT).get("enabled", "(default true)"),
+    }
+    for key, enabled in statuses.items():
         print(f"  {key:16s} enabled = {enabled}")
 
     print("\n-- Health check DYNAMIC (exit code real) --")
     # fail-open: malformed JSON must make every hook exit 0
-    for name in ("simplify_gate.py", "build_check.py"):
+    for name in ("prompt_context.py", "tool_guard.py"):
         if (HOOKS_DIR / name).exists():
             rc = _run_hook(name, "BAD JSON NOT PARSEABLE")
             print(f"  {name} (malformed JSON -> fail-open): exit={rc} "
                   f"[{'OK' if rc == 0 else 'ERROR: did not fail open'}]")
+
+    if (HOOKS_DIR / "tool_guard.py").exists():
+        payload = json.dumps({
+            "cwd": str(ROOT),
+            "tool_name": "Read",
+            "tool_input": {"file_path": ".env"},
+        })
+        rc = _run_hook("tool_guard.py", payload)
+        print(f"  tool_guard.py (privacy block .env): exit={rc} "
+              f"[{'OK' if rc == 2 else 'ERROR: did not block'}]")
 
 
 if __name__ == "__main__":

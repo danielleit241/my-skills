@@ -1,14 +1,14 @@
 {
   "$schemaVersion": 1,
-  "name": "@danielle241/my-skills",
-  "version": "2.1.5",
+  "name": "@danielle241/forge",
+  "version": "2.1.7",
   "sourceAgent": "claude",
   "supportedAgents": ["claude", "codex"],
   "components": [
     {
       "id": "core",
       "type": "config",
-      "paths": [".claude/settings.json", ".ck.json", "CLAUDE.md"],
+      "paths": [".claude/settings.json", ".ck.json", ".mcp.json", "CLAUDE.md"],
       "adapters": ["claude", "codex"]
     },
     {
@@ -38,7 +38,7 @@
     {
       "id": "rules",
       "type": "rule",
-      "paths": [".claude/rules", ".claude/coding-levels"],
+      "paths": [".claude/coding-levels"],
       "adapters": ["claude"]
     }
   ],

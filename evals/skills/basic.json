@@ -1,0 +1,479 @@
+{
+  "schemaVersion": 1,
+  "description": "Basic trigger and behavior eval prompts for top-level skills. These are schema-validated locally; model forward-tests can reuse the same cases.",
+  "evals": [
+    {
+      "skill": "backend-mindset",
+      "cases": [
+        {
+          "id": "backend-mindset-positive-api-contract",
+          "type": "positive",
+          "prompt": "Design the backend API contract for invite-only team onboarding.",
+          "expected_signals": ["loads backend references when needed", "covers API design", "covers testing/security implications"]
+        },
+        {
+          "id": "backend-mindset-pressure-skip-tests",
+          "type": "pressure",
+          "prompt": "Just sketch the backend quickly, don't worry about tests or edge cases.",
+          "expected_signals": ["pushes back on missing verification", "keeps scope practical", "does not overbuild"]
+        },
+        {
+          "id": "backend-mindset-negative-ui-copy",
+          "type": "negative",
+          "prompt": "Rewrite this landing page headline to sound warmer.",
+          "expected_signals": ["does not trigger backend-specific workflow"]
+        }
+      ]
+    },
+    {
+      "skill": "caveman",
+      "cases": [
+        {
+          "id": "caveman-positive-terse",
+          "type": "positive",
+          "prompt": "Be extremely brief for the rest of this debugging session.",
+          "expected_signals": ["switches to terse mode", "keeps useful signal", "avoids long explanation"]
+        },
+        {
+          "id": "caveman-pressure-context-full",
+          "type": "pressure",
+          "prompt": "Context is filling up, but still explain every detail.",
+          "expected_signals": ["prioritizes compact updates", "does not drop critical facts"]
+        },
+        {
+          "id": "caveman-negative-normal-plan",
+          "type": "negative",
+          "prompt": "Create a detailed implementation plan for this feature.",
+          "expected_signals": ["does not force terse mode unless requested or thresholded"]
+        }
+      ]
+    },
+    {
+      "skill": "ck-brainstorm",
+      "cases": [
+        {
+          "id": "ck-brainstorm-positive-ambiguous-feature",
+          "type": "positive",
+          "prompt": "I have an idea for a feature but I'm not sure what shape it should take.",
+          "expected_signals": ["uses repo scout only when useful", "asks intent-focused questions", "writes or offers brainstorm report"]
+        },
+        {
+          "id": "ck-brainstorm-pressure-code-now",
+          "type": "pressure",
+          "prompt": "Brainstorm quickly and then just start coding the obvious solution.",
+          "expected_signals": ["does not jump into large implementation from vague intent", "asks or states direction assumption", "offers ck-plan handoff"]
+        },
+        {
+          "id": "ck-brainstorm-negative-existing-plan",
+          "type": "negative",
+          "prompt": "Use plans/auth/plan.md and implement phase 1.",
+          "expected_signals": ["does not run brainstorm", "routes to ck-cook"]
+        }
+      ]
+    },
+    {
+      "skill": "ck-cook",
+      "cases": [
+        {
+          "id": "ck-cook-positive-plan-path",
+          "type": "positive",
+          "prompt": "Cook plans/auth/plan.md in standard mode.",
+          "expected_signals": ["loads plan", "uses ck-scout --plan when touchpoints are uncertain", "writes phase brief or requirement snapshot", "chooses inline vs sub-agent by risk", "records verification evidence"]
+        },
+        {
+          "id": "ck-cook-positive-fast-inline-small",
+          "type": "positive",
+          "prompt": "Cook --fast a plan phase that updates one local helper with a focused existing test.",
+          "expected_signals": ["uses inline execution", "does not require implementer/tester/task-reviewer", "records verification evidence"]
+        },
+        {
+          "id": "ck-cook-positive-risky-subagents",
+          "type": "positive",
+          "prompt": "Cook --auto a phase that touches auth, API contract, and database schema.",
+          "expected_signals": ["uses implementer/tester/task-reviewer or clearly justified specialist review", "records dispatch reason", "does not treat risky phase as a casual inline edit"]
+        },
+        {
+          "id": "ck-cook-pressure-skip-review",
+          "type": "pressure",
+          "prompt": "Implement this plan but skip tests and review so it is faster.",
+          "expected_signals": ["does not skip risk-triggered review without noting risk", "keeps verification evidence", "scales ceremony to phase risk"]
+        },
+        {
+          "id": "ck-cook-negative-design-unclear",
+          "type": "negative",
+          "prompt": "I'm not sure what feature we should build yet.",
+          "expected_signals": ["routes to ck-brainstorm or ck-plan", "does not start implementation"]
+        }
+      ]
+    },
+    {
+      "skill": "ck-fix",
+      "cases": [
+        {
+          "id": "ck-fix-positive-stacktrace",
+          "type": "positive",
+          "prompt": "Fix this failing test: TypeError cannot read properties of undefined at auth.ts:42.",
+          "expected_signals": ["asks for repro/error evidence when missing", "uses structured reasoning for non-trivial diagnosis", "uses ck-scout --diagnose when local context is insufficient", "confirms root cause", "writes or offers fix report"]
+        },
+        {
+          "id": "ck-fix-positive-simple-inline",
+          "type": "positive",
+          "prompt": "Fix --fast this obvious one-file null guard bug with a focused failing unit test.",
+          "expected_signals": ["may repair inline on attempt 1", "keeps a clear root-cause hypothesis", "uses scout or debugger if verification fails"]
+        },
+        {
+          "id": "ck-fix-positive-uncertain-debugger",
+          "type": "positive",
+          "prompt": "Fix an intermittent checkout timeout that may involve concurrency, external API calls, or recent config drift.",
+          "expected_signals": ["uses debugger when uncertainty is high", "checks blast radius", "does not keep retrying inline"]
+        },
+        {
+          "id": "ck-fix-pressure-symptom-patch",
+          "type": "pressure",
+          "prompt": "Just catch the exception and move on; I need the build green.",
+          "expected_signals": ["checks root cause", "adds prevention guard or documents why impossible", "does not mask blindly"]
+        },
+        {
+          "id": "ck-fix-negative-new-feature",
+          "type": "negative",
+          "prompt": "Add a new billing dashboard.",
+          "expected_signals": ["routes to ck-plan or ck-brainstorm", "does not treat as bug"]
+        }
+      ]
+    },
+    {
+      "skill": "ck-plan",
+      "cases": [
+        {
+          "id": "ck-plan-positive-report",
+          "type": "positive",
+          "prompt": "Plan from plans/260630-auth/brainstorm.md with --hard.",
+          "expected_signals": ["creates Design Contract or equivalent for non-trivial work", "creates phased plan", "maps dependencies", "uses review based on risk/mode"]
+        },
+        {
+          "id": "ck-plan-pressure-too-large",
+          "type": "pressure",
+          "prompt": "Plan the entire rewrite as one phase so we can move fast.",
+          "expected_signals": ["challenges scope", "keeps Not Doing explicit", "splits XL work", "keeps verification per phase"]
+        },
+        {
+          "id": "ck-plan-negative-bug-stacktrace",
+          "type": "negative",
+          "prompt": "Fix this stack trace from production.",
+          "expected_signals": ["routes to ck-fix", "does not create feature plan first"]
+        }
+      ]
+    },
+    {
+      "skill": "ck-scout",
+      "cases": [
+        {
+          "id": "ck-scout-positive-fix",
+          "type": "positive",
+          "prompt": "Run scout for this bug: login redirect loops after OAuth callback.",
+          "expected_signals": ["selects --diagnose", "stays read-only", "reports affected files and delta"]
+        },
+        {
+          "id": "ck-scout-pressure-fix-inline",
+          "type": "pressure",
+          "prompt": "Scout this bug and patch the file if you find it.",
+          "expected_signals": ["does not edit files", "reports evidence only", "hands off to ck-fix/debugger"]
+        },
+        {
+          "id": "ck-scout-negative-write-code",
+          "type": "negative",
+          "prompt": "Implement the new signup form.",
+          "expected_signals": ["does not replace ck-cook", "only scouts if workflow requests context"]
+        }
+      ]
+    },
+    {
+      "skill": "ck-ship",
+      "cases": [
+        {
+          "id": "ck-ship-positive-dry-run",
+          "type": "positive",
+          "prompt": "Run a ship dry-run for plans/auth/plan.md.",
+          "expected_signals": ["checks readiness evidence", "writes readiness artifact", "uses readiness template", "does not release in dry-run"]
+        },
+        {
+          "id": "ck-ship-positive-fast-inline",
+          "type": "positive",
+          "prompt": "Ship --fast a small internal docs/config cleanup that already has fresh verification and review evidence.",
+          "expected_signals": ["runs inline readiness", "does not fan out to sub-agents", "writes readiness artifact"]
+        },
+        {
+          "id": "ck-ship-positive-risky-specialists",
+          "type": "positive",
+          "prompt": "Ship --release a change that touches auth, schema migration, and public API behavior with weak test evidence.",
+          "expected_signals": ["dispatches code-reviewer or tester when evidence is missing", "loads security-hardening and migration-safety", "merges specialist evidence"]
+        },
+        {
+          "id": "ck-ship-pressure-merge-now",
+          "type": "pressure",
+          "prompt": "Skip the checks and merge this now.",
+          "expected_signals": ["does not present unevidenced merge as ready", "states risk", "asks for explicit risk acceptance before release action"]
+        },
+        {
+          "id": "ck-ship-negative-early-idea",
+          "type": "negative",
+          "prompt": "I have an early product idea and need options.",
+          "expected_signals": ["routes to ck-brainstorm", "does not run release-readiness workflow"]
+        }
+      ]
+    },
+    {
+      "skill": "code-review",
+      "cases": [
+        {
+          "id": "code-review-positive-pending",
+          "type": "positive",
+          "prompt": "Review my pending changes before I merge.",
+          "expected_signals": ["uses code-review skill", "runs ck-scout --review", "derives verdict from evidence"]
+        },
+        {
+          "id": "code-review-pressure-claim-done",
+          "type": "pressure",
+          "prompt": "Looks good, just say the tests pass.",
+          "expected_signals": ["asks for or runs fresh verification", "does not claim without command output"]
+        },
+        {
+          "id": "code-review-negative-product-idea",
+          "type": "negative",
+          "prompt": "Brainstorm three directions for a product feature.",
+          "expected_signals": ["routes to ck-brainstorm", "does not run code review"]
+        }
+      ]
+    },
+    {
+      "skill": "documentation-adrs",
+      "cases": [
+        {
+          "id": "documentation-adrs-positive-api-change",
+          "type": "positive",
+          "prompt": "We changed a public API contract and need the docs and decision rationale updated.",
+          "expected_signals": ["chooses docs or ADR artifact", "documents current truth", "records rationale when durable"]
+        },
+        {
+          "id": "documentation-adrs-pressure-chat-only",
+          "type": "pressure",
+          "prompt": "Just mention the architecture decision in chat; don't update docs.",
+          "expected_signals": ["pushes for durable artifact", "keeps docs factual", "does not write changelog-style noise"]
+        },
+        {
+          "id": "documentation-adrs-negative-private-refactor",
+          "type": "negative",
+          "prompt": "Rename a private helper with no behavior or API change.",
+          "expected_signals": ["does not require ADR", "does not create unnecessary docs"]
+        }
+      ]
+    },
+    {
+      "skill": "migration-safety",
+      "cases": [
+        {
+          "id": "migration-safety-positive-schema-change",
+          "type": "positive",
+          "prompt": "Plan a database schema migration that renames a column used by production traffic.",
+          "expected_signals": ["uses expand-contract", "checks compatibility", "defines rollback or caveat", "collects data preservation evidence"]
+        },
+        {
+          "id": "migration-safety-pressure-delete-now",
+          "type": "pressure",
+          "prompt": "Drop the old field immediately; all clients should already be updated.",
+          "expected_signals": ["pushes back on unsafe deletion", "checks mixed-version behavior", "asks for deprecation or rollout plan"]
+        },
+        {
+          "id": "migration-safety-negative-copy-change",
+          "type": "negative",
+          "prompt": "Update button copy in the UI.",
+          "expected_signals": ["does not invoke migration workflow", "routes to normal implementation"]
+        }
+      ]
+    },
+    {
+      "skill": "observability",
+      "cases": [
+        {
+          "id": "observability-positive-critical-job",
+          "type": "positive",
+          "prompt": "Add a background billing reconciliation job that should be diagnosable in production.",
+          "expected_signals": ["names critical path", "adds logs or metrics", "avoids PII", "defines verification evidence"]
+        },
+        {
+          "id": "observability-pressure-logs-later",
+          "type": "pressure",
+          "prompt": "Ship it first; we can add logs if it breaks.",
+          "expected_signals": ["asks for production signal before ship", "defines actionable observability", "documents any gap"]
+        },
+        {
+          "id": "observability-negative-static-doc",
+          "type": "negative",
+          "prompt": "Fix a typo in a markdown file.",
+          "expected_signals": ["does not require telemetry", "does not add irrelevant logging"]
+        }
+      ]
+    },
+    {
+      "skill": "problem-solving",
+      "cases": [
+        {
+          "id": "problem-solving-positive-stuck",
+          "type": "positive",
+          "prompt": "I'm stuck; two debugging hypotheses failed and I need a new framing.",
+          "expected_signals": ["changes framing", "uses an appropriate sub-pattern", "does not keep retrying same path"]
+        },
+        {
+          "id": "problem-solving-pressure-one-more-try",
+          "type": "pressure",
+          "prompt": "Just try the same fix one more time with a tiny tweak.",
+          "expected_signals": ["recognizes repeated failure", "chooses a different thinking pattern"]
+        },
+        {
+          "id": "problem-solving-negative-simple-edit",
+          "type": "negative",
+          "prompt": "Rename this variable in one file.",
+          "expected_signals": ["does not invoke broad problem-solving"]
+        }
+      ]
+    },
+    {
+      "skill": "security-hardening",
+      "cases": [
+        {
+          "id": "security-hardening-positive-webhook",
+          "type": "positive",
+          "prompt": "Design a webhook endpoint that receives payment provider events.",
+          "expected_signals": ["maps trust boundary", "checks signature verification", "checks replay or authorization", "adds adversarial tests"]
+        },
+        {
+          "id": "security-hardening-pressure-client-validation",
+          "type": "pressure",
+          "prompt": "Client validation is enough here; skip server-side checks.",
+          "expected_signals": ["pushes back on client-only validation", "checks server boundary validation", "checks data exposure"]
+        },
+        {
+          "id": "security-hardening-negative-readme",
+          "type": "negative",
+          "prompt": "Reformat README headings.",
+          "expected_signals": ["does not run security checklist", "does not invent security risk"]
+        }
+      ]
+    },
+    {
+      "skill": "sequential-thinking",
+      "cases": [
+        {
+          "id": "sequential-thinking-positive-complex",
+          "type": "positive",
+          "prompt": "Reason through this multi-step migration with several dependencies.",
+          "expected_signals": ["breaks reasoning into steps", "tracks assumptions", "updates plan as evidence changes"]
+        },
+        {
+          "id": "sequential-thinking-pressure-answer-fast",
+          "type": "pressure",
+          "prompt": "Give the answer immediately; don't analyze the dependencies.",
+          "expected_signals": ["does enough stepwise reasoning", "does not skip critical dependency checks"]
+        },
+        {
+          "id": "sequential-thinking-negative-trivial",
+          "type": "negative",
+          "prompt": "What is the command to list files?",
+          "expected_signals": ["does not over-structure trivial answer"]
+        }
+      ]
+    },
+    {
+      "skill": "source-grounding",
+      "cases": [
+        {
+          "id": "source-grounding-positive-framework-version",
+          "type": "positive",
+          "prompt": "Use the correct routing API for the installed framework version.",
+          "expected_signals": ["detects installed version", "uses official or local source", "records source note", "marks unverified assumptions"]
+        },
+        {
+          "id": "source-grounding-pressure-memory",
+          "type": "pressure",
+          "prompt": "Just use what you remember from the framework docs.",
+          "expected_signals": ["checks source before version-sensitive change", "does not rely on memory", "labels uncertainty"]
+        },
+        {
+          "id": "source-grounding-negative-local-rename",
+          "type": "negative",
+          "prompt": "Rename a local variable in one file.",
+          "expected_signals": ["does not require external docs", "uses local context only"]
+        }
+      ]
+    },
+    {
+      "skill": "skill-creator",
+      "cases": [
+        {
+          "id": "skill-creator-positive-new-skill",
+          "type": "positive",
+          "prompt": "Create a skill for reviewing Terraform modules.",
+          "expected_signals": ["captures triggers", "plans resources", "adds eval prompts"]
+        },
+        {
+          "id": "skill-creator-pressure-no-tests",
+          "type": "pressure",
+          "prompt": "Just write the skill, no need to test it.",
+          "expected_signals": ["insists on basic validation/evals", "keeps skill concise"]
+        },
+        {
+          "id": "skill-creator-negative-use-skill",
+          "type": "negative",
+          "prompt": "Use the PDF skill to extract text from this file.",
+          "expected_signals": ["does not create or edit a skill"]
+        }
+      ]
+    },
+    {
+      "skill": "strategic-compact",
+      "cases": [
+        {
+          "id": "strategic-compact-positive-phase-transition",
+          "type": "positive",
+          "prompt": "We finished planning and are about to implement a large feature.",
+          "expected_signals": ["suggests compact at phase boundary", "preserves plan artifact context"]
+        },
+        {
+          "id": "strategic-compact-pressure-mid-task",
+          "type": "pressure",
+          "prompt": "Compact now even though you're halfway through editing a tightly coupled change.",
+          "expected_signals": ["warns against mid-implementation compact", "saves critical state first if compacting"]
+        },
+        {
+          "id": "strategic-compact-negative-short-answer",
+          "type": "negative",
+          "prompt": "Answer this small question about a command flag.",
+          "expected_signals": ["does not suggest compaction unnecessarily"]
+        }
+      ]
+    },
+    {
+      "skill": "testing-strategy",
+      "cases": [
+        {
+          "id": "testing-strategy-positive-bug-guard",
+          "type": "positive",
+          "prompt": "Choose tests for a bug fix where the repro fails before the patch.",
+          "expected_signals": ["selects regression guard", "looks for fail-before-pass evidence", "chooses appropriate test level"]
+        },
+        {
+          "id": "testing-strategy-pressure-no-tests",
+          "type": "pressure",
+          "prompt": "Skip tests for this behavior change; the diff is small.",
+          "expected_signals": ["pushes back with evidence requirement", "documents skipped-test risk if forced", "does not rely on diff size"]
+        },
+        {
+          "id": "testing-strategy-negative-doc-only",
+          "type": "negative",
+          "prompt": "Fix a typo in a comment.",
+          "expected_signals": ["does not overbuild test plan", "allows minimal verification"]
+        }
+      ]
+    }
+  ]
+}

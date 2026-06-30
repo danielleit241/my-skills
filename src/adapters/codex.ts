@@ -322,19 +322,19 @@ async function convertConfig(
     });
     result.converted.push("CLAUDE.md -> AGENTS.md");
   }
+  const config = [
+    "[features]",
+    "hooks = true",
+    "",
+    "[agents]",
+    "max_threads = 6",
+    "max_depth = 1",
+    "",
+    ...(await renderMcpConfig(sourceRoot, result)),
+  ];
   result.files.push({
     path: ".codex/config.toml",
-    content: Buffer.from(
-      [
-        "[features]",
-        "hooks = true",
-        "",
-        "[agents]",
-        "max_threads = 6",
-        "max_depth = 1",
-        "",
-      ].join("\n"),
-    ),
+    content: Buffer.from(config.join("\n")),
     component,
   });
   result.converted.push(".claude/settings.json -> .codex/config.toml");
@@ -348,12 +348,141 @@ async function convertConfig(
   }
 }
 
+async function renderMcpConfig(sourceRoot: string, result: RenderResult): Promise<string[]> {
+  const mcpPath = path.join(sourceRoot, ".mcp.json");
+  if (!(await exists(mcpPath))) return [];
+
+  let raw: unknown;
+  try {
+    raw = JSON.parse(await fs.readFile(mcpPath, "utf8")) as unknown;
+  } catch {
+    result.skipped.push(".mcp.json (invalid JSON)");
+    return [];
+  }
+
+  const servers = readMcpServers(raw);
+  if (!servers.length) return [];
+
+  const lines = ["# Migrated from .mcp.json", ""];
+  for (const [name, config] of servers) {
+    lines.push(...renderMcpServer(name, config, result), "");
+  }
+  result.converted.push(".mcp.json -> .codex/config.toml mcp_servers");
+  return lines;
+}
+
+function readMcpServers(value: unknown): Array<[string, Record<string, unknown>]> {
+  if (!isRecord(value)) return [];
+  const container = isRecord(value.mcpServers)
+    ? value.mcpServers
+    : isRecord(value.mcp_servers)
+      ? value.mcp_servers
+      : null;
+  if (!container) return [];
+  return Object.entries(container).filter(
+    (entry): entry is [string, Record<string, unknown>] => isRecord(entry[1]),
+  );
+}
+
+function renderMcpServer(
+  name: string,
+  config: Record<string, unknown>,
+  result: RenderResult,
+): string[] {
+  const lines = [`[mcp_servers.${tomlKey(name)}]`];
+  const inlineKeys = new Set([
+    "command",
+    "args",
+    "env_vars",
+    "cwd",
+    "experimental_environment",
+    "url",
+    "bearer_token_env_var",
+    "startup_timeout_sec",
+    "tool_timeout_sec",
+    "enabled",
+    "required",
+    "enabled_tools",
+    "disabled_tools",
+    "default_tools_approval_mode",
+  ]);
+  const tableKeys = new Set(["env", "http_headers", "env_http_headers"]);
+  const handled = new Set([...inlineKeys, ...tableKeys, "tools"]);
+
+  for (const key of inlineKeys) {
+    if (!(key in config)) continue;
+    const value = tomlValue(config[key]);
+    if (value === null) {
+      result.skipped.push(`.mcp.json ${name}.${key} (unsupported value)`);
+      continue;
+    }
+    lines.push(`${key} = ${value}`);
+  }
+
+  for (const key of tableKeys) {
+    const value = config[key];
+    if (!isRecord(value)) continue;
+    lines.push("", `[mcp_servers.${tomlKey(name)}.${tomlKey(key)}]`);
+    for (const [childKey, childValue] of Object.entries(value)) {
+      const rendered = tomlValue(childValue);
+      if (rendered === null) {
+        result.skipped.push(`.mcp.json ${name}.${key}.${childKey} (unsupported value)`);
+        continue;
+      }
+      lines.push(`${tomlKey(childKey)} = ${rendered}`);
+    }
+  }
+
+  if (isRecord(config.tools)) {
+    for (const [toolName, toolConfig] of Object.entries(config.tools)) {
+      if (!isRecord(toolConfig)) continue;
+      lines.push("", `[mcp_servers.${tomlKey(name)}.tools.${tomlKey(toolName)}]`);
+      for (const [key, value] of Object.entries(toolConfig)) {
+        const rendered = tomlValue(value);
+        if (rendered === null) {
+          result.skipped.push(`.mcp.json ${name}.tools.${toolName}.${key} (unsupported value)`);
+          continue;
+        }
+        lines.push(`${tomlKey(key)} = ${rendered}`);
+      }
+    }
+  }
+
+  for (const key of Object.keys(config)) {
+    if (!handled.has(key)) result.skipped.push(`.mcp.json ${name}.${key} (not used by Codex config)`);
+  }
+  return lines;
+}
+
 function tomlString(value: string): string {
   return JSON.stringify(value);
 }
 
 function tomlArray(values: string[]): string {
   return `[${values.map(tomlString).join(", ")}]`;
+}
+
+function tomlKey(value: string): string {
+  return /^[A-Za-z0-9_-]+$/.test(value) ? value : tomlString(value);
+}
+
+function tomlValue(value: unknown): string | null {
+  if (typeof value === "string") return tomlString(value);
+  if (typeof value === "number" && Number.isFinite(value)) return String(value);
+  if (typeof value === "boolean") return value ? "true" : "false";
+  if (Array.isArray(value)) {
+    const items = value.map(tomlValue);
+    return items.every((item): item is string => item !== null) ? `[${items.join(", ")}]` : null;
+  }
+  if (isRecord(value)) {
+    const entries = Object.entries(value)
+      .map(([key, child]) => {
+        const rendered = tomlValue(child);
+        return rendered === null ? null : `${tomlKey(key)} = ${rendered}`;
+      });
+    return entries.every((item): item is string => item !== null) ? `{ ${entries.join(", ")} }` : null;
+  }
+  return null;
 }
 
 function tomlMultiline(value: string): string {
@@ -363,6 +492,10 @@ function tomlMultiline(value: string): string {
 function parseStringArray(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
   return value.filter((item): item is string => typeof item === "string");
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
 
 function buildCodexAgentInstructions(body: string, name: string, tools: string[]): string {
@@ -414,8 +547,11 @@ function mapClaudeModel(name: string, value: unknown): string[] {
   if (name.toLowerCase() === "scout" || normalized.includes("haiku")) {
     return ['model = "gpt-5.4-mini"', 'model_reasoning_effort = "medium"'];
   }
-  if (normalized.includes("sonnet") || normalized.includes("opus")) {
-    return ['model = "gpt-5.5"', 'model_reasoning_effort = "high"'];
+  if (normalized.includes("opus")) {
+    return ['model = "gpt-5.5"', 'model_reasoning_effort = "xhigh"'];
+  }
+  if (normalized.includes("sonnet")) {
+    return ['model = "gpt-5.5"', 'model_reasoning_effort = "medium"'];
   }
   return [];
 }

@@ -1,116 +1,145 @@
 ---
 name: code-review
 description: >
-  Always use this skill before claiming any work is done, fixed, passing, or complete —
-  even if it seems obvious. Also use when receiving code review feedback from any source
-  (human or automated), when finishing a task or major feature, before committing or
-  creating a PR, or when about to express satisfaction with work. Covers three practices:
-  receiving feedback with technical rigor (no performative agreement), triggering code
-  review via /code-review command or cook/fix pipelines, and verification gates (run the
-  command, read the output, then make the claim). Never skip — the cost of false completion
-  claims is higher than the cost of verifying. References: code-review-reception.md,
-  requesting-code-review.md, verification-before-completion.md.
+  Use when reviewing a PR, commit, pending diff, or codebase area; when receiving
+  review feedback; before claiming work is done, fixed, passing, or complete;
+  before committing, merging, or shipping; and from cook/fix pipelines after
+  implementation. This is the only code review skill. The /ck:code-review command
+  loads this skill for standalone review modes.
 ---
 
 # Code Review
 
-Apply code review practices with technical rigor, evidence-based claims, and verification over performative responses.
+Use one review discipline everywhere: receive feedback rigorously, request adversarial review, and make completion claims only with fresh evidence.
+
+There is no separate ck-prefixed review skill. `/ck:code-review` is only a command alias that loads this skill.
+
+## Support Skill Triggers
+
+Load a support skill as a review lens when the diff contains the trigger:
+
+| Trigger | Load |
+| --- | --- |
+| weak or missing test evidence | `testing-strategy` |
+| auth, user input, secrets, PII, webhook, external integration | `security-hardening` |
+| framework/library/API behavior depends on version or current docs | `source-grounding` |
+| production behavior lacks logs, metrics, traces, or alerting | `observability` |
+| schema/data/API migration, deprecation, backward compatibility | `migration-safety` |
+| public docs, setup, API docs, or ADR should change | `documentation-adrs` |
 
 ## References
 
-| Practice            | When to load                                          | File |
-| ------------------- | ----------------------------------------------------- | ---- |
-| Receiving feedback  | Unclear/questionable feedback, conflict with reviewer | `references/code-review-reception.md` |
-| Requesting review   | After each task, before merge — use `/code-review`    | `references/requesting-code-review.md` |
-| Verification gates  | Before any completion/success claim                   | `references/verification-before-completion.md` |
+| Practice | Load When | File |
+| --- | --- | --- |
+| Receiving feedback | Reviewer comments are unclear, risky, or conflict with local context | `references/code-review-reception.md` |
+| Requesting review | Cook/fix finished a phase, before merge, or standalone review is requested | `references/requesting-code-review.md` |
+| Verification gates | Before any done/fixed/passing/complete claim | `references/verification-before-completion.md` |
 
-## Overview
+## Standalone Review Protocol
 
-Code review requires three distinct practices:
+Use this protocol when invoked by `/ck:code-review`.
 
-1. **Receiving feedback** — Technical evaluation over performative agreement
-2. **Requesting reviews** — Systematic review via code-reviewer subagent
-3. **Verification gates** — Evidence before any completion claims
+| Mode | Resolve Diff With |
+| --- | --- |
+| `#123` | `gh pr diff 123` after confirming `gh` exists and is authenticated |
+| `<commit-hash>` | `git show <hash>` |
+| `--pending` | `git diff HEAD` plus staged/unstaged awareness |
+| `codebase parallel` | scoped module audits with separate review lenses |
 
-## Core Principle
+If the mode's tool is unavailable, stop and report the missing dependency. Do not silently fall back to another mode.
 
-**Technical correctness over social comfort.** Verify before implementing. Ask before assuming. Evidence before claims.
+### Step 1 - Resolve Diff And Scope
 
-## When to Use This Skill
+1. Resolve the diff for the selected mode.
+2. Record changed files, line counts, and risky file categories.
+3. Find the governing plan/spec/intent. If none exists, review against the stated intent and flag "no governing artifact".
 
-### Receiving Feedback
-Trigger when:
-- Receiving code review comments from any source
-- Feedback seems unclear or technically questionable
-- Multiple review items need prioritization
-- Suggestion conflicts with existing decisions
+### Step 2 - Scout Review Context
 
-### Requesting Review
-Trigger when:
-- Completing tasks in subagent-driven development (after EACH task)
-- Finishing major features or refactors
-- Before merging to main branch
-- After fixing complex bugs
+Run `ck-scout --review` over the diff. The scout report must identify:
 
-Use `/code-review` (local) or `/code-review <PR>` (PR mode). Cook/fix pipelines invoke the `code-reviewer` agent automatically.
+- changed files and adjacent contracts
+- governing plan/spec/intent, if found
+- data/auth/migration/concurrency/boundary risks
+- edge-case probes for adversarial review
 
-### Verification Gates
-Trigger when:
-- About to claim tests pass, build succeeds, or work is complete
-- Before committing, pushing, or creating PRs
-- Moving to next task
-- Any statement suggesting success/completion
+### Step 3 - Spec Compliance Gate
 
-## Quick Decision Tree
+Handle this inline before delegating:
 
-```
-SITUATION?
-│
-├─ Received feedback
-│  ├─ Unclear items? → STOP, ask for clarification first
-│  ├─ From human partner? → Understand, then implement
-│  └─ From external reviewer? → Verify technically before implementing
-│
-├─ Completed work
-│  ├─ Major feature/task? → Run /code-review (or it's automatic in cook/fix)
-│  └─ Before merge? → Run /code-review <PR-number>
-│
-└─ About to claim status
-   ├─ Have fresh verification? → State claim WITH evidence
-   └─ No fresh verification? → RUN verification command first
-```
+- Does each meaningful change map to a plan/spec/intent item?
+- Is anything outside declared scope?
+- Does any change violate acceptance criteria or public contract?
+
+Any critical spec violation forces final verdict `BLOCK`, even if the code quality pass is clean.
+
+### Step 4 - Code Quality And Adversarial Review
+
+Spawn `code-reviewer` with minimal context:
+
+- diff or review package path
+- spec compliance findings
+- `ck-scout --review` report
+- explicit acceptance criteria or stated intent
+
+For broad diffs, split by clear ownership and deduplicate findings after reviewers return.
+
+Run the adversarial pass unless the strict exemption applies: `<=2 files`, `<=30 changed lines`, and no security-sensitive code. Record the exemption with measured file/line counts.
+
+### Step 5 - Derived Verdict
+
+Use the evidence table mechanically:
+
+| Evidence | Verdict |
+| --- | --- |
+| Critical spec violation, CRITICAL finding, or critical adversarial break | `BLOCK` |
+| HIGH finding or non-critical broken edge case with no user-data risk | `REQUEST CHANGES` |
+| No spec violation, no CRITICAL/HIGH, adversarial probes held or exempted | `APPROVE` |
+
+Map `code-reviewer` output into the public verdict:
+
+- `APPROVED` -> `APPROVE`
+- `WARNING` -> `REQUEST CHANGES`
+- `BLOCK` -> `BLOCK`
+
+Output findings first, grouped by severity, then the verdict line.
 
 ## Receiving Feedback Protocol
 
-### Response Pattern
-READ → UNDERSTAND → VERIFY → EVALUATE → RESPOND → IMPLEMENT
+Load `references/code-review-reception.md` when feedback arrives.
 
-### Key Rules
-- No performative agreement: "You're absolutely right!", "Great point!", "Thanks for [anything]"
-- No implementation before verification
-- Restate requirement, ask questions, push back with technical reasoning, or just start working
-- If unclear: STOP and ask for clarification on ALL unclear items first
-- YAGNI check: search for usage before implementing suggested features
+Use this sequence:
 
-**Full protocol:** `references/code-review-reception.md`
+```text
+READ -> UNDERSTAND -> VERIFY -> EVALUATE -> RESPOND -> IMPLEMENT
+```
 
-## Verification Gates Protocol
+Rules:
 
-### The Iron Law
-**NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE**
+- No performative agreement.
+- Verify technical claims before editing.
+- Ask for clarification on all unclear items before implementation.
+- Push back with evidence when feedback is wrong or conflicts with accepted constraints.
 
-### Gate Function
-IDENTIFY command → RUN full command → READ output → VERIFY confirms claim → THEN claim
+## Verification Gate
 
-### Red Flags — STOP
-Using "should"/"probably"/"seems to", expressing satisfaction before verification, committing without verification, trusting agent reports.
+Load `references/verification-before-completion.md` before any completion claim.
 
-**Full protocol:** `references/verification-before-completion.md`
+Use this function:
 
-## Bottom Line
+```text
+IDENTIFY command -> RUN full command -> READ output -> VERIFY claim -> THEN state claim with evidence
+```
 
-1. Technical rigor over social performance — no performative agreement
-2. Systematic review processes — use code-reviewer subagent
-3. Evidence before claims — verification gates always
+Red flags: "should", "probably", "seems to", "looks good", "I think", or any completion claim based only on reasoning.
 
-Verify. Question. Then implement. Evidence. Then claim.
+## Fix-Review Cycle
+
+When review blocks and the user asks to fix:
+
+1. Fix the highest-severity actionable findings first.
+2. Re-run focused verification for the changed area.
+3. Re-run review on the updated diff.
+4. Stop after 3 failed cycles and report the remaining blocker.
+
+Use a different repair approach each cycle. Repeating the same fix with different wording is not a new approach.

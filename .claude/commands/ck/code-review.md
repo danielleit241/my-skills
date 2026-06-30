@@ -3,4 +3,4 @@ description: Adversarial review for a PR, commit, pending changes, or a parallel
 argument-hint: "[#pr | commit | --pending | codebase parallel]"
 ---
 
-Load the `ck:code-review` skill and run it with `$ARGUMENTS`.
+Load the `code-review` skill and run its standalone review protocol with `$ARGUMENTS`.

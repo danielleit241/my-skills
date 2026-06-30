@@ -26,7 +26,7 @@ const packageJson = JSON.parse(await fs.readFile(path.join(repositoryRoot, "pack
 };
 
 program
-  .name("my-skills")
+  .name("forge")
   .description("Install, update, migrate, and revert versioned AI agent toolkits")
   .version(packageJson.version);
 
@@ -66,10 +66,10 @@ program
   .addOption(projectPathOption())
   .addOption(projectRootOption())
   .addOption(agentOption())
-  .option("-b, --bundle <name...>", "Bundles to install", ["full"])
-  .option("--source <path>", "Toolkit source")
-  .option("--dry-run", "Preview without writing")
-  .option("--force", "Overwrite local conflicts")
+  .addOption(bundleOption())
+  .addOption(sourceOption("Toolkit source"))
+  .addOption(dryRunOption())
+  .addOption(forceOption())
   .action(async (target, options) => {
     const targetRoot = await resolveProjectTarget(target, options);
     await runInstall(
@@ -86,14 +86,17 @@ program
   .command("update")
   .description("Update an installed toolkit")
   .argument("[version]", "SemVer release, or latest", "latest")
-  .argument("[target]", "Target project", ".")
-  .option("--source <path>", "Local toolkit Git repository instead of npm")
-  .option("--dry-run", "Preview without writing")
-  .option("--force", "Overwrite local conflicts")
+  .argument("[target]", "Target project")
+  .addOption(projectPathOption())
+  .addOption(projectRootOption())
+  .addOption(sourceOption("Local toolkit Git repository instead of npm"))
+  .addOption(dryRunOption())
+  .addOption(forceOption())
   .action(async (version, target, options) => {
+    const targetRoot = await resolveProjectTarget(target, options);
     await runUpdate(
       version,
-      path.resolve(target),
+      targetRoot,
       options.source ? path.resolve(options.source) : undefined,
       Boolean(options.dryRun),
       Boolean(options.force),
@@ -104,13 +107,15 @@ program
   .command("revert")
   .description("Restore an installed toolkit to a SemVer release")
   .argument("<version>", "SemVer release")
-  .argument("[target]", "Target project", ".")
-  .option("--source <path>", "Local toolkit Git repository instead of npm")
-  .option("--dry-run", "Preview without writing")
-  .option("--force", "Overwrite local conflicts")
+  .argument("[target]", "Target project")
+  .addOption(projectPathOption())
+  .addOption(projectRootOption())
+  .addOption(sourceOption("Local toolkit Git repository instead of npm"))
+  .addOption(dryRunOption())
+  .addOption(forceOption())
   .action(async (version, target, options) => {
     if (!semver.valid(version.replace(/^v/, ""))) throw new Error(`Invalid version: ${version}`);
-    const targetRoot = path.resolve(target);
+    const targetRoot = await resolveProjectTarget(target, options);
     const status = await inspectStatus(targetRoot);
     if (!status.lock) throw new Error("Toolkit is not initialized");
     const source = options.source
@@ -137,16 +142,19 @@ program
 program
   .command("migrate")
   .description("Migrate an installed toolkit between agent formats")
-  .argument("[target]", "Target project", ".")
+  .argument("[target]", "Target project")
+  .addOption(projectPathOption())
+  .addOption(projectRootOption())
   .requiredOption("--from <agent>", "Source agent", parseAgent)
   .requiredOption("--to <agent>", "Target agent", parseAgent)
-  .option("--source <path>", "Toolkit source")
-  .option("-b, --bundle <name...>", "Bundles when no lockfile exists", ["full"])
-  .option("--dry-run", "Preview without writing")
-  .option("--force", "Overwrite local conflicts")
+  .addOption(sourceOption("Toolkit source"))
+  .addOption(bundleOption("Bundles when no lockfile exists"))
+  .addOption(dryRunOption())
+  .addOption(forceOption())
   .action(async (target, options) => {
+    const targetRoot = await resolveProjectTarget(target, options);
     await runMigrate(
-      path.resolve(target),
+      targetRoot,
       options.from,
       options.to,
       options.bundle,
@@ -159,17 +167,22 @@ program
 program
   .command("status")
   .description("Show installed version and local drift")
-  .argument("[target]", "Target project", ".")
-  .option("--source <path>", "Local toolkit Git repository")
+  .argument("[target]", "Target project")
+  .addOption(projectPathOption())
+  .addOption(projectRootOption())
+  .addOption(sourceOption("Local toolkit Git repository"))
   .action(async (target, options) => {
-    await printStatus(path.resolve(target), options.source ? path.resolve(options.source) : undefined);
+    const targetRoot = await resolveProjectTarget(target, options);
+    await printStatus(targetRoot, options.source ? path.resolve(options.source) : undefined);
   });
 
 program
   .command("validate")
   .description("Validate a toolkit source or installed project")
-  .argument("[target]", "Target project", ".")
-  .option("--source <path>", "Validate source manifest instead")
+  .argument("[target]", "Target project")
+  .addOption(projectPathOption())
+  .addOption(projectRootOption())
+  .addOption(sourceOption("Validate source manifest instead"))
   .addOption(agentOption(false))
   .action(async (target, options) => {
     if (options.source) {
@@ -177,7 +190,8 @@ program
       console.log(`Valid manifest: ${manifest.name}@${manifest.version}`);
       return;
     }
-    await validateTarget(path.resolve(target), options.agent);
+    const targetRoot = await resolveProjectTarget(target, options);
+    await validateTarget(targetRoot, options.agent);
   });
 
 if (process.argv.length === 2) {
@@ -203,6 +217,22 @@ function projectPathOption(): Option {
 
 function projectRootOption(): Option {
   return new Option("--project-root", "Treat the current working directory as the project root");
+}
+
+function sourceOption(description: string): Option {
+  return new Option("--source <path>", description);
+}
+
+function bundleOption(description = "Bundles to install"): Option {
+  return new Option("-b, --bundle <name...>", description).default(["full"]);
+}
+
+function dryRunOption(): Option {
+  return new Option("--dry-run", "Preview without writing");
+}
+
+function forceOption(): Option {
+  return new Option("--force", "Overwrite local conflicts");
 }
 
 function parseAgent(value: string): AgentName {

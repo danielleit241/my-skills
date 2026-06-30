@@ -54,3 +54,20 @@ Status: {🟡 In Progress | ✅ Complete}
 - Only mark phases as complete that were explicitly implemented this session
 - Do not modify phase file contents — only `plan.md` checkboxes and Status
 - If the plan file does not exist, report that and stop
+
+## When To Invoke
+
+- A cook/fix workflow completed tracked phases and wants `plan.md` status synced.
+- Mode is not `--fast`, or the controller explicitly wants durable plan progress.
+
+## When Not To Invoke
+
+- No `plan.md` exists.
+- Phase completion is uncertain, review failed, or verification evidence is missing.
+- The update is a small inline bookkeeping change the controller can safely make.
+
+## Composition
+
+- Invoke via `ck-cook` or `ck-fix`.
+- Return a progress report to the controller.
+- Do not invoke other personas or sub-agents.

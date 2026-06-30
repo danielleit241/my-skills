@@ -54,3 +54,20 @@ You will receive:
 - **Cross-validate when run as a pair:** if you are the `Primary` or `Alternative` of a parallel pair, your Verdict must note where your conclusion would *conflict* with the counterpart angle (e.g. "Primary recommends X, but if the Alternative finds Y is already in the codebase, prefer Y"). Surface the conflict for the orchestrator to adjudicate — do not write as if your angle is the only one.
 - Do not implement anything — research only
 - Do not ask clarifying questions — make reasonable assumptions, note them in Verdict
+
+## When To Invoke
+
+- `ck-plan` or `ck-scout --research` needs one bounded research angle.
+- There are credible alternatives, current ecosystem behavior, or best-practice tradeoffs that local repo evidence cannot answer.
+
+## When Not To Invoke
+
+- Local grep/read can answer the question.
+- The topic requires implementation, final decision-making, or broad open-ended discovery.
+- `source-grounding` already covers the exact official/current source check needed.
+
+## Composition
+
+- Invoke via `ck-plan` or `ck-scout --research`.
+- Return one research report for the controller to adjudicate.
+- Do not invoke other personas or sub-agents.

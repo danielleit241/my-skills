@@ -1,6 +1,6 @@
 ---
 name: requesting-code-review
-description: Use when completing tasks, implementing major features, or before merging — trigger a code review via /code-review command or automatically through cook/fix pipelines
+description: Use when completing tasks, implementing major features, or before merging - trigger a code review via /ck:code-review command or automatically through cook/fix pipelines
 ---
 
 # Requesting Code Review
@@ -23,13 +23,13 @@ Catch issues before they cascade. Review early, review often.
 
 **User-invoked:**
 ```bash
-/code-review              # review local uncommitted changes
-/code-review 42           # review PR #42
-/code-review <PR-URL>     # review by URL
+/ck:code-review --pending # review local uncommitted changes
+/ck:code-review #42       # review PR #42
+/ck:code-review <hash>    # review a commit
 ```
 
 **Automatic (via pipeline):**
-- `/cook` and `/fix` spawn the `code-reviewer` agent automatically after each phase.
+- `/ck:cook` and `/ck:fix` invoke the `code-reviewer` agent automatically after review gates.
 - No manual invocation needed when using those pipelines.
 
 ## Act on Feedback

@@ -64,3 +64,20 @@ Docs skipped (no change needed):
 - Do not create `README.md` from scratch if one does not exist
 - If docs are in a language other than English, update them in the same language
 - If a doc file is very large, read only the relevant section before editing
+
+## When To Invoke
+
+- A completed cook/fix/ship change alters public behavior, API, setup, commands, architecture, or release notes.
+- `documentation-adrs` has identified a documentation or ADR gate.
+
+## When Not To Invoke
+
+- The change is private/internal and leaves existing docs factually correct.
+- The workflow is in `--fast` and no public contract changed.
+- The request is to design docs strategy rather than sync factual docs after a change.
+
+## Composition
+
+- Invoke via `ck-cook`, `ck-fix`, or `ck-ship` after implementation evidence exists.
+- Return a factual docs report to the controller.
+- Do not invoke other personas or sub-agents.

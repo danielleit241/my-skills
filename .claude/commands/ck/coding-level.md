@@ -30,15 +30,24 @@ Set the coding explanation depth. Levels control how Claude structures and expla
 
 Read the argument `$ARGUMENTS`:
 
-**No argument** — read `.ck.json` at the project root (default: 5 if not set), print the level table above, and ask the user to pick a number -1 through 5.
+**No argument** — read `.ck.json` at the project root from `profile.codingLevel`
+(fallback: legacy `codingLevel`, default: 5 if not set), print the level table
+above, and ask the user to pick a number -1 through 5.
 
-**Argument is a number -1 through 5** — write `.ck.json` at the project root:
+**Argument is a number -1 through 5** — update `.ck.json` at the project root,
+preserving all other keys:
 ```json
-{ "codingLevel": <N> }
+{
+  "profile": {
+    "codingLevel": <N>
+  }
+}
 ```
 Confirm with one line: `Coding level set to <N> (<Name>). Takes effect next session.`
 
-**Argument is `reset`** — remove the `codingLevel` key from `.ck.json` if it exists (keep other keys intact). Confirm: `Coding level reset. Claude's default style will be used.`
+**Argument is `reset`** — remove `profile.codingLevel` and legacy
+`codingLevel` from `.ck.json` if they exist (keep other keys intact). Confirm:
+`Coding level reset. Claude's default style will be used.`
 
 **Argument is anything else** — print usage and the level table.
 

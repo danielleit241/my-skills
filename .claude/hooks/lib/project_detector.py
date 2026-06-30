@@ -1,8 +1,7 @@
 """
 Detect project type and package manager from the working directory.
 
-Reads .ck.json for overrides where applicable. Falls back to file-system
-heuristics (lock files, config markers, extensions).
+Uses file-system heuristics (lock files, config markers, extensions).
 
 Usage:
     from project_detector import detect_project_type, get_package_manager

@@ -1,6 +1,7 @@
 import path from "node:path";
 
-export const LOCK_FILE = ".my-skills.lock.json";
+export const LOCK_FILE = ".forge.lock.json";
+export const LEGACY_LOCK_FILE = ".my-skills.lock.json";
 
 export function normalizeRelative(value: string): string {
   return value.split(path.sep).join("/").replace(/^\.\//, "");

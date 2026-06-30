@@ -13,7 +13,7 @@ interface Backup {
 
 export async function applyTransaction(targetRoot: string, plan: ChangePlan): Promise<void> {
   if (plan.conflicts.length > 0) throw new Error("Cannot apply a plan containing conflicts");
-  const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "my-skills-"));
+  const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "forge-"));
   const backups: Backup[] = [];
   try {
     for (const file of plan.writes) backups.push(await backup(targetRoot, tempRoot, file.path));
@@ -43,7 +43,7 @@ async function backup(targetRoot: string, tempRoot: string, relative: string): P
 async function atomicWrite(targetRoot: string, file: RenderedFile): Promise<void> {
   const destination = resolveInside(targetRoot, file.path);
   await fs.mkdir(path.dirname(destination), { recursive: true });
-  const temporary = `${destination}.my-skills-${process.pid}.tmp`;
+  const temporary = `${destination}.forge-${process.pid}.tmp`;
   await fs.writeFile(temporary, file.content);
   await fs.rename(temporary, destination);
 }

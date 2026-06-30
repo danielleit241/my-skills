@@ -20,8 +20,10 @@ sys.path.insert(0, str(Path(__file__).parent / "lib"))
 from ck_config_utils import find_project_root as get_project_root, get_project_name, get_sessions_dir
 from hook_logger import HookLogger, strip_ansi
 from session_utils import ensure_dir, get_datetime_string
+from utf8_stdio import configure_utf8_stdio, read_stdin, write_json
 
 _log = HookLogger("session-state")
+configure_utf8_stdio()
 
 STATE_FILENAME = ".last-state.md"
 ARCHIVE_DIR_NAME = "archive"
@@ -141,7 +143,7 @@ def _empty_transcript() -> dict:
 def _detect_agent(payload: dict | None = None) -> str:
     explicit = (
         os.environ.get("CK_AGENT")
-        or os.environ.get("MY_SKILLS_AGENT")
+        or os.environ.get("FORGE_AGENT")
         or (payload or {}).get("agent")
         or (payload or {}).get("agentName")
         or (payload or {}).get("source")
@@ -366,15 +368,14 @@ def main() -> None:
     if mode == "load":
         content = load_state()
         if content:
-            sys.stdout.write(json.dumps({
+            write_json({
                 "hookSpecificOutput": {
                     "hookEventName": "SessionStart",
                     "additionalContext": f"Previous session state:\n{content}",
                 }
-            }))
-            sys.stdout.flush()
+            })
     else:
-        stdin_data = sys.stdin.read(MAX_STDIN)
+        stdin_data = read_stdin(MAX_STDIN)
         transcript_path = None
         payload = None
         try:

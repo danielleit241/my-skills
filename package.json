@@ -1,14 +1,14 @@
 {
-  "name": "@danielle241/my-skills",
-  "version": "2.1.5",
+  "name": "@danielle241/forge",
+  "version": "2.1.7",
   "description": "Versioned CLI for installing and migrating AI agent toolkits",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/danielleit241/my-skills.git"
+    "url": "git+https://github.com/danielleit241/forge.git"
   },
-  "homepage": "https://github.com/danielleit241/my-skills#readme",
+  "homepage": "https://github.com/danielleit241/forge#readme",
   "bugs": {
-    "url": "https://github.com/danielleit241/my-skills/issues"
+    "url": "https://github.com/danielleit241/forge/issues"
   },
   "publishConfig": {
     "access": "public",
@@ -16,7 +16,7 @@
   },
   "type": "module",
   "bin": {
-    "my-skills": "dist/cli.js"
+    "forge": "dist/cli.js"
   },
   "files": [
     "dist",
@@ -25,22 +25,23 @@
     ".claude/commands",
     ".claude/hooks/*.py",
     ".claude/hooks/lib/*.py",
-    ".claude/rules",
     ".claude/settings.json",
     ".claude/skills",
     "toolkit.manifest.json",
     "CHANGELOG.md",
     "CLAUDE.md",
+    ".mcp.json",
     ".ck.json"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "check": "tsc -p tsconfig.json --noEmit",
     "test": "npm run build && node --test dist/tests/engine.test.js dist/tests/onboarding.test.js dist/tests/project.test.js dist/tests/transaction.test.js",
+    "validate:skills": "node scripts/validate-skills.mjs",
     "validate:toolkit": "npm run build && node dist/cli.js validate --source .",
     "version:check": "node scripts/check-release-version.mjs",
-    "release:check": "npm run check && npm test && npm run validate:toolkit && npm pack --dry-run",
-    "prepublishOnly": "npm run check && npm test && npm run validate:toolkit"
+    "release:check": "npm run check && npm run validate:skills && npm test && npm run validate:toolkit && npm pack --dry-run",
+    "prepublishOnly": "npm run check && npm run validate:skills && npm test && npm run validate:toolkit"
   },
   "engines": {
     "node": ">=20"

@@ -20,6 +20,8 @@ import os
 import re
 from pathlib import Path
 
+from ck_config_utils import find_project_root, get_safety_section
+
 SENSITIVE_FILENAME_PATTERNS: list[str] = [
     ".env",
     ".env.*",
@@ -51,16 +53,13 @@ _BASH_RE = re.compile(
 
 
 def load_allow_list(cwd: str | None = None) -> set[str]:
-    """Load privacyBlock.allowList from .ck.json, lowercased."""
+    """Load safety.privacyBlock.allowList from .ck.json, lowercased."""
     try:
-        root = _find_root(cwd)
+        root = find_project_root(cwd) or _find_root(cwd)
         if not root:
             return set()
-        ck = root / ".ck.json"
-        if not ck.exists():
-            return set()
-        cfg = json.loads(ck.read_text(encoding="utf-8-sig"))
-        return {p.lower() for p in cfg.get("privacyBlock", {}).get("allowList", [])}
+        section = get_safety_section("privacyBlock", root=root)
+        return {p.lower() for p in section.get("allowList", [])}
     except Exception:
         return set()
 

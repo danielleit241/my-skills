@@ -9,12 +9,14 @@ sys.path.insert(0, str(Path(__file__).parent / "lib"))
 sys.path.insert(0, str(Path(__file__).parent))
 from hook_logger import HookLogger
 from session_state import save_state
+from utf8_stdio import configure_utf8_stdio, read_stdin
 
 MAX_STDIN = 1024 * 1024
+configure_utf8_stdio()
 
 
 def main() -> None:
-    stdin_data = sys.stdin.read(MAX_STDIN)
+    stdin_data = read_stdin(MAX_STDIN)
     transcript_path = None
     payload = None
     try:

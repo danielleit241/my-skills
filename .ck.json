@@ -1,59 +1,41 @@
 {
-  "codingLevel": -1,
-  "compactDay": 3,
-  "memoryDay": 30,
-  "conversation": "vi",
-  "spec": {
-    "language": "vi",
-    "directory": "plans",
+  "schemaVersion": 2,
+  "profile": {
+    "codingLevel": -1,
+    "language": {
+      "conversation": "vi",
+      "artifacts": "vi"
+    }
+  },
+  "workspace": {
+    "root": "plans",
     "dateFormat": "YYMMDD"
   },
-  "cavemanMode": {
-    "enabled": true,
-    "threshold": {
-      "orange": 50,
-      "red": 100
-    }
+  "retention": {
+    "compactDays": 3,
+    "memoryDays": 30
   },
-  "artifactFolding": {
-    "enabled": true,
-    "threshold": {
-      "maxChars": 2000,
-      "maxLines": 120,
-      "previewLines": 10
-    }
-  },
-  "privacyBlock": {
-    "enabled": true,
-    "allowList": []
-  },
-  "simplify": {
-    "gate": {
-      "enabled": false
+  "hooks": {
+    "caveman": {
+      "enabled": true,
+      "threshold": {
+        "orange": 50,
+        "red": 100
+      }
     },
-    "threshold": {
-      "totalLoc": 400,
-      "fileCount": 8,
-      "singleFileLoc": 200,
-      "sourceExtensions": [
-        ".py",
-        ".js",
-        ".ts",
-        ".tsx",
-        ".jsx",
-        ".go",
-        ".rs",
-        ".java",
-        ".cs",
-        ".cpp",
-        ".c",
-        ".rb",
-        ".php",
-        ".swift",
-        ".kt",
-        ".vue",
-        ".svelte"
-      ]
+    "simplifyGate": {
+      "enabled": false,
+      "threshold": {
+        "totalLoc": 400,
+        "fileCount": 8,
+        "singleFileLoc": 200
+      }
+    }
+  },
+  "safety": {
+    "privacyBlock": {
+      "enabled": true,
+      "allowList": []
     }
   }
 }

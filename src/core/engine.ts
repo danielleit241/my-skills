@@ -9,7 +9,7 @@ import type {
   ToolkitLock,
 } from "../types.js";
 import { sha256 } from "./hash.js";
-import { readLock, serializeLock } from "./lock.js";
+import { findLockFile, readLock, serializeLock } from "./lock.js";
 import { loadManifest, selectComponents } from "./manifest.js";
 import { mergeExistingConfig } from "./merge.js";
 import { LOCK_FILE } from "./paths.js";
@@ -47,6 +47,7 @@ export async function installToolkit(options: InstallOptions): Promise<InstallRe
   addSupportFiles(render.files);
   render.files = await mergeExistingConfig(options.targetRoot, render.files);
   assertUniquePaths(render.files);
+  const previousLockPath = await findLockFile(options.targetRoot);
   const previous = await readLock(options.targetRoot);
   const lock = makeLock(
     manifest.name,
@@ -66,7 +67,7 @@ export async function installToolkit(options: InstallOptions): Promise<InstallRe
   const plan = await buildChangePlan(
     options.targetRoot,
     desiredWithLock,
-    previousWithLock(previous),
+    previousWithLock(previous, previousLockPath),
     options.force,
     options.preservePreviousFiles ?? false,
   );
@@ -88,7 +89,7 @@ function addSupportFiles(files: RenderedFile[]): void {
       path: ".gitignore",
       content: Buffer.from(
         [
-          "# my-skills generated files",
+          "# forge generated files",
           ".claude/",
           "CLAUDE.md",
           "claude.md",
@@ -97,7 +98,8 @@ function addSupportFiles(files: RenderedFile[]): void {
           "AGENTS.md",
           "agents.md",
           ".ck.json",
-          ".my-skills.lock.json",
+          ".mcp.json",
+          ".forge.lock.json",
           "session-data/",
           "",
         ].join("\n"),
@@ -165,14 +167,14 @@ function makeLock(
   };
 }
 
-function previousWithLock(previous: ToolkitLock | null): ToolkitLock | null {
+function previousWithLock(previous: ToolkitLock | null, lockPath: string | null): ToolkitLock | null {
   if (!previous) return null;
   const lockContent = serializeLock(previous);
   return {
     ...previous,
     files: [
       ...previous.files,
-      { path: LOCK_FILE, sha256: sha256(lockContent), component: "lockfile" },
+      { path: lockPath ?? LOCK_FILE, sha256: sha256(lockContent), component: "lockfile" },
     ],
   };
 }

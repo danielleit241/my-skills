@@ -19,15 +19,17 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent / "lib"))
 from ck_config_utils import (
     find_project_root as get_project_root,
-    get_claude_dir, get_project_name, get_sessions_dir, load_ck_config,
+    get_claude_dir, get_coding_level, get_language_config, get_project_name,
+    get_sessions_dir,
 )
 from hook_logger import HookLogger, strip_ansi
 from project_detector import detect_project_type, get_package_manager
 from session_utils import ensure_dir
 from config_counter import get_summary as get_config_summary
+from utf8_stdio import configure_utf8_stdio, write_json
 
-DEV_RULES = "YAGNI · KISS · DRY · Brutal honesty · Challenge assumptions"
 _log = HookLogger("session-init")
+configure_utf8_stdio()
 
 
 # ── coding level ──────────────────────────────────────────────────────────────
@@ -41,18 +43,15 @@ def read_language_setting(root: Path) -> str | None:
     """Return a language instruction string from .ck.json config.
 
     Reads:
-      - conversation  → top-level "conversation" key
-      - file language → "spec.language" key
+      - profile.language.conversation, fallback conversation
+      - profile.language.artifacts, fallback spec.language
     """
-    ck_path = root / ".ck.json"
-    if not ck_path.exists():
-        return None
     try:
-        cfg = json.loads(ck_path.read_text(encoding="utf-8"))
+        cfg = get_language_config(root)
         parts = []
         if conv := cfg.get("conversation"):
             parts.append(f"Respond to the user in: {conv}")
-        if files := cfg.get("spec", {}).get("language"):
+        if files := cfg.get("artifacts"):
             parts.append(f"Write all file content (code, docs, comments) in: {files}")
         return "\n".join(parts) if parts else None
     except Exception as err:
@@ -64,12 +63,8 @@ def read_coding_level() -> str | None:
     root = get_project_root()
     if not root:
         return None
-    ck_path = root / ".ck.json"
-    if not ck_path.exists():
-        return None
     try:
-        cfg = json.loads(ck_path.read_text(encoding="utf-8"))
-        level = int(cfg.get("codingLevel", 5))
+        level = get_coding_level(root, default=5)
         if level not in _LEVEL_NAMES:
             return None
         _log.info(f"Coding level: {level} ({_LEVEL_NAMES[level]})")
@@ -123,7 +118,6 @@ def write_session_context(sessions_dir: Path) -> None:
         context = {
             "project": project,
             "branch": branch,
-            "rules": DEV_RULES,
             "updated_at": datetime.now().isoformat(),
         }
         (sessions_dir / "session-context.json").write_text(
@@ -195,7 +189,7 @@ def main() -> None:
         parts.append(f"frameworks: {', '.join(project_info['frameworks'])}")
     if parts:
         logger.info(f"Project: {'; '.join(parts)}")
-        context_parts.append(f"Project type: {json.dumps(project_info)}")
+        context_parts.append(f"Project type: {json.dumps(project_info, ensure_ascii=False)}")
     else:
         logger.info("No specific project type detected")
 
@@ -209,14 +203,12 @@ def main() -> None:
     write_session_context(sessions_dir)
     logger.perf()
 
-    payload = json.dumps({
+    write_json({
         "hookSpecificOutput": {
             "hookEventName": "SessionStart",
             "additionalContext": "\n\n".join(context_parts),
         }
     })
-    sys.stdout.write(payload)
-    sys.stdout.flush()
 
 
 if __name__ == "__main__":

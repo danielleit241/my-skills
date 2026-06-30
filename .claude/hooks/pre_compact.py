@@ -18,12 +18,14 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 sys.path.insert(0, str(Path(__file__).parent / "lib"))
-from ck_config_utils import get_sessions_dir, load_ck_config
+from ck_config_utils import get_retention_config, get_sessions_dir
 from hook_logger import HookLogger
 from session_state import save_state
 from session_utils import append_file, ensure_dir, find_files, get_datetime_string, get_time_string
+from utf8_stdio import configure_utf8_stdio, read_stdin
 
 MAX_STDIN = 1024 * 1024
+configure_utf8_stdio()
 
 
 def _project_slug() -> str:
@@ -60,7 +62,7 @@ def main() -> None:
     ensure_dir(sessions_dir)
 
     # 1. Read stdin — same pattern as session_end.py
-    stdin_data = sys.stdin.read(MAX_STDIN)
+    stdin_data = read_stdin(MAX_STDIN)
     transcript_path = None
     payload = None
     try:
@@ -83,9 +85,9 @@ def main() -> None:
     append_file(sessions_dir / "compaction-log.txt", f"[{timestamp}] Context compaction triggered\n")
 
     # 4. Purge old files
-    config = load_ck_config()
-    compact_day: int = int(config.get("compactDay", 3))
-    memory_day: int = int(config.get("memoryDay", 30))
+    retention = get_retention_config()
+    compact_day: int = retention["compactDays"]
+    memory_day: int = retention["memoryDays"]
 
     purge_outdated(sessions_dir, compact_day, "session-data", log)
 

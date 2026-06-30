@@ -16,6 +16,18 @@ export async function writeFixture(root: string, manifest: ToolkitManifest): Pro
   await fs.writeFile(path.join(root, "CLAUDE.md"), "# Instructions\n");
   await fs.writeFile(path.join(root, ".ck.json"), "{}");
   await fs.writeFile(
+    path.join(root, ".mcp.json"),
+    JSON.stringify({
+      mcpServers: {
+        "sequential-thinking": {
+          command: "npx",
+          args: ["-y", "@modelcontextprotocol/server-sequential-thinking"],
+          description: "Claude-only note.",
+        },
+      },
+    }),
+  );
+  await fs.writeFile(
     path.join(root, ".claude", "settings.json"),
     JSON.stringify({
       hooks: {
@@ -45,7 +57,7 @@ export const fixtureManifest: ToolkitManifest = {
   sourceAgent: "claude",
   supportedAgents: ["claude", "codex"],
   components: [
-    { id: "core", type: "config", paths: [".claude/settings.json", ".ck.json", "CLAUDE.md"], adapters: ["claude", "codex"] },
+    { id: "core", type: "config", paths: [".claude/settings.json", ".ck.json", ".mcp.json", "CLAUDE.md"], adapters: ["claude", "codex"] },
     { id: "skills", type: "skill", paths: [".claude/skills"], adapters: ["claude", "codex"] },
     { id: "commands", type: "command", paths: [".claude/commands"], adapters: ["claude", "codex"] },
     { id: "agents", type: "agent", paths: [".claude/agents"], adapters: ["claude", "codex"] },
